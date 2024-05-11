@@ -1,8 +1,8 @@
-import { REDIRECT_URL } from './Constants';
+import { CLIENT_ID, REDIRECT_URL } from './Constants';
 
 export const msalConfig = {
   auth: {
-    clientId: '4b179bfc-6621-409a-a1ed-ad141c12eb11',
+    clientId: CLIENT_ID,
     redirectUri: REDIRECT_URL,
     clientSecret: process.env.INPUT_CLIENT_SECRET_FOR_MSAL,
     authority:
@@ -12,10 +12,9 @@ export const msalConfig = {
     cacheLocation: 'localStorage',
   },
 };
-
 // Add scopes here for ID token to be used at Microsoft identity platform endpoints.
 export const loginRequest = {
-  scopes: ['User.Read'],
+  scopes: [`${CLIENT_ID}/.default`],
   prompt: 'select_account', // This is optional, but useful to ensure the user is prompted to sign in
   extraQueryParameters: {
     prompt: 'consent',

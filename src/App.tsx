@@ -5,7 +5,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import { useEffect, useReducer, useMemo, useState } from 'react';
 import { Footer } from './Components/FooterEl';
 import { SignUpButton } from './Components/SignUpButton';
-import { API_ACCESS_TOKEN, CHOICES } from './Constants';
+import { API_ACCESS_TOKEN, CHOICES, CLIENT_ID } from './Constants';
 import Context from './Context/Context';
 import Reducer from './Context/Reducer';
 import MainBody from './MainBody';
@@ -128,7 +128,7 @@ function App() {
   useEffect(() => {
     if (isAuthenticated) {
       const accessTokenRequest = {
-        scopes: ['user.read'],
+        scopes: [`${CLIENT_ID}/.default`],
         account: accounts[0],
       };
       instance

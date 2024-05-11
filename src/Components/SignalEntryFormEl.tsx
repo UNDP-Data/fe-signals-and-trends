@@ -1,8 +1,8 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import { Input, Select, Popconfirm } from 'antd';
-import axios, { AxiosResponse } from 'axios';
+import { Input, Select, Popconfirm, Modal } from 'antd';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 import sortBy from 'lodash.sortby';
 import { useNavigate } from 'react-router-dom';
 import { useContext, useEffect, useRef, useState } from 'react';
@@ -71,6 +71,22 @@ const FileAttachmentButton = styled.input`
   display: none;
 `;
 
+const isUrl = (str?: string) => {
+  if (str) {
+    const urlPattern = new RegExp(
+      '^(https?:\\/\\/)?' + // validate protocol
+        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // validate domain name
+        '((\\d{1,3}\\.){3}\\d{1,3}))' + // validate OR ip (v4) address
+        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // validate port and path
+        '(\\?[;&a-z\\d%_.~+=-]*)?' + // validate query string
+        '(\\#[-a-z\\d_]*)?$',
+      'i',
+    ); // validate fragment locator
+
+    return !!urlPattern.test(str);
+  }
+  return false;
+};
 export function isSignalInvalid(
   signal: SignalDataType | NewSignalDataType,
   keyWords: [string | undefined, string | undefined, string | undefined],
@@ -98,7 +114,8 @@ export function SignalEntryFormEl(props: Props) {
   const { updateSignal, draft } = props;
   const { userName, role, accessToken, updateNotificationText, choices, unit } =
     useContext(Context);
-
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const [signalData, updateSignalData] = useState<
     SignalDataType | NewSignalDataType
   >(
@@ -220,6 +237,87 @@ export function SignalEntryFormEl(props: Props) {
         trends.
       </p>
       <div className='margin-bottom-07'>
+        <div className='margin-bottom-07'>
+          <p className='undp-typography margin-bottom-01'>Signal Source*</p>
+          <div className='flex-div margin-bottom-00'>
+            <div style={{ flexGrow: 1 }}>
+              <Input
+                className='undp-input'
+                placeholder='Enter signal source'
+                onChange={d => {
+                  updateSignalData({
+                    ...signalData,
+                    url: d.target.value,
+                  });
+                }}
+                value={signalData.url}
+              />
+            </div>
+            <button
+              type='button'
+              className={`undp-button button-primary ${
+                !isUrl(signalData.url) || loading ? 'disabled' : ''
+              }`}
+              style={{ flexShrink: 0, flexGrow: 0 }}
+              disabled={!isUrl(signalData.url) || loading}
+              onClick={() => {
+                setError(false);
+                if (isUrl(signalData.url)) {
+                  setLoading(true);
+                  axios
+                    .get(
+                      `https://signals-and-trends-api.azurewebsites.net/v1/signals/generate?url=${signalData.url}`,
+                      {
+                        headers: {
+                          access_token: accessToken || API_ACCESS_TOKEN,
+                        },
+                      },
+                    )
+                    .then((response: AxiosResponse) => {
+                      setKeyword1(response.data.keywords[0]);
+                      setKeyword2(response.data.keywords[1]);
+                      setKeyword3(response.data.keywords[2]);
+                      updateSignalData({
+                        ...signalData,
+                        description: response.data.description,
+                        headline: response.data.headline,
+                        keywords: [...response.data.keywords],
+                        signature_primary: response.data.signature_primary,
+                        sdgs: response.data.sdgs,
+                        location: response.data.location,
+                        relevance: response.data.relevance,
+                        signature_secondary: response.data.signature_secondary,
+                        steep_primary: response.data.steep_primary,
+                        steep_secondary: response.data.steep_secondary,
+                      });
+                      setLoading(false);
+                    })
+                    .catch((_err: AxiosError) => {
+                      setError(true);
+                      setLoading(false);
+                    });
+                }
+              }}
+            >
+              {!loading ? 'Fill form using AI' : 'Fetching Data...'}
+            </button>
+          </div>
+          {error ? (
+            <p
+              className='undp-typography margin-top-02 small-font margin-bottom-00'
+              style={{ color: 'var(--dark-red)' }}
+            >
+              Unable to fetch data using AI from the URL. Please try again later
+              and make sure its valid URL.
+            </p>
+          ) : null}
+          <p className='undp-typography margin-top-02 small-font'>
+            If no URL is available, provide description of source - e.g., in a
+            meeting with Minister X; or taxi in country X. Please note the
+            &quot;Fill form using AI&quot; only work with links starting with
+            http.
+          </p>
+        </div>
         <p className='undp-typography margin-bottom-01'>Signal Title*</p>
         <Input
           className='undp-input'
@@ -232,6 +330,7 @@ export function SignalEntryFormEl(props: Props) {
               headline: d.target.value,
             });
           }}
+          disabled={loading}
         />
         <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
           Useful titles are clear, concise and can stand alone as a simple
@@ -260,6 +359,7 @@ export function SignalEntryFormEl(props: Props) {
             });
           }}
           value={signalData.description}
+          disabled={loading}
         />
         <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
           What is the Signal about? Keep this description concise and think
@@ -271,31 +371,7 @@ export function SignalEntryFormEl(props: Props) {
         </p>
       </div>
       <div className='flex-div'>
-        <div
-          className='margin-bottom-07'
-          style={{ width: 'calc(50% - 0.5rem)' }}
-        >
-          <p className='undp-typography margin-bottom-01'>Signal Source*</p>
-          <Input
-            className='undp-input'
-            placeholder='Enter signal source'
-            onChange={d => {
-              updateSignalData({
-                ...signalData,
-                url: d.target.value,
-              });
-            }}
-            value={signalData.url}
-          />
-          <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
-            If no URL is available, provide description of source - e.g., in a
-            meeting with Minister X; or taxi in country X
-          </p>
-        </div>
-        <div
-          className='margin-bottom-07'
-          style={{ width: 'calc(50% - 0.5rem)' }}
-        >
+        <div className='margin-bottom-07' style={{ width: '100%' }}>
           <p className='undp-typography margin-bottom-01'>
             Location of the signal*
           </p>
@@ -309,6 +385,7 @@ export function SignalEntryFormEl(props: Props) {
               });
             }}
             value={signalData.location}
+            disabled={loading}
             showSearch
           >
             {choices?.locations.map((d, i) => (
@@ -334,6 +411,7 @@ export function SignalEntryFormEl(props: Props) {
             });
           }}
           value={signalData.relevance}
+          disabled={loading}
         />
         <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
           What is the significance of this Signal to UNDP? Consider both the
@@ -341,69 +419,68 @@ export function SignalEntryFormEl(props: Props) {
         </p>
       </div>
       <div className='margin-bottom-07'>
-        <div className='flex-div flex-wrap margin-bottom-00'>
-          <div style={{ width: 'calc(50% - 0.5rem)' }}>
-            <p className='undp-typography margin-bottom-01'>Primary STEEP+V*</p>
-            <Select
-              className='undp-select'
-              placeholder='Select STEEP+V'
-              onChange={e => {
-                updateSignalData({
-                  ...signalData,
-                  steep_primary: e,
-                });
-              }}
-              value={signalData.steep_primary}
-            >
-              {choices?.steepv.map((d, i) => (
-                <Select.Option className='undp-select-option' key={i} value={d}>
-                  {d}
-                </Select.Option>
-              ))}
-            </Select>
-          </div>
-          <div style={{ width: 'calc(50% - 0.5rem)' }}>
-            <p className='undp-typography margin-bottom-01'>
-              Secondary STEEP+V
-            </p>
-            <Select
-              className='undp-select'
-              placeholder='Select STEEP+V'
-              mode='multiple'
-              onChange={e => {
-                if (e.length > 1) {
-                  updateSignalData({
-                    ...signalData,
-                    steep_secondary: [e[0], e[e.length - 1]],
-                  });
-                } else {
-                  updateSignalData({
-                    ...signalData,
-                    steep_secondary: e.length === 0 || !e ? [] : e,
-                  });
-                }
-              }}
-              value={
-                signalData.steep_secondary
-                  ? signalData.steep_secondary?.length > 0 &&
-                    signalData.steep_secondary
-                    ? signalData.steep_secondary
-                    : undefined
-                  : undefined
-              }
-            >
-              {choices?.steepv.map((d, i) => (
-                <Select.Option className='undp-select-option' key={i} value={d}>
-                  {d}
-                </Select.Option>
-              ))}
-            </Select>
-          </div>
+        <div style={{ width: '100%' }}>
+          <p className='undp-typography margin-bottom-01'>Primary STEEP+V*</p>
+          <Select
+            className='undp-select'
+            placeholder='Select STEEP+V'
+            onChange={e => {
+              updateSignalData({
+                ...signalData,
+                steep_primary: e,
+              });
+            }}
+            value={signalData.steep_primary}
+            disabled={loading}
+          >
+            {choices?.steepv.map((d, i) => (
+              <Select.Option className='undp-select-option' key={i} value={d}>
+                {d}
+              </Select.Option>
+            ))}
+          </Select>
         </div>
         <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
           STEEP+V analysis methodology stands for Social, Technological,
           Economic, Environmental (or Ecological), Political and Values
         </p>
+      </div>
+      <div style={{ width: '100%' }} className='margin-bottom-07'>
+        <p className='undp-typography margin-bottom-01'>Secondary STEEP+V</p>
+        <Select
+          className='undp-select'
+          placeholder='Select STEEP+V'
+          mode='multiple'
+          maxTagCount='responsive'
+          disabled={loading}
+          onChange={e => {
+            if (e.length > 1) {
+              updateSignalData({
+                ...signalData,
+                steep_secondary: [e[0], e[e.length - 1]],
+              });
+            } else {
+              updateSignalData({
+                ...signalData,
+                steep_secondary: e.length === 0 || !e ? [] : e,
+              });
+            }
+          }}
+          value={
+            signalData.steep_secondary
+              ? signalData.steep_secondary?.length > 0 &&
+                signalData.steep_secondary
+                ? signalData.steep_secondary
+                : undefined
+              : undefined
+          }
+        >
+          {choices?.steepv.map((d, i) => (
+            <Select.Option className='undp-select-option' key={i} value={d}>
+              {d}
+            </Select.Option>
+          ))}
+        </Select>
       </div>
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Cover Image</p>
@@ -420,6 +497,7 @@ export function SignalEntryFormEl(props: Props) {
                   attachment: undefined,
                 });
               }}
+              disabled={loading}
               style={{
                 backgroundColor: 'var(--gray-300)',
                 padding: 'var(--spacing-05)',
@@ -469,6 +547,7 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword1(e.target.value);
             }}
+            disabled={loading}
             value={keyword1 || undefined}
           />
           <Input
@@ -477,6 +556,7 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword2(e.target.value);
             }}
+            disabled={loading}
             value={keyword2 || undefined}
           />
           <Input
@@ -485,6 +565,7 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword3(e.target.value);
             }}
+            disabled={loading}
             value={keyword3 || undefined}
           />
         </div>
@@ -506,6 +587,7 @@ export function SignalEntryFormEl(props: Props) {
                 signature_primary: e,
               });
             }}
+            disabled={loading}
             value={signalData.signature_primary}
           >
             {choices?.signatures.map((d, i) => (
@@ -522,6 +604,7 @@ export function SignalEntryFormEl(props: Props) {
           <Select
             className='undp-select'
             placeholder='Select Signature Solution'
+            disabled={loading}
             onChange={e => {
               if (e.length > 1) {
                 updateSignalData({
@@ -562,6 +645,7 @@ export function SignalEntryFormEl(props: Props) {
           mode='multiple'
           placeholder='Select SDG'
           maxTagCount='responsive'
+          disabled={loading}
           onChange={e => {
             if (e.length > 1) {
               updateSignalData({
@@ -602,6 +686,7 @@ export function SignalEntryFormEl(props: Props) {
           <Select
             className='undp-select'
             placeholder='Select Score'
+            disabled={loading}
             onChange={e => {
               updateSignalData({
                 ...signalData,
@@ -649,6 +734,7 @@ export function SignalEntryFormEl(props: Props) {
                     setTrendsList(arr);
                     setSelectedTrendsList(arr.map(k => k.id));
                   }}
+                  disabled={loading}
                   type='button'
                   className='undp-button button-tertiary padding-bottom-00 padding-top-00'
                 >
@@ -665,6 +751,7 @@ export function SignalEntryFormEl(props: Props) {
               onClick={() => {
                 setTrendModal(true);
               }}
+              disabled={loading}
               style={{
                 backgroundColor: 'var(--gray-300)',
                 padding: 'var(--spacing-05)',
@@ -682,6 +769,7 @@ export function SignalEntryFormEl(props: Props) {
         <Select
           className='undp-select'
           placeholder='Created For'
+          disabled={loading}
           onChange={e => {
             updateSignalData({
               ...signalData,
@@ -701,7 +789,8 @@ export function SignalEntryFormEl(props: Props) {
         <p className='undp-typography margin-bottom-01'>Unit</p>
         <Select
           className='undp-select'
-          placeholder='Select Status'
+          placeholder='Select Unit'
+          disabled={loading}
           onChange={e => {
             updateSignalData({
               ...signalData,
@@ -725,6 +814,7 @@ export function SignalEntryFormEl(props: Props) {
           <Select
             className='undp-select'
             placeholder='Select Status'
+            disabled={loading}
             onChange={e => {
               updateSignalData({
                 ...signalData,
@@ -752,14 +842,16 @@ export function SignalEntryFormEl(props: Props) {
               <button
                 className={`${
                   isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                  buttonDisabled
+                  buttonDisabled ||
+                  loading
                     ? 'disabled '
                     : ''
                 }undp-button button-secondary button-arrow`}
                 type='button'
                 disabled={
                   isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                  buttonDisabled
+                  buttonDisabled ||
+                  loading
                 }
                 onClick={() => {
                   // submit signal
@@ -807,6 +899,7 @@ export function SignalEntryFormEl(props: Props) {
               <button
                 className='undp-button button-secondary button-arrow'
                 type='button'
+                disabled={loading}
                 onClick={() => {
                   // save as draft
                   setButtonDisabled(true);
@@ -872,14 +965,16 @@ export function SignalEntryFormEl(props: Props) {
             <button
               className={`${
                 isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                buttonDisabled
+                buttonDisabled ||
+                loading
                   ? 'disabled '
                   : ''
               }undp-button button-secondary button-arrow`}
               type='button'
               disabled={
                 isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                buttonDisabled
+                buttonDisabled ||
+                loading
               }
               title={
                 isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
@@ -933,14 +1028,16 @@ export function SignalEntryFormEl(props: Props) {
             <button
               className={`${
                 isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                buttonDisabled
+                buttonDisabled ||
+                loading
                   ? 'disabled '
                   : ''
               }undp-button button-secondary button-arrow`}
               type='button'
               disabled={
                 isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                buttonDisabled
+                buttonDisabled ||
+                loading
               }
               title={
                 isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
@@ -993,6 +1090,7 @@ export function SignalEntryFormEl(props: Props) {
             <button
               className='undp-button button-secondary button-arrow'
               type='button'
+              disabled={loading}
               onClick={() => {
                 setButtonDisabled(true);
                 setSubmittingError(undefined);
