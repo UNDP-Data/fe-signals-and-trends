@@ -1,8 +1,5 @@
 import { CLIENT_ID, REDIRECT_URL } from './Constants';
 
-// eslint-disable-next-line no-console
-console.log(process.env.INPUT_CLIENT_SECRET_FOR_MSAL, 'hello');
-
 export const msalConfig = {
   auth: {
     clientId: CLIENT_ID,
