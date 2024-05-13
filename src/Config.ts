@@ -4,7 +4,7 @@ export const msalConfig = {
   auth: {
     clientId: CLIENT_ID,
     redirectUri: REDIRECT_URL,
-    clientSecret: process.env.INPUT_CLIENT_SECRET_FOR_MSAL,
+    // clientSecret: process.env.INPUT_CLIENT_SECRET_FOR_MSAL,
     authority:
       'https://login.microsoftonline.com/b3e5db5e-2944-4837-99f5-7488ace54319',
   },
