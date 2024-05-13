@@ -78,7 +78,7 @@ export function AllSignals(props: Props) {
     const unitQueryParameter =
       filters.unit_region === 'All Units'
         ? ''
-        : `&unit_region=${filters.unit_region.replaceAll(' ', '%20')}`;
+        : `&unit=${filters.unit_region.replaceAll(' ', '%20')}`;
     const createdByQueryParameter =
       filters.created_by && filters.created_by !== 'All'
         ? `&created_by=${filters.created_by}`

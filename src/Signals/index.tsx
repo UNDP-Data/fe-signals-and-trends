@@ -512,11 +512,20 @@ export function SignalsListing() {
                 <Select.Option className='undp-select-option' key='All Units'>
                   All Units
                 </Select.Option>
-                {choices?.unit_regions.map(d => (
-                  <Select.Option className='undp-select-option' key={d}>
-                    {d}
-                  </Select.Option>
-                ))}
+                <Select.OptGroup label='Parent units'>
+                  {choices?.unit_regions.map(d => (
+                    <Select.Option className='undp-select-option' key={d}>
+                      {d}
+                    </Select.Option>
+                  ))}
+                </Select.OptGroup>
+                <Select.OptGroup label='Units'>
+                  {choices?.unit_names.map(d => (
+                    <Select.Option className='undp-select-option' key={d}>
+                      {d}
+                    </Select.Option>
+                  ))}
+                </Select.OptGroup>
               </Select>
             </div>
           </div>

@@ -258,7 +258,7 @@ export function AddSignalsModal(props: Props) {
     const unitQueryParameter =
       filters.unit_region === 'All Units'
         ? ''
-        : `&unit_region=${filters.unit_region.replaceAll(' ', '%20')}`;
+        : `&unit=${filters.unit_region.replaceAll(' ', '%20')}`;
     axios
       .get(
         `https://signals-and-trends-api.azurewebsites.net/v1/signals/list?page=1&per_page=${pageSize}&${steepPrimaryQueryParameter}${steepSecondaryQueryParameter}${sdgQueryParameter}${ss1QueryParameter}${ss2QueryParameter}${createdForQueryParameter}${statusQueryParameter}${unitQueryParameter}${locationQueryParameter}${scoreQueryParameter}${searchQueryParameter}`,
@@ -576,11 +576,20 @@ export function AddSignalsModal(props: Props) {
                     >
                       All Units
                     </Select.Option>
-                    {choices?.unit_regions.map(d => (
-                      <Select.Option className='undp-select-option' key={d}>
-                        {d}
-                      </Select.Option>
-                    ))}
+                    <Select.OptGroup label='Parent units'>
+                      {choices?.unit_regions.map(d => (
+                        <Select.Option className='undp-select-option' key={d}>
+                          {d}
+                        </Select.Option>
+                      ))}
+                    </Select.OptGroup>
+                    <Select.OptGroup label='Units'>
+                      {choices?.unit_names.map(d => (
+                        <Select.Option className='undp-select-option' key={d}>
+                          {d}
+                        </Select.Option>
+                      ))}
+                    </Select.OptGroup>
                   </Select>
                 </div>
                 <div
