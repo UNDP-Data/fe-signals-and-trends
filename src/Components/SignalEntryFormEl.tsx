@@ -1,7 +1,5 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import { Input, Select, Popconfirm, Modal } from 'antd';
+import { Input, Select, Popconfirm, Checkbox, Tooltip } from 'antd';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import sortBy from 'lodash.sortby';
 import { useNavigate } from 'react-router-dom';
@@ -142,6 +140,7 @@ export function SignalEntryFormEl(props: Props) {
   );
   const navigate = useNavigate();
   const [buttonDisabled, setButtonDisabled] = useState(false);
+  const [acceptTOS, setAcceptTOS] = useState(false);
   const [trendsList, setTrendsList] = useState<undefined | TrendDataType[]>(
     undefined,
   );
@@ -253,55 +252,52 @@ export function SignalEntryFormEl(props: Props) {
                 value={signalData.url}
               />
             </div>
-            <button
-              type='button'
-              className={`undp-button button-primary ${
-                !isUrl(signalData.url) || loading ? 'disabled' : ''
-              }`}
-              style={{ flexShrink: 0, flexGrow: 0 }}
-              disabled={!isUrl(signalData.url) || loading}
-              onClick={() => {
-                setError(false);
-                if (isUrl(signalData.url)) {
-                  setLoading(true);
-                  axios
-                    .get(
-                      `https://signals-and-trends-api.azurewebsites.net/v1/signals/generate?url=${signalData.url}`,
-                      {
-                        headers: {
-                          access_token: accessToken || API_ACCESS_TOKEN,
-                        },
-                      },
-                    )
-                    .then((response: AxiosResponse) => {
-                      setKeyword1(response.data.keywords[0]);
-                      setKeyword2(response.data.keywords[1]);
-                      setKeyword3(response.data.keywords[2]);
-                      updateSignalData({
-                        ...signalData,
-                        description: response.data.description,
-                        headline: response.data.headline,
-                        keywords: [...response.data.keywords],
-                        signature_primary: response.data.signature_primary,
-                        sdgs: response.data.sdgs,
-                        location: response.data.location,
-                        relevance: response.data.relevance,
-                        signature_secondary: response.data.signature_secondary,
-                        steep_primary: response.data.steep_primary,
-                        steep_secondary: response.data.steep_secondary,
-                      });
-                      setLoading(false);
-                    })
-                    .catch((_err: AxiosError) => {
-                      setError(true);
-                      setLoading(false);
-                    });
-                }
-              }}
-            >
-              {!loading ? 'Fill form using AI' : 'Fetching Data...'}
-            </button>
           </div>
+          <p className='undp-typography margin-top-02 small-font'>
+            If no URL is available, provide description of source - e.g., in a
+            meeting with Minister X; or taxi in country X. Please note the
+            &quot;Fill form using AI&quot; only work with links starting with
+            http.
+          </p>
+          <Checkbox
+            className='undp-checkbox'
+            onChange={e => {
+              setAcceptTOS(e.target.checked);
+            }}
+            checked={acceptTOS}
+          >
+            <div className='label margin-bottom-00'>
+              I accept{' '}
+              <Tooltip
+                placement='right'
+                title={
+                  <span>
+                    By using the &quot;FILL FORM WITH AI&quot; feature,
+                    henceforth referred to as the &apos;AI feature&apos;, I
+                    confirm that the signal source website, henceforth referred
+                    to as the &apos;Website&apos;, permits automated collection
+                    and analysis of its contents. I acknowledge and agree that
+                    the use of the AI feature may be subject to the terms of use
+                    of the Website and potentially infringe copyright laws. I
+                    assume all responsibility for ensuring that the use of the
+                    AI feature complies with all applicable laws, regulations
+                    and the Website&apos;s terms of use. UNDP shall not be held
+                    liable for any direct, indirect, incidental, consequential,
+                    punitive, or other damages arising from or relating to my
+                    use of the AI feature, regardless of the form of action or
+                    the basis of the claim.
+                  </span>
+                }
+                arrow={false}
+                overlayClassName='undp-tooltip'
+              >
+                <span style={{ textDecoration: 'underline' }}>
+                  term and condition
+                </span>
+              </Tooltip>{' '}
+              for using &quot;Fill Form with AI&quot;
+            </div>
+          </Checkbox>
           {error ? (
             <p
               className='undp-typography margin-top-02 small-font margin-bottom-00'
@@ -311,12 +307,54 @@ export function SignalEntryFormEl(props: Props) {
               and make sure its valid URL.
             </p>
           ) : null}
-          <p className='undp-typography margin-top-02 small-font'>
-            If no URL is available, provide description of source - e.g., in a
-            meeting with Minister X; or taxi in country X. Please note the
-            &quot;Fill form using AI&quot; only work with links starting with
-            http.
-          </p>
+          <button
+            type='button'
+            className={`undp-button button-primary ${
+              !isUrl(signalData.url) || loading || !acceptTOS ? 'disabled' : ''
+            }`}
+            style={{ flexShrink: 0, flexGrow: 0 }}
+            disabled={!isUrl(signalData.url) || loading || !acceptTOS}
+            onClick={() => {
+              setError(false);
+              if (isUrl(signalData.url)) {
+                setLoading(true);
+                axios
+                  .get(
+                    `https://signals-and-trends-api.azurewebsites.net/v1/signals/generate?url=${signalData.url}`,
+                    {
+                      headers: {
+                        access_token: accessToken || API_ACCESS_TOKEN,
+                      },
+                    },
+                  )
+                  .then((response: AxiosResponse) => {
+                    setKeyword1(response.data.keywords[0]);
+                    setKeyword2(response.data.keywords[1]);
+                    setKeyword3(response.data.keywords[2]);
+                    updateSignalData({
+                      ...signalData,
+                      description: response.data.description,
+                      headline: response.data.headline,
+                      keywords: [...response.data.keywords],
+                      signature_primary: response.data.signature_primary,
+                      sdgs: response.data.sdgs,
+                      location: response.data.location,
+                      relevance: response.data.relevance,
+                      signature_secondary: response.data.signature_secondary,
+                      steep_primary: response.data.steep_primary,
+                      steep_secondary: response.data.steep_secondary,
+                    });
+                    setLoading(false);
+                  })
+                  .catch((_err: AxiosError) => {
+                    setError(true);
+                    setLoading(false);
+                  });
+              }
+            }}
+          >
+            {!loading ? 'Fill form using AI' : 'Fetching Data...'}
+          </button>
         </div>
         <p className='undp-typography margin-bottom-01'>Signal Title*</p>
         <Input
