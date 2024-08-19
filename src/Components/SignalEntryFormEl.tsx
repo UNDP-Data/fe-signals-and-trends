@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import { Input, Select, Popconfirm, Checkbox, Tooltip } from 'antd';
-import axios, { AxiosError, AxiosResponse } from 'axios';
+import { Input, Select, Popconfirm } from 'antd';
+import axios, { AxiosResponse } from 'axios';
 import sortBy from 'lodash.sortby';
 import { useNavigate } from 'react-router-dom';
 import { useContext, useEffect, useRef, useState } from 'react';
@@ -69,6 +69,7 @@ const FileAttachmentButton = styled.input`
   display: none;
 `;
 
+/*
 const isUrl = (str?: string) => {
   if (str) {
     const urlPattern = new RegExp(
@@ -85,6 +86,29 @@ const isUrl = (str?: string) => {
   }
   return false;
 };
+const getRootUrl = (url: string) => {
+  const parsedUrl = new URL(url);
+  const rootUrl = parsedUrl.hostname;
+  return rootUrl;
+};
+const getStringBeforeSubstring = (str: string, substring: string) => {
+  const index = str.indexOf(substring);
+  if (index !== -1) {
+    return str.substring(0, index);
+  }
+  return str; // Return the original string if the substring is not found
+};
+const findFirstArrayMatch = (text: string) => {
+  const array = ['scrape', 'scraping', 'artificial intelligence'];
+  const lowerCaseText = text.toLowerCase(); // Convert the text to lowercase
+  for (let i = 0; i < array.length; i + 1) {
+    if (lowerCaseText.includes(array[i])) {
+      return array[i];
+    }
+  }
+  return null; // Return null if no items are found
+};
+*/
 export function isSignalInvalid(
   signal: SignalDataType | NewSignalDataType,
   keyWords: [string | undefined, string | undefined, string | undefined],
@@ -112,8 +136,9 @@ export function SignalEntryFormEl(props: Props) {
   const { updateSignal, draft } = props;
   const { userName, role, accessToken, updateNotificationText, choices, unit } =
     useContext(Context);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
+  // const [loading, setLoading] = useState(false);
+  // const [error, setError] = useState(false);
+  // const [tosError, setTosError] = useState(false);
   const [signalData, updateSignalData] = useState<
     SignalDataType | NewSignalDataType
   >(
@@ -140,7 +165,7 @@ export function SignalEntryFormEl(props: Props) {
   );
   const navigate = useNavigate();
   const [buttonDisabled, setButtonDisabled] = useState(false);
-  const [acceptTOS, setAcceptTOS] = useState(false);
+  // const [acceptTOS, setAcceptTOS] = useState(false);
   const [trendsList, setTrendsList] = useState<undefined | TrendDataType[]>(
     undefined,
   );
@@ -227,6 +252,65 @@ export function SignalEntryFormEl(props: Props) {
       setSelectedFileName(event.target.files[0].name);
     }
   };
+  /*
+  const fillUsingAI = async () => {
+    setTosError(false);
+    if (isUrl(signalData.url) && typeof signalData.url === 'string') {
+      setLoading(true);
+      try {
+        // Additional logic to vet terms of service. Comment out as required.
+        const rootUrl = getRootUrl(signalData.url);
+
+        const tosRes = await axios.get(
+          `https://s.jina.ai/${rootUrl}+terms+of+service`,
+        );
+        const tos = tosRes.data;
+        console.log(rootUrl, tos);
+        const firstSearch = getStringBeforeSubstring(tos, '[2] Title:');
+        const matches = findFirstArrayMatch(firstSearch);
+        console.log(firstSearch, matches);
+
+        // If prohibited keywords, found, return and show TOS Error message
+        if (matches && matches.length > 0) {
+          setTosError(true);
+        } else {
+          // Otherwise, process via AI as normal
+          const response = await axios.get(
+            `https://signals-and-trends-api.azurewebsites.net/v1/signals/generate?url=${signalData.url}`,
+            {
+              headers: {
+                access_token: accessToken || API_ACCESS_TOKEN,
+              },
+            },
+          );
+
+          setKeyword1(response.data.keywords[0]);
+          setKeyword2(response.data.keywords[1]);
+          setKeyword3(response.data.keywords[2]);
+
+          updateSignalData({
+            ...signalData,
+            description: response.data.description,
+            headline: response.data.headline,
+            keywords: [...response.data.keywords],
+            signature_primary: response.data.signature_primary,
+            sdgs: response.data.sdgs,
+            location: response.data.location,
+            relevance: response.data.relevance,
+            signature_secondary: response.data.signature_secondary,
+            steep_primary: response.data.steep_primary,
+            steep_secondary: response.data.steep_secondary,
+          });
+        }
+      } catch (_err) {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+  */
+
   return (
     <div className='undp-container max-width padding-top-00 padding-bottom-00'>
       <p className='undp-typography'>
@@ -255,11 +339,9 @@ export function SignalEntryFormEl(props: Props) {
           </div>
           <p className='undp-typography margin-top-02 small-font'>
             If no URL is available, provide description of source - e.g., in a
-            meeting with Minister X; or taxi in country X. Please note the
-            &quot;Fill form using AI&quot; only work with links starting with
-            http.
+            meeting with Minister X; or taxi in country X.
           </p>
-          <Checkbox
+          {/* <Checkbox
             className='undp-checkbox'
             onChange={e => {
               setAcceptTOS(e.target.checked);
@@ -298,16 +380,30 @@ export function SignalEntryFormEl(props: Props) {
               for using &quot;Fill Form with AI&quot;
             </div>
           </Checkbox>
-          {error ? (
+            */}
+
+          {/* error ? (
+              <p
+                className='undp-typography margin-top-02 small-font margin-bottom-00'
+                style={{ color: 'var(--dark-red)' }}
+              >
+                Unable to fetch data from the URL using AI. Please try again later
+                and make sure that you are using a valid URL.
+              </p>
+            ) : null
+            */}
+          {/* tosError ? (
             <p
               className='undp-typography margin-top-02 small-font margin-bottom-00'
               style={{ color: 'var(--dark-red)' }}
             >
-              Unable to fetch data using AI from the URL. Please try again later
-              and make sure its valid URL.
+              This Website&rsquo;s Terms of Service explicitly prohibits the use
+              of AI or Scraping. Please try again later with a Signal source the
+              allows the use of AI. Alternatively, please process this Signal
+              manually.
             </p>
-          ) : null}
-          <button
+          ) : null */}
+          {/* <button
             type='button'
             className={`undp-button button-primary ${
               !isUrl(signalData.url) || loading || !acceptTOS ? 'disabled' : ''
@@ -355,6 +451,7 @@ export function SignalEntryFormEl(props: Props) {
           >
             {!loading ? 'Fill form using AI' : 'Fetching Data...'}
           </button>
+            */}
         </div>
         <p className='undp-typography margin-bottom-01'>Signal Title*</p>
         <Input
@@ -368,7 +465,6 @@ export function SignalEntryFormEl(props: Props) {
               headline: d.target.value,
             });
           }}
-          disabled={loading}
         />
         <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
           Useful titles are clear, concise and can stand alone as a simple
@@ -397,7 +493,6 @@ export function SignalEntryFormEl(props: Props) {
             });
           }}
           value={signalData.description}
-          disabled={loading}
         />
         <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
           What is the Signal about? Keep this description concise and think
@@ -423,7 +518,6 @@ export function SignalEntryFormEl(props: Props) {
               });
             }}
             value={signalData.location}
-            disabled={loading}
             showSearch
           >
             {choices?.locations.map((d, i) => (
@@ -449,7 +543,6 @@ export function SignalEntryFormEl(props: Props) {
             });
           }}
           value={signalData.relevance}
-          disabled={loading}
         />
         <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
           What is the significance of this Signal to UNDP? Consider both the
@@ -469,7 +562,6 @@ export function SignalEntryFormEl(props: Props) {
               });
             }}
             value={signalData.steep_primary}
-            disabled={loading}
           >
             {choices?.steepv.map((d, i) => (
               <Select.Option className='undp-select-option' key={i} value={d}>
@@ -490,7 +582,6 @@ export function SignalEntryFormEl(props: Props) {
           placeholder='Select STEEP+V'
           mode='multiple'
           maxTagCount='responsive'
-          disabled={loading}
           onChange={e => {
             if (e.length > 1) {
               updateSignalData({
@@ -535,7 +626,6 @@ export function SignalEntryFormEl(props: Props) {
                   attachment: undefined,
                 });
               }}
-              disabled={loading}
               style={{
                 backgroundColor: 'var(--gray-300)',
                 padding: 'var(--spacing-05)',
@@ -585,7 +675,6 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword1(e.target.value);
             }}
-            disabled={loading}
             value={keyword1 || undefined}
           />
           <Input
@@ -594,7 +683,6 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword2(e.target.value);
             }}
-            disabled={loading}
             value={keyword2 || undefined}
           />
           <Input
@@ -603,7 +691,6 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword3(e.target.value);
             }}
-            disabled={loading}
             value={keyword3 || undefined}
           />
         </div>
@@ -625,7 +712,6 @@ export function SignalEntryFormEl(props: Props) {
                 signature_primary: e,
               });
             }}
-            disabled={loading}
             value={signalData.signature_primary}
           >
             {choices?.signatures.map((d, i) => (
@@ -642,7 +728,6 @@ export function SignalEntryFormEl(props: Props) {
           <Select
             className='undp-select'
             placeholder='Select Signature Solution'
-            disabled={loading}
             onChange={e => {
               if (e.length > 1) {
                 updateSignalData({
@@ -683,7 +768,6 @@ export function SignalEntryFormEl(props: Props) {
           mode='multiple'
           placeholder='Select SDG'
           maxTagCount='responsive'
-          disabled={loading}
           onChange={e => {
             if (e.length > 1) {
               updateSignalData({
@@ -724,7 +808,6 @@ export function SignalEntryFormEl(props: Props) {
           <Select
             className='undp-select'
             placeholder='Select Score'
-            disabled={loading}
             onChange={e => {
               updateSignalData({
                 ...signalData,
@@ -772,7 +855,6 @@ export function SignalEntryFormEl(props: Props) {
                     setTrendsList(arr);
                     setSelectedTrendsList(arr.map(k => k.id));
                   }}
-                  disabled={loading}
                   type='button'
                   className='undp-button button-tertiary padding-bottom-00 padding-top-00'
                 >
@@ -789,7 +871,6 @@ export function SignalEntryFormEl(props: Props) {
               onClick={() => {
                 setTrendModal(true);
               }}
-              disabled={loading}
               style={{
                 backgroundColor: 'var(--gray-300)',
                 padding: 'var(--spacing-05)',
@@ -807,7 +888,6 @@ export function SignalEntryFormEl(props: Props) {
         <Select
           className='undp-select'
           placeholder='Created For'
-          disabled={loading}
           onChange={e => {
             updateSignalData({
               ...signalData,
@@ -828,7 +908,6 @@ export function SignalEntryFormEl(props: Props) {
         <Select
           className='undp-select'
           placeholder='Select Unit'
-          disabled={loading}
           onChange={e => {
             updateSignalData({
               ...signalData,
@@ -852,7 +931,6 @@ export function SignalEntryFormEl(props: Props) {
           <Select
             className='undp-select'
             placeholder='Select Status'
-            disabled={loading}
             onChange={e => {
               updateSignalData({
                 ...signalData,
@@ -880,16 +958,12 @@ export function SignalEntryFormEl(props: Props) {
               <button
                 className={`${
                   isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                  buttonDisabled ||
-                  loading
-                    ? 'disabled '
-                    : ''
+                  buttonDisabled
                 }undp-button button-secondary button-arrow`}
                 type='button'
                 disabled={
                   isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                  buttonDisabled ||
-                  loading
+                  buttonDisabled
                 }
                 onClick={() => {
                   // submit signal
@@ -937,7 +1011,6 @@ export function SignalEntryFormEl(props: Props) {
               <button
                 className='undp-button button-secondary button-arrow'
                 type='button'
-                disabled={loading}
                 onClick={() => {
                   // save as draft
                   setButtonDisabled(true);
@@ -1003,16 +1076,12 @@ export function SignalEntryFormEl(props: Props) {
             <button
               className={`${
                 isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                buttonDisabled ||
-                loading
-                  ? 'disabled '
-                  : ''
+                buttonDisabled
               }undp-button button-secondary button-arrow`}
               type='button'
               disabled={
                 isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                buttonDisabled ||
-                loading
+                buttonDisabled
               }
               title={
                 isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
@@ -1066,16 +1135,12 @@ export function SignalEntryFormEl(props: Props) {
             <button
               className={`${
                 isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                buttonDisabled ||
-                loading
-                  ? 'disabled '
-                  : ''
+                buttonDisabled
               }undp-button button-secondary button-arrow`}
               type='button'
               disabled={
                 isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                buttonDisabled ||
-                loading
+                buttonDisabled
               }
               title={
                 isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
@@ -1128,7 +1193,6 @@ export function SignalEntryFormEl(props: Props) {
             <button
               className='undp-button button-secondary button-arrow'
               type='button'
-              disabled={loading}
               onClick={() => {
                 setButtonDisabled(true);
                 setSubmittingError(undefined);
