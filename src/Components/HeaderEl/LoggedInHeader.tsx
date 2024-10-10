@@ -1,22 +1,16 @@
 import { Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
 import { NavLink } from 'react-router-dom';
-import {
-  AuthenticatedTemplate,
-  UnauthenticatedTemplate,
-} from '@azure/msal-react';
 import { useContext, useState } from 'react';
-import { SignOutButton } from './SignOutButton';
-import { SignInButtonForHeader } from './SignInButtonForHeader';
-import Context from '../Context/Context';
+import { SignOutButton } from '../SignOutButton';
+import Context from '../../Context/Context';
 
 interface Props {
   signOutClickHandler: () => void;
-  loginError?: boolean;
 }
 
-export function Header(props: Props) {
-  const { signOutClickHandler, loginError } = props;
+export function LoggedInHeader(props: Props) {
+  const { signOutClickHandler } = props;
   const { role } = useContext(Context);
   const [showMenu, setShowMenu] = useState(false);
   const items: MenuProps['items'] = [
@@ -108,28 +102,22 @@ export function Header(props: Props) {
             className='flex-div gap-09'
             style={{ flexGrow: 1, justifyContent: 'center' }}
           >
-            <AuthenticatedTemplate>
-              {loginError ? null : (
-                <>
-                  <NavLink
-                    to='./signals'
-                    className={({ isActive }) =>
-                      isActive ? 'header-link-active' : 'header-link'
-                    }
-                  >
-                    All Signals
-                  </NavLink>
-                  <NavLink
-                    to='./trends'
-                    className={({ isActive }) =>
-                      isActive ? 'header-link-active' : 'header-link'
-                    }
-                  >
-                    All Trends
-                  </NavLink>
-                </>
-              )}
-            </AuthenticatedTemplate>
+            <NavLink
+              to='./signals'
+              className={({ isActive }) =>
+                isActive ? 'header-link-active' : 'header-link'
+              }
+            >
+              All Signals
+            </NavLink>
+            <NavLink
+              to='./trends'
+              className={({ isActive }) =>
+                isActive ? 'header-link-active' : 'header-link'
+              }
+            >
+              All Trends
+            </NavLink>
             {role === 'Admin' || role === 'Curator' ? (
               <>
                 <NavLink
@@ -152,26 +140,17 @@ export function Header(props: Props) {
             ) : null}
           </div>
           <div>
-            <AuthenticatedTemplate>
-              {loginError ? (
-                <SignInButtonForHeader />
-              ) : (
-                <div className='flex-div flex-vert-align-center'>
-                  <Dropdown
-                    menu={{ items }}
-                    placement='bottomRight'
-                    className='undp-button-dropdown'
-                    overlayClassName='undp-dropdown-menu'
-                  >
-                    <div className='small-font'>Add A New</div>
-                  </Dropdown>
-                  <SignOutButton signOutClickHandler={signOutClickHandler} />
-                </div>
-              )}
-            </AuthenticatedTemplate>
-            <UnauthenticatedTemplate>
-              <SignInButtonForHeader />
-            </UnauthenticatedTemplate>
+            <div className='flex-div flex-vert-align-center'>
+              <Dropdown
+                menu={{ items }}
+                placement='bottomRight'
+                className='undp-button-dropdown'
+                overlayClassName='undp-dropdown-menu'
+              >
+                <div className='small-font'>Add A New</div>
+              </Dropdown>
+              <SignOutButton signOutClickHandler={signOutClickHandler} />
+            </div>
           </div>
         </div>
         <button
@@ -195,38 +174,32 @@ export function Header(props: Props) {
           showMenu ? 'undp-mobile-nav mobile-nav-show' : 'undp-mobile-nav'
         }
       >
-        <AuthenticatedTemplate>
-          {loginError ? null : (
-            <>
-              <div>
-                <NavLink
-                  to='./signals'
-                  className={({ isActive }) =>
-                    isActive ? 'header-link-active' : 'header-link'
-                  }
-                  onClick={() => {
-                    setShowMenu(false);
-                  }}
-                >
-                  All Signals
-                </NavLink>
-              </div>
-              <div>
-                <NavLink
-                  to='./trends'
-                  className={({ isActive }) =>
-                    isActive ? 'header-link-active' : 'header-link'
-                  }
-                  onClick={() => {
-                    setShowMenu(false);
-                  }}
-                >
-                  All Trends
-                </NavLink>
-              </div>
-            </>
-          )}
-        </AuthenticatedTemplate>
+        <div>
+          <NavLink
+            to='./signals'
+            className={({ isActive }) =>
+              isActive ? 'header-link-active' : 'header-link'
+            }
+            onClick={() => {
+              setShowMenu(false);
+            }}
+          >
+            All Signals
+          </NavLink>
+        </div>
+        <div>
+          <NavLink
+            to='./trends'
+            className={({ isActive }) =>
+              isActive ? 'header-link-active' : 'header-link'
+            }
+            onClick={() => {
+              setShowMenu(false);
+            }}
+          >
+            All Trends
+          </NavLink>
+        </div>
         {role === 'Admin' || role === 'Curator' ? (
           <div>
             <NavLink
@@ -257,49 +230,35 @@ export function Header(props: Props) {
             </NavLink>
           </div>
         ) : null}
-        <AuthenticatedTemplate>
-          {loginError ? (
-            <SignInButtonForHeader />
-          ) : (
-            <>
-              <div>
-                <NavLink
-                  to='/add-new-signal'
-                  className={({ isActive }) =>
-                    isActive ? 'header-link-active' : 'header-link'
-                  }
-                  onClick={() => {
-                    setShowMenu(false);
-                  }}
-                >
-                  Add new signal
-                </NavLink>
-              </div>
-              {role === 'User' ? null : (
-                <div>
-                  <NavLink
-                    to='/add-new-trend'
-                    className={({ isActive }) =>
-                      isActive ? 'header-link-active' : 'header-link'
-                    }
-                    onClick={() => {
-                      setShowMenu(false);
-                    }}
-                  >
-                    Add new trend
-                  </NavLink>
-                </div>
-              )}
-              <SignOutButton
-                mobileView
-                signOutClickHandler={signOutClickHandler}
-              />
-            </>
-          )}
-        </AuthenticatedTemplate>
-        <UnauthenticatedTemplate>
-          <SignInButtonForHeader />
-        </UnauthenticatedTemplate>
+        <div>
+          <NavLink
+            to='/add-new-signal'
+            className={({ isActive }) =>
+              isActive ? 'header-link-active' : 'header-link'
+            }
+            onClick={() => {
+              setShowMenu(false);
+            }}
+          >
+            Add new signal
+          </NavLink>
+        </div>
+        {role === 'User' ? null : (
+          <div>
+            <NavLink
+              to='/add-new-trend'
+              className={({ isActive }) =>
+                isActive ? 'header-link-active' : 'header-link'
+              }
+              onClick={() => {
+                setShowMenu(false);
+              }}
+            >
+              Add new trend
+            </NavLink>
+          </div>
+        )}
+        <SignOutButton mobileView signOutClickHandler={signOutClickHandler} />
       </div>
     </header>
   );

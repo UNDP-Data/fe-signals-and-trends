@@ -18,12 +18,12 @@ import { ArchivedSignalsListing, SignalsListing } from './Signals';
 import { TrendDetail } from './Trends/TrendDetail';
 import { ArchivedTrendsListing, TrendsListing } from './Trends';
 import { MyDrafts } from './MyDrafts';
-import { Header } from './Components/HeaderEl';
 import { API_ACCESS_TOKEN } from './Constants';
 import { SignalDataType, TrendDataType } from './Types';
 import { PDFDocument } from './PDFGenerator';
 import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
 import { signOutClickHandler } from './Utils/SignOutClickHandler';
+import { Header } from './Components/HeaderEl';
 
 function MainBody() {
   const {
