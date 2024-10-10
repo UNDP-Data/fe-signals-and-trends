@@ -4,7 +4,6 @@ import {
 } from '@azure/msal-react';
 import { useContext, useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { PublicClientApplication } from '@azure/msal-browser';
 import { Modal, notification } from 'antd';
 import axios, { AxiosResponse } from 'axios';
 import { PDFDownloadLink } from '@react-pdf/renderer';
@@ -19,20 +18,12 @@ import { ArchivedSignalsListing, SignalsListing } from './Signals';
 import { TrendDetail } from './Trends/TrendDetail';
 import { ArchivedTrendsListing, TrendsListing } from './Trends';
 import { MyDrafts } from './MyDrafts';
-import { msalConfig } from './Config';
 import { Header } from './Components/HeaderEl';
 import { API_ACCESS_TOKEN } from './Constants';
 import { SignalDataType, TrendDataType } from './Types';
 import { PDFDocument } from './PDFGenerator';
 import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
-
-function signOutClickHandler() {
-  const msalInstance = new PublicClientApplication(msalConfig);
-  const logoutRequest = {
-    postLogoutRedirectUri: '/',
-  };
-  msalInstance.logoutRedirect(logoutRequest);
-}
+import { signOutClickHandler } from './Utils/SignOutClickHandler';
 
 function MainBody() {
   const {

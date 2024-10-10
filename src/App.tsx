@@ -12,6 +12,9 @@ import MainBody from './MainBody';
 import { CardsToPrintDataType, ChoicesDataType } from './Types';
 
 import './App.css';
+import { Header } from './Components/HeaderEl';
+import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
+import { signOutClickHandler } from './Utils/SignOutClickHandler';
 
 function App() {
   const isAuthenticated = useIsAuthenticated();
@@ -19,6 +22,7 @@ function App() {
   const [selectedUnit, setSelectedUnit] = useState<string | undefined>(
     undefined,
   );
+  const [loginError, setLoginError] = useState(false);
   const [accessTokenTemp, setAccessTokenTemp] = useState<string | undefined>(
     undefined,
   );
@@ -131,59 +135,67 @@ function App() {
         scopes: [`${CLIENT_ID}/.default`],
         account: accounts[0],
       };
-      instance
-        .acquireTokenSilent(accessTokenRequest)
-        .then((accessTokenResponse: AuthenticationResult) => {
-          updateAccessToken(accessTokenResponse.accessToken);
-          setAccessTokenTemp(accessTokenResponse.accessToken);
-          setExpiresOn(accessTokenResponse.expiresOn as Date);
-          updateExpiresOn(accessTokenResponse.expiresOn as Date);
-          axios
-            .get(
-              'https://signals-and-trends-api.azurewebsites.net/v1/users/me',
-              {
-                headers: {
-                  access_token: accessTokenResponse.accessToken,
+      try {
+        instance
+          .acquireTokenSilent(accessTokenRequest)
+          .then((accessTokenResponse: AuthenticationResult) => {
+            setLoginError(false);
+            updateAccessToken(accessTokenResponse.accessToken);
+            setAccessTokenTemp(accessTokenResponse.accessToken);
+            setExpiresOn(accessTokenResponse.expiresOn as Date);
+            updateExpiresOn(accessTokenResponse.expiresOn as Date);
+            axios
+              .get(
+                'https://signals-and-trends-api.azurewebsites.net/v1/users/me',
+                {
+                  headers: {
+                    access_token: accessTokenResponse.accessToken,
+                  },
                 },
-              },
-            )
-            .then((res: AxiosResponse) => {
-              updateUserName(res.data.email);
-              updateName(res.data.name);
-              updateUnit(res.data.unit);
-              updateRole(res.data.role);
-              setUserRoleTemp(res.data.role);
-              updateUserID(res.data.id);
-              updateIsAcceleratorLab(res.data.acclab !== null);
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              if (!res.data.unit) {
-                setOpenModal(true);
+              )
+              .then((res: AxiosResponse) => {
+                updateUserName(res.data.email);
+                updateName(res.data.name);
+                updateUnit(res.data.unit);
+                updateRole(res.data.role);
+                setUserRoleTemp(res.data.role);
+                updateUserID(res.data.id);
+                updateIsAcceleratorLab(res.data.acclab !== null);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if (!res.data.unit) {
+                  setOpenModal(true);
+                }
+              })
+              .catch((err: AxiosError) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if ((err.response?.data as any).detail === 'User not found.') {
+                  setOpenModal(true);
+                }
+              });
+            setInterval(async () => {
+              const now = new Date().getTime() / 1000;
+              if (expiresOn && expiresOn.getTime() / 1000 < now) {
+                try {
+                  const refreshedAccessToken =
+                    await instance.acquireTokenSilent({
+                      ...accessTokenRequest,
+                      forceRefresh: true,
+                    });
+                  updateAccessToken(refreshedAccessToken.accessToken);
+                  setExpiresOn(refreshedAccessToken.expiresOn as Date);
+                  updateExpiresOn(refreshedAccessToken.expiresOn as Date);
+                } catch (error) {
+                  // eslint-disable-next-line no-console
+                }
               }
-            })
-            .catch((err: AxiosError) => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              if ((err.response?.data as any).detail === 'User not found.') {
-                setOpenModal(true);
-              }
-            });
-        });
-
-      setInterval(async () => {
-        const now = new Date().getTime() / 1000;
-        if (expiresOn && expiresOn.getTime() / 1000 < now) {
-          try {
-            const refreshedAccessToken = await instance.acquireTokenSilent({
-              ...accessTokenRequest,
-              forceRefresh: true,
-            });
-            updateAccessToken(refreshedAccessToken.accessToken);
-            setExpiresOn(refreshedAccessToken.expiresOn as Date);
-            updateExpiresOn(refreshedAccessToken.expiresOn as Date);
-          } catch (error) {
-            // eslint-disable-next-line no-console
-          }
-        }
-      }, 60000); // check every minute
+            }, 60000);
+          })
+          .catch(_error => {
+            setLoginError(true);
+          });
+      } catch (error) {
+        setLoginError(true);
+      }
     }
   }, [isAuthenticated, instance]);
   const contextValue = useMemo(
@@ -216,18 +228,34 @@ function App() {
   );
   return (
     <Context.Provider value={contextValue}>
-      <div
-        className='undp-container'
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-        }}
-      >
-        <MainBody />
-        <Footer />
-      </div>
+      {!loginError ? (
+        <div
+          className='undp-container'
+          style={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          }}
+        >
+          <MainBody />
+          <Footer />
+        </div>
+      ) : (
+        <div
+          className='undp-container'
+          style={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Header signOutClickHandler={signOutClickHandler} loginError />
+          <SignedOutHomePage />
+          <Footer />
+        </div>
+      )}
       <Modal open={openModal} className='undp-modal'>
         <h5 className='undp-typography bold margin-bottom-07'>
           Welcome to the UNDP Signal and Trends Portal

@@ -10,6 +10,7 @@ export const msalConfig = {
   },
   cache: {
     cacheLocation: 'localStorage',
+    storeAuthStateInCookie: false,
   },
 };
 // Add scopes here for ID token to be used at Microsoft identity platform endpoints.
@@ -19,8 +20,4 @@ export const loginRequest = {
   extraQueryParameters: {
     prompt: 'consent',
   },
-};
-
-export const graphConfig = {
-  graphMeEndpoint: 'https://graph.microsoft.com/v1.0/me',
 };
