@@ -1,4 +1,7 @@
 # Future Trends and Signals System (FTSS)
+
+[![Azure Static Web Apps CI/CD](https://github.com/UNDP-Data/fe-signals-and-trends/actions/workflows/azure-static-web-apps-thankful-forest-05a90a303.yml/badge.svg)](https://github.com/UNDP-Data/fe-signals-and-trends/actions/workflows/azure-static-web-apps-thankful-forest-05a90a303.yml)
+
 The [Future Trends and Signals System](https://signals.data.undp.org) captures signals of change noticed across UNDP, and identifies the trends emerging – helping us all make stronger, more future-aware decisions. This repository hosts the codebase for the front-end application written in React.
 
 ## Table of Contents
@@ -96,7 +99,7 @@ The application interfaces with the back-end API. See the [documentation](https:
 The application CI/CD to Azure Static Web App and automatically deployed on changes to `production` or `staging`.
 
 - `production` is deployed to the [production environment](https://signals.data.undp.org).
-- `staging` is deployed to the [staging environment]() (TBA).
+- `staging` is deployed to the [staging environment](https://thankful-forest-05a90a303-staging.westeurope.3.azurestaticapps.net).
 
 ## Contributing
 
