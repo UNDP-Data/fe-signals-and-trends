@@ -35,6 +35,6 @@ jobs:
           output_location: "build" # Built app content directory - optional
           production_branch: "production"
           access_token_for_api: ${{ secrets.ACCESS_CODE_FOR_API }}
-          redirect_uri_for_msal: ${{ secrets.REDIRECT_URI_FOR_MSAL }}
+          redirect_uri_for_msal: ${{ env.REDIRECT_URI_FOR_MSAL }}
           client_secret_for_msal: ${{ secrets.CLIENT_SECRET_FOR_MSAL }}
           msal_client_id: ${{ secrets.MSAL_CLIENT_ID }}
