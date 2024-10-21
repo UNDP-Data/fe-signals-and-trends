@@ -8,21 +8,18 @@ import {
 } from '@azure/msal-react';
 import { SignInButton } from '../Components/SignInButton';
 import Context from '../Context/Context';
-import { SignalDataType } from '../Types';
 import { CardList } from '../Signals/AllSignals/GridView';
 
 export function MyDrafts() {
-  const { accessToken, userName } = useContext(Context);
+  const { accessToken, userName, signalList, updateSignalList } =
+    useContext(Context);
   const [paginationValue, setPaginationValue] = useState(1);
   const [error, setError] = useState<undefined | string>(undefined);
   const [pageSize, setPageSize] = useState(20);
-  const [signalList, setSignalList] = useState<SignalDataType[] | undefined>(
-    undefined,
-  );
   const [totalNoOfPages, setTotalNoOfPages] = useState(0);
   useEffect(() => {
     setError(undefined);
-    setSignalList(undefined);
+    updateSignalList(undefined);
     axios
       .get(
         `https://signals-and-trends-api.azurewebsites.net/v1/signals/list?&page=${paginationValue}&per_page=${pageSize}&statuses=Draft&created_by=${userName}`,
@@ -33,13 +30,13 @@ export function MyDrafts() {
         },
       )
       .then((response: AxiosResponse) => {
-        setSignalList(
+        updateSignalList(
           sortBy(response.data.data, d => Date.parse(d.created_at)).reverse(),
         );
       })
       .catch(err => {
         if (err.response?.status === 404) {
-          setSignalList([]);
+          updateSignalList([]);
         } else {
           setError(
             `Error code ${err.response?.status}: ${err.response?.data}. ${
@@ -53,7 +50,7 @@ export function MyDrafts() {
   }, [paginationValue]);
   useEffect(() => {
     setError(undefined);
-    setSignalList(undefined);
+    updateSignalList(undefined);
     axios
       .get(
         `https://signals-and-trends-api.azurewebsites.net/v1/signals/list?&page=1&per_page=${pageSize}&statuses=Draft&created_by=${userName}`,
@@ -64,7 +61,7 @@ export function MyDrafts() {
         },
       )
       .then((response: AxiosResponse) => {
-        setSignalList(
+        updateSignalList(
           sortBy(response.data.data, d => Date.parse(d.created_at)).reverse(),
         );
         setPaginationValue(1);
@@ -72,7 +69,7 @@ export function MyDrafts() {
       })
       .catch(err => {
         if (err.response?.status === 404) {
-          setSignalList([]);
+          updateSignalList([]);
         } else {
           setError(
             `Error code ${err.response?.status}: ${err.response?.data}. ${
@@ -102,7 +99,7 @@ export function MyDrafts() {
             <h3 className='undp-typography margin-top-05'>My Drafts</h3>
             <div className='flex-div flex-wrap listing'>
               {signalList.length > 0 ? (
-                <CardList data={signalList} />
+                <CardList />
               ) : (
                 <h5
                   className='undp-typography bold'

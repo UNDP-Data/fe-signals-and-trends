@@ -322,7 +322,7 @@ export const TREND_ORDER_BY_OPTIONS = [
 export const WEB_ADDRESS = 'https://signals.data.undp.org';
 
 export const CLIENT_ID = process.env.INPUT_MSAL_CLIENT_ID;
-
+// export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
 export const API_ACCESS_TOKEN = process.env.INPUT_ACCESS_TOKEN_FOR_API;
 // export const API_ACCESS_TOKEN = import.meta.env.VITE_ACCESS_CODE;
 export const REDIRECT_URL = process.env.INPUT_REDIRECT_URI_FOR_MSAL;
