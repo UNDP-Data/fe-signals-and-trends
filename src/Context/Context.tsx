@@ -1,5 +1,13 @@
 import { createContext } from 'react';
-import { CardsToPrintDataType, ChoicesDataType, CtxDataType } from '../Types';
+import {
+  CardsToPrintDataType,
+  ChoicesDataType,
+  CtxDataType,
+  SignalDataType,
+  SignalFiltersDataType,
+  TrendDataType,
+  TrendFiltersDataType,
+} from '../Types';
 
 const Context = createContext<CtxDataType>({
   userName: undefined,
@@ -13,6 +21,39 @@ const Context = createContext<CtxDataType>({
   notificationText: undefined,
   choices: undefined,
   cardsToPrint: [],
+  trendFilters: {
+    impact: 'All Ratings',
+    horizon: 'All Horizons',
+    steep_primary: 'All Primary STEEP+V',
+    steep_secondary: 'All Secondary STEEP+V',
+    sdg: 'All SDGs',
+    signature_primary: 'All Primary Signature Solutions/Enabler',
+    signature_secondary: 'All Secondary Signature Solutions/Enabler',
+    created_for: 'All Options',
+    assigned_to: undefined,
+    status: 'All Status',
+    search: undefined,
+  },
+  signalFilters: {
+    steep_primary: 'All Primary STEEP+V',
+    steep_secondary: 'All Secondary STEEP+V',
+    sdg: 'All SDGs',
+    signature_primary: 'All Primary Signature Solutions/Enabler',
+    signature_secondary: 'All Secondary Signature Solutions/Enabler',
+    status: 'All Status',
+    location: 'All Locations',
+    score: 'All Scores',
+    created_for: 'All Options',
+    created_by: undefined,
+    unit_region: 'All Units',
+    search: undefined,
+  },
+  noOfTrendsFiltersActive: 0,
+  noOfSignalsFiltersActive: 0,
+  signalsSortBy: 'created_at',
+  trendsSortBy: 'created_at',
+  trendList: undefined,
+  signalList: undefined,
   updateUserName: (_d?: string) => {},
   updateName: (_d?: string) => {},
   updateUnit: (_d?: string) => {},
@@ -24,6 +65,14 @@ const Context = createContext<CtxDataType>({
   updateNotificationText: (_d?: string) => {},
   updateChoices: (_d?: ChoicesDataType) => {},
   updateCardsToPrint: (_d: CardsToPrintDataType[]) => {},
+  updateTrendFilters: (_d: TrendFiltersDataType) => {},
+  updateSignalFilters: (_d: SignalFiltersDataType) => {},
+  updateNoOfTrendsFiltersActive: (_d: number) => {},
+  updateNoOfSignalsFiltersActive: (_d: number) => {},
+  updateSignalsSortBy: (_d: string) => {},
+  updateTrendsSortBy: (_d: string) => {},
+  updateTrendList: (_d?: TrendDataType[]) => {},
+  updateSignalList: (_d?: SignalDataType[]) => {},
 });
 
 export default Context;

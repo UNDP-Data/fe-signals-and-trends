@@ -19,8 +19,8 @@
 }
 
 .trend-card-for-listing{
-  width: calc(33.33% - 0.67rem);
-  min-width: min(100%, 440px);
+  width: 100%;
+  min-width: min(100%, 420px);
   color: var(--black);
   text-decoration: none;
   background-color: var(--gray-200);
@@ -40,6 +40,15 @@
 
 @media(min-width: 888px){
   .signal-card{
+    width: calc(50% - 0.5rem);
+  }
+  .trend-card{
+    width: calc(50% - 0.5rem);
+  }
+  .trend-card-for-listing{
+    width: calc(50% - 0.5rem);
+  }
+  .trend-card-for-homepage{
     width: calc(50% - 0.5rem);
   }
 }
@@ -64,7 +73,7 @@
     width: calc(50% - 0.5rem);
   }
   .trend-card-for-listing{
-    width: calc(33.3% - 0.67rem);
+    width: calc(50% - 0.5rem);
   }
   .trend-card-for-homepage{
     width: calc(50% - 0.5rem);
@@ -77,10 +86,10 @@
 }
 @media(min-width: 1820px){  
   .trend-card{
-    width: calc(50% - 0.5rem);
+    width: calc(33.33% - 0.67rem);
   }
   .trend-card-for-listing{
-    width: calc(25% - 0.75rem);
+    width: calc(33.33% - 0.67rem);
   }
   .trend-card-for-homepage{
     width: calc(33.33% - 0.67rem);

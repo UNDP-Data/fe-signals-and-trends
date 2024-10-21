@@ -408,18 +408,72 @@ export function TrendDetail() {
                   </div>
                 </AuthenticatedTemplate>
                 <button
-                  className='undp-button button-tertiary button-arrow'
+                  className={`undp-button button-tertiary button-arrow${
+                    cardsToPrint.findIndex(
+                      el =>
+                        el.id === `${data.id}` &&
+                        el.mode === 'detail' &&
+                        el.type === 'trend',
+                    ) !== -1
+                      ? 'disabled'
+                      : ''
+                  }`}
+                  disabled={
+                    cardsToPrint.findIndex(
+                      el =>
+                        el.id === `${data.id}` &&
+                        el.mode === 'detail' &&
+                        el.type === 'trend',
+                    ) !== -1
+                  }
+                  style={{
+                    opacity:
+                      cardsToPrint.findIndex(
+                        el =>
+                          el.id === `${data.id}` &&
+                          el.mode === 'detail' &&
+                          el.type === 'trend',
+                      ) !== -1
+                        ? 0.4
+                        : 1,
+                    cursor:
+                      cardsToPrint.findIndex(
+                        el =>
+                          el.id === `${data.id}` &&
+                          el.mode === 'detail' &&
+                          el.type === 'trend',
+                      ) !== -1
+                        ? 'not-allowed'
+                        : 'pointer',
+                  }}
                   type='button'
                   onClick={() => {
-                    const cardToPrintTemp = [...cardsToPrint];
-                    cardToPrintTemp.push({
-                      type: 'trend',
-                      id: `${data.id}`,
-                    });
-                    updateCardsToPrint(cardToPrintTemp);
+                    if (
+                      cardsToPrint.findIndex(
+                        el =>
+                          el.id === `${data.id}` &&
+                          el.mode === 'detail' &&
+                          el.type === 'trend',
+                      ) === -1
+                    ) {
+                      const cardToPrintTemp = [...cardsToPrint];
+                      cardToPrintTemp.push({
+                        type: 'trend',
+                        mode: 'detail',
+                        id: `${data.id}`,
+                      });
+                      updateCardsToPrint(cardToPrintTemp);
+                    }
                   }}
                 >
-                  Download
+                  {cardsToPrint.findIndex(
+                    el =>
+                      el.id === `${data.id}` &&
+                      el.mode === 'detail' &&
+                      el.type === 'trend',
+                  ) === -1
+                    ? 'Download'
+                    : 'Added to PDF'}
                 </button>
                 {buttonDisabled ? <div className='undp-loader' /> : null}
                 {submittingError ? (

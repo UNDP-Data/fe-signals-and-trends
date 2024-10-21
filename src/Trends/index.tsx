@@ -19,25 +19,21 @@ const HeroImageEl = styled.div`
   margin-top: 7.1875rem;
 `;
 export function TrendsListing() {
-  const { role, choices } = useContext(Context);
+  const {
+    role,
+    choices,
+    trendFilters,
+    updateTrendFilters,
+    noOfTrendsFiltersActive,
+    updateNoOfTrendsFiltersActive,
+    trendsSortBy,
+    updateTrendsSortBy,
+  } = useContext(Context);
   const [viewType, setViewType] = useState<'cardView' | 'listView'>('cardView');
-  const [noOfFilter, setNoOfFilter] = useState(0);
   const [showFilterModal, setShowFilterModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState<undefined | string>(undefined);
-  const [trendSortBy, setTrendSortBy] = useState('created_at');
-  const [filters, setFilters] = useState<TrendFiltersDataType>({
-    impact: 'All Ratings',
-    horizon: 'All Horizons',
-    steep_primary: 'All Primary STEEP+V',
-    steep_secondary: 'All Secondary STEEP+V',
-    sdg: 'All SDGs',
-    signature_primary: 'All Primary Signature Solutions/Enabler',
-    signature_secondary: 'All Secondary Signature Solutions/Enabler',
-    created_for: 'All Options',
-    assigned_to: undefined,
-    status: 'All Status',
-    search: undefined,
-  });
+  const [searchQuery, setSearchQuery] = useState<undefined | string>(
+    trendFilters.search,
+  );
   const [tempFilters, setTempFilters] = useState<TrendFiltersDataType>({
     impact: 'All Ratings',
     horizon: 'All Horizons',
@@ -89,9 +85,9 @@ export function TrendsListing() {
               width: '15rem',
             }}
             placeholder='Sort by'
-            value={trendSortBy}
+            value={trendsSortBy}
             onChange={value => {
-              setTrendSortBy(value);
+              updateTrendsSortBy(value);
             }}
           >
             {TREND_ORDER_BY_OPTIONS.map(d => (
@@ -104,11 +100,12 @@ export function TrendsListing() {
             type='button'
             className='undp-button button-secondary'
             onClick={() => {
-              setTempFilters(filters);
+              setTempFilters(trendFilters);
               setShowFilterModal(true);
             }}
           >
-            Filters{noOfFilter ? ` (${noOfFilter})` : ''}
+            Filters
+            {noOfTrendsFiltersActive ? ` (${noOfTrendsFiltersActive})` : ''}
           </button>
           <Radio.Group
             defaultValue='cardView'
@@ -130,14 +127,14 @@ export function TrendsListing() {
                 setSearchQuery(d.target.value);
               }}
               onPressEnter={() => {
-                setFilters({ ...filters, search: searchQuery });
+                updateTrendFilters({ ...trendFilters, search: searchQuery });
               }}
             />
             <button
               type='button'
               className='undp-button button-secondary'
               onClick={() => {
-                setFilters({ ...filters, search: searchQuery });
+                updateTrendFilters({ ...trendFilters, search: searchQuery });
               }}
             >
               Search
@@ -145,7 +142,7 @@ export function TrendsListing() {
           </div>
         </div>
       </div>
-      {noOfFilter > 0 ? (
+      {noOfTrendsFiltersActive > 0 ? (
         <div
           className='flex-div flex-wrap margin-top-02 margin-bottom-05'
           style={{
@@ -153,57 +150,62 @@ export function TrendsListing() {
             paddingRight: '1rem',
           }}
         >
-          {filters.impact !== 'All Ratings' ? (
+          {trendFilters.impact !== 'All Ratings' ? (
             <div className='undp-chip undp-chip-blue'>
-              Rating: {filters.impact}
+              Rating: {trendFilters.impact}
             </div>
           ) : null}
-          {filters.horizon !== 'All Horizons' ? (
-            <div className='undp-chip undp-chip-blue'>{filters.horizon}</div>
-          ) : null}
-          {filters.steep_primary !== 'All Primary STEEP+V' ? (
+          {trendFilters.horizon !== 'All Horizons' ? (
             <div className='undp-chip undp-chip-blue'>
-              Primary STEEP+V: {filters.steep_primary.split('–')[0]}
+              {trendFilters.horizon}
             </div>
           ) : null}
-          {filters.steep_secondary !== 'All Secondary STEEP+V' ? (
+          {trendFilters.steep_primary !== 'All Primary STEEP+V' ? (
             <div className='undp-chip undp-chip-blue'>
-              Secondary STEEP+V: {filters.steep_secondary.split('–')[0]}
+              Primary STEEP+V: {trendFilters.steep_primary.split('–')[0]}
             </div>
           ) : null}
-          {filters.signature_primary !==
+          {trendFilters.steep_secondary !== 'All Secondary STEEP+V' ? (
+            <div className='undp-chip undp-chip-blue'>
+              Secondary STEEP+V: {trendFilters.steep_secondary.split('–')[0]}
+            </div>
+          ) : null}
+          {trendFilters.signature_primary !==
           'All Primary Signature Solutions/Enabler' ? (
             <div className='undp-chip undp-chip-blue'>
-              Primary Signature Solutions/Enabler: {filters.signature_primary}
+              Primary Signature Solutions/Enabler:{' '}
+              {trendFilters.signature_primary}
             </div>
           ) : null}
-          {filters.signature_secondary !==
+          {trendFilters.signature_secondary !==
           'All Secondary Signature Solutions/Enabler' ? (
             <div className='undp-chip undp-chip-blue'>
               Secondary Signature Solutions/Enabler:{' '}
-              {filters.signature_secondary}
+              {trendFilters.signature_secondary}
             </div>
           ) : null}
-          {filters.sdg !== 'All SDGs' ? (
-            <div className='undp-chip undp-chip-blue'>{filters.sdg}</div>
+          {trendFilters.sdg !== 'All SDGs' ? (
+            <div className='undp-chip undp-chip-blue'>{trendFilters.sdg}</div>
           ) : null}
-          {filters.created_for !== 'All Options' ? (
+          {trendFilters.created_for !== 'All Options' ? (
             <div className='undp-chip undp-chip-blue'>
-              {filters.created_for}
+              {trendFilters.created_for}
             </div>
           ) : null}
-          {filters.status !== 'All Status' ? (
+          {trendFilters.status !== 'All Status' ? (
             <div className='undp-chip undp-chip-blue'>
-              {filters.status === 'New' ? 'Awaiting Approval' : filters.status}
+              {trendFilters.status === 'New'
+                ? 'Awaiting Approval'
+                : trendFilters.status}
             </div>
           ) : null}
           <button
             type='button'
             className='undp-chip'
             onClick={() => {
-              setNoOfFilter(0);
+              updateNoOfTrendsFiltersActive(0);
               setSearchQuery(undefined);
-              setFilters({
+              updateTrendFilters({
                 impact: 'All Ratings',
                 horizon: 'All Horizons',
                 steep_primary: 'All Primary STEEP+V',
@@ -223,16 +225,12 @@ export function TrendsListing() {
           </button>
         </div>
       ) : null}
-      <AllTrends
-        filters={filters}
-        view={viewType}
-        trendsOrderBy={trendSortBy}
-      />
+      <AllTrends view={viewType} />
       <Modal
         className='undp-modal'
         open={showFilterModal}
         onCancel={() => {
-          setTempFilters(filters);
+          setTempFilters(trendFilters);
           setShowFilterModal(false);
         }}
       >
@@ -605,8 +603,8 @@ export function TrendsListing() {
             if (tempFilters.created_for !== 'All Options') {
               i += 1;
             }
-            setFilters(tempFilters);
-            setNoOfFilter(i);
+            updateTrendFilters(tempFilters);
+            updateNoOfTrendsFiltersActive(i);
             setShowFilterModal(false);
           }}
         >
@@ -659,23 +657,7 @@ export function ArchivedTrendsListing() {
       </div>
       <AuthenticatedTemplate>
         {role === 'Admin' || role === 'Curator' ? (
-          <AllTrends
-            filters={{
-              impact: 'All Ratings',
-              horizon: 'All Horizons',
-              steep_primary: 'All Primary STEEP+V',
-              steep_secondary: 'All Secondary STEEP+V',
-              sdg: 'All SDGs',
-              signature_primary: 'All Primary Signature Solutions/Enabler',
-              signature_secondary: 'All Secondary Signature Solutions/Enabler',
-              created_for: 'All Options',
-              assigned_to: undefined,
-              search: undefined,
-              status: 'Archived',
-            }}
-            view={viewType}
-            trendsOrderBy='modified_at'
-          />
+          <AllTrends isArchived view={viewType} />
         ) : (
           <p className='undp-typography' style={{ color: 'var(--dark-red)' }}>
             Admin rights required to view this page

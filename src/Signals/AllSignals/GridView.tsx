@@ -1,17 +1,16 @@
-import { SignalDataType } from '../../Types';
+import { useContext } from 'react';
 import { SignalCard } from '../../Components/SignalCard';
+import Context from '../../Context/Context';
 
-interface Props {
-  data: SignalDataType[];
-}
-
-export function CardList(props: Props) {
-  const { data } = props;
-  return (
-    <>
-      {data.map((d, i) => (
-        <SignalCard data={d} key={i} isDraft={d.status === 'Draft'} />
-      ))}
-    </>
-  );
+export function CardList() {
+  const { signalList } = useContext(Context);
+  if (signalList)
+    return (
+      <>
+        {signalList.map((d, i) => (
+          <SignalCard data={d} key={i} isDraft={d.status === 'Draft'} />
+        ))}
+      </>
+    );
+  return null;
 }

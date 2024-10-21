@@ -149,6 +149,7 @@ export interface ChoicesDataType {
 
 export interface CardsToPrintDataType {
   type: 'trend' | 'signal';
+  mode: 'card' | 'detail';
   id: string;
 }
 
@@ -164,6 +165,14 @@ export interface CtxDataType {
   notificationText?: string;
   choices?: ChoicesDataType;
   cardsToPrint: CardsToPrintDataType[];
+  trendFilters: TrendFiltersDataType;
+  noOfTrendsFiltersActive: number;
+  signalFilters: SignalFiltersDataType;
+  noOfSignalsFiltersActive: number;
+  signalsSortBy: string;
+  trendsSortBy: string;
+  trendList?: TrendDataType[];
+  signalList?: SignalDataType[];
   updateUserName: (_d: string) => void;
   updateName: (_d?: string) => void;
   updateAccessToken: (_d?: string) => void;
@@ -175,9 +184,18 @@ export interface CtxDataType {
   updateNotificationText: (_d?: string) => void;
   updateChoices: (_d?: ChoicesDataType) => void;
   updateCardsToPrint: (_d: CardsToPrintDataType[]) => void;
+  updateTrendFilters: (_d: TrendFiltersDataType) => void;
+  updateSignalFilters: (_d: SignalFiltersDataType) => void;
+  updateNoOfTrendsFiltersActive: (_d: number) => void;
+  updateNoOfSignalsFiltersActive: (_d: number) => void;
+  updateSignalsSortBy: (_d: string) => void;
+  updateTrendsSortBy: (_d: string) => void;
+  updateTrendList: (_d?: TrendDataType[]) => void;
+  updateSignalList: (_d?: SignalDataType[]) => void;
 }
 
 export interface ObjForPrintingDataType {
   type: 'trend' | 'signal';
+  mode: 'card' | 'detail';
   data: SignalDataType | TrendDataType;
 }

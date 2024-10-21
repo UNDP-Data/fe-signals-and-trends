@@ -2,89 +2,99 @@ import { useContext, useEffect, useState } from 'react';
 import { Modal, Pagination, PaginationProps } from 'antd';
 import axios, { AxiosResponse } from 'axios';
 import sortBy from 'lodash.sortby';
-import { SignalDataType, SignalFiltersDataType } from '../../Types';
 import { CardList } from './GridView';
 import { ListView } from './ListView';
 import { API_ACCESS_TOKEN } from '../../Constants';
 import Context from '../../Context/Context';
 
 interface Props {
-  filters: SignalFiltersDataType;
   view: 'cardView' | 'listView';
-  signalOrderBy: string;
+  isArchived?: boolean;
 }
 
 export function AllSignals(props: Props) {
-  const { filters, view, signalOrderBy } = props;
+  const { view, isArchived } = props;
   const [paginationValue, setPaginationValue] = useState(1);
   const [loading, setLoading] = useState(false);
   const [pageSize, setPageSize] = useState(20);
   const [totalCount, setTotalCount] = useState<number | undefined>(undefined);
-  const { role, accessToken } = useContext(Context);
+  const {
+    role,
+    accessToken,
+    signalFilters,
+    signalsSortBy,
+    signalList,
+    updateSignalList,
+    cardsToPrint,
+    updateCardsToPrint,
+  } = useContext(Context);
   const [error, setError] = useState<undefined | string>(undefined);
-  const [signalList, setSignalList] = useState<undefined | SignalDataType[]>(
-    undefined,
-  );
 
   const GetURL = (isExportLink: boolean) => {
     const steepPrimaryQueryParameter =
-      filters.steep_primary === 'All Primary STEEP+V'
+      signalFilters.steep_primary === 'All Primary STEEP+V'
         ? ''
-        : `&steep_primary=${filters.steep_primary}`;
+        : `&steep_primary=${signalFilters.steep_primary}`;
     const steepSecondaryQueryParameter =
-      filters.steep_secondary === 'All Secondary STEEP+V'
+      signalFilters.steep_secondary === 'All Secondary STEEP+V'
         ? ''
-        : `&steep_secondary=${filters.steep_secondary}`;
+        : `&steep_secondary=${signalFilters.steep_secondary}`;
     const ss1QueryParameter =
-      filters.signature_primary === 'All Primary Signature Solutions/Enabler'
+      signalFilters.signature_primary ===
+      'All Primary Signature Solutions/Enabler'
         ? ''
-        : `&signature_primary=${filters.signature_primary.replaceAll(
+        : `&signature_primary=${signalFilters.signature_primary.replaceAll(
             ' ',
             '%20',
           )}`;
     const ss2QueryParameter =
-      filters.signature_secondary ===
+      signalFilters.signature_secondary ===
       'All Secondary Signature Solutions/Enabler'
         ? ''
-        : `&signature_secondary=${filters.signature_secondary.replaceAll(
+        : `&signature_secondary=${signalFilters.signature_secondary.replaceAll(
             ' ',
             '%20',
           )}`;
-    const statusQueryParameter =
-      role === 'Curator' || role === 'Admin'
-        ? filters.status === 'All Status'
-          ? '&statuses=New&statuses=Approved'
-          : `&statuses=${filters.status}`
-        : '&statuses=Approved';
+    const statusQueryParameter = isArchived
+      ? `&statuses=Archived`
+      : role === 'Curator' || role === 'Admin'
+      ? signalFilters.status === 'All Status'
+        ? '&statuses=New&statuses=Approved'
+        : `&statuses=${signalFilters.status}`
+      : '&statuses=Approved';
     const sdgQueryParameter =
-      filters.sdg === 'All SDGs'
+      signalFilters.sdg === 'All SDGs'
         ? ''
-        : `&sdgs=${filters.sdg.replaceAll(' ', '%20')}`;
+        : `&sdgs=${signalFilters.sdg.replaceAll(' ', '%20')}`;
     const locationQueryParameter =
-      filters.location === 'All Locations'
+      signalFilters.location === 'All Locations'
         ? ''
-        : `&location=${filters.location}`;
+        : `&location=${signalFilters.location}`;
     const scoreQueryParameter =
-      filters.score === 'All Scores'
+      signalFilters.score === 'All Scores'
         ? ''
-        : `&score=${filters.score.replaceAll(' ', '%20')}`;
+        : `&score=${signalFilters.score.replaceAll(' ', '%20')}`;
     const createdForQueryParameter =
-      filters.created_for === 'All Options'
+      signalFilters.created_for === 'All Options'
         ? ''
-        : `&created_for=${filters.created_for.replaceAll(' ', '%20')}`;
-    const searchQueryParameter = filters.search
-      ? `&query=${filters.search}`
+        : `&created_for=${signalFilters.created_for.replaceAll(' ', '%20')}`;
+    const searchQueryParameter = signalFilters.search
+      ? `&query=${signalFilters.search}`
       : '';
     const unitQueryParameter =
-      filters.unit_region === 'All Units'
+      signalFilters.unit_region === 'All Units'
         ? ''
-        : `&unit=${filters.unit_region.replaceAll(' ', '%20')}`;
+        : `&unit=${signalFilters.unit_region.replaceAll(' ', '%20')}`;
     const createdByQueryParameter =
-      filters.created_by && filters.created_by !== 'All'
-        ? `&created_by=${filters.created_by}`
+      signalFilters.created_by && signalFilters.created_by !== 'All'
+        ? `&created_by=${signalFilters.created_by}`
         : '';
-    const orderByQueryParameter = `&order_by_field=${signalOrderBy}&order_by_direction=${
-      signalOrderBy === 'created_at' || signalOrderBy === 'modified_at'
+    const orderByQueryParameter = `&order_by_field=${
+      isArchived ? 'modified_at' : signalsSortBy
+    }&order_by_direction=${
+      signalsSortBy === 'created_at' ||
+      signalsSortBy === 'modified_at' ||
+      isArchived
         ? 'desc'
         : 'asc'
     }`;
@@ -94,7 +104,7 @@ export function AllSignals(props: Props) {
   };
 
   useEffect(() => {
-    setSignalList(undefined);
+    updateSignalList(undefined);
     axios
       .get(GetURL(false), {
         headers: {
@@ -102,13 +112,13 @@ export function AllSignals(props: Props) {
         },
       })
       .then((response: AxiosResponse) => {
-        setSignalList(
+        updateSignalList(
           sortBy(response.data.data, d => Date.parse(d.created_at)).reverse(),
         );
       })
       .catch(err => {
         if (err.response?.status === 404) {
-          setSignalList([]);
+          updateSignalList([]);
           setTotalCount(0);
         } else {
           setError(
@@ -123,7 +133,7 @@ export function AllSignals(props: Props) {
   }, [paginationValue]);
   useEffect(() => {
     setError(undefined);
-    setSignalList(undefined);
+    updateSignalList(undefined);
     axios
       .get(GetURL(false), {
         headers: {
@@ -131,7 +141,7 @@ export function AllSignals(props: Props) {
         },
       })
       .then((response: AxiosResponse) => {
-        setSignalList(
+        updateSignalList(
           sortBy(response.data.data, d => Date.parse(d.created_at)).reverse(),
         );
         setTotalCount(response.data.total_count);
@@ -139,7 +149,7 @@ export function AllSignals(props: Props) {
       })
       .catch(err => {
         if (err.response?.status === 404) {
-          setSignalList([]);
+          updateSignalList([]);
           setTotalCount(0);
         } else {
           setError(
@@ -151,7 +161,7 @@ export function AllSignals(props: Props) {
           );
         }
       });
-  }, [role, filters, accessToken, pageSize, signalOrderBy]);
+  }, [role, signalFilters, accessToken, pageSize, signalsSortBy]);
   const onShowSizeChange: PaginationProps['onShowSizeChange'] = (
     _current,
     size,
@@ -211,13 +221,39 @@ export function AllSignals(props: Props) {
                 Download Excel
               </button>
             ) : null}
+            <button
+              type='button'
+              className='undp-button button-primary'
+              onClick={() => {
+                const cardToPrintTemp = [...cardsToPrint];
+                signalList.forEach(s => {
+                  if (
+                    cardsToPrint.findIndex(
+                      el =>
+                        el.id === `${s.id}` &&
+                        el.mode === 'card' &&
+                        el.type === 'signal',
+                    ) === -1
+                  ) {
+                    cardToPrintTemp.push({
+                      type: 'signal',
+                      mode: 'card',
+                      id: `${s.id}`,
+                    });
+                  }
+                });
+                updateCardsToPrint(cardToPrintTemp);
+              }}
+            >
+              Add signals on page to PDF
+            </button>
           </div>
           <div className='flex-div flex-wrap listing'>
-            {signalList.length > 0 ? (
+            {signalList.length > 0 && signalList ? (
               view === 'cardView' ? (
-                <CardList data={signalList} />
+                <CardList />
               ) : (
-                <ListView data={signalList} />
+                <ListView />
               )
             ) : (
               <h5

@@ -2,29 +2,33 @@ import { useContext, useEffect, useState } from 'react';
 import { Modal, Pagination, PaginationProps } from 'antd';
 import sortBy from 'lodash.sortby';
 import axios, { AxiosResponse } from 'axios';
-import { TrendDataType, TrendFiltersDataType } from '../../Types';
 import { CardList } from './GridView';
 import { ListView } from './ListView';
 import { API_ACCESS_TOKEN } from '../../Constants';
 import Context from '../../Context/Context';
 
 interface Props {
-  filters: TrendFiltersDataType;
   view: 'cardView' | 'listView';
-  trendsOrderBy: string;
+  isArchived?: boolean;
 }
 
 export function AllTrends(props: Props) {
-  const { filters, view, trendsOrderBy } = props;
-  const { role, accessToken } = useContext(Context);
+  const { view, isArchived } = props;
+  const {
+    role,
+    accessToken,
+    trendFilters,
+    trendsSortBy,
+    trendList,
+    updateTrendList,
+    cardsToPrint,
+    updateCardsToPrint,
+  } = useContext(Context);
   const [paginationValue, setPaginationValue] = useState(1);
   const [loading, setLoading] = useState(false);
   const [pageSize, setPageSize] = useState(20);
   const [totalCount, setTotalCount] = useState<undefined | number>(undefined);
   const [error, setError] = useState<undefined | string>(undefined);
-  const [trendsList, setTrendsList] = useState<undefined | TrendDataType[]>(
-    undefined,
-  );
   const onShowSizeChange: PaginationProps['onShowSizeChange'] = (
     _current,
     size,
@@ -33,55 +37,61 @@ export function AllTrends(props: Props) {
   };
   const GetURL = (isExportLink: boolean) => {
     const steepPrimaryQueryParameter =
-      filters.steep_primary === 'All Primary STEEP+V'
+      trendFilters.steep_primary === 'All Primary STEEP+V'
         ? ''
-        : `&steep_primary=${filters.steep_primary}`;
+        : `&steep_primary=${trendFilters.steep_primary}`;
     const steepSecondaryQueryParameter =
-      filters.steep_secondary === 'All Secondary STEEP+V'
+      trendFilters.steep_secondary === 'All Secondary STEEP+V'
         ? ''
-        : `&steep_secondary=${filters.steep_secondary}`;
+        : `&steep_secondary=${trendFilters.steep_secondary}`;
     const ss1QueryParameter =
-      filters.signature_primary === 'All Primary Signature Solutions/Enabler'
+      trendFilters.signature_primary ===
+      'All Primary Signature Solutions/Enabler'
         ? ''
-        : `&signature_primary=${filters.signature_primary.replaceAll(
+        : `&signature_primary=${trendFilters.signature_primary.replaceAll(
             ' ',
             '%20',
           )}`;
     const ss2QueryParameter =
-      filters.signature_secondary ===
+      trendFilters.signature_secondary ===
       'All Secondary Signature Solutions/Enabler'
         ? ''
-        : `&signature_secondary=${filters.signature_secondary.replaceAll(
+        : `&signature_secondary=${trendFilters.signature_secondary.replaceAll(
             ' ',
             '%20',
           )}`;
     const sdgQueryParameter =
-      filters.sdg === 'All SDGs'
+      trendFilters.sdg === 'All SDGs'
         ? ''
-        : `&sdgs=${filters.sdg.replaceAll(' ', '%20')}`;
+        : `&sdgs=${trendFilters.sdg.replaceAll(' ', '%20')}`;
     const createdForQueryParameter =
-      filters.created_for === 'All Options'
+      trendFilters.created_for === 'All Options'
         ? ''
-        : `&created_for=${filters.created_for.replaceAll(' ', '%20')}`;
+        : `&created_for=${trendFilters.created_for.replaceAll(' ', '%20')}`;
     const horizonQueryParameter =
-      filters.horizon === 'All Horizons'
+      trendFilters.horizon === 'All Horizons'
         ? ''
-        : `&time_horizon=${filters.horizon.replace('+', '%2B')}`;
+        : `&time_horizon=${trendFilters.horizon.replace('+', '%2B')}`;
     const ratingQueryParameter =
-      filters.impact === 'All Ratings'
+      trendFilters.impact === 'All Ratings'
         ? ''
-        : `&impact_rating=${filters.impact}`;
-    const statusQueryParameter =
-      filters.status === 'All Status'
-        ? role === 'Admin' || role === 'Curator'
-          ? 'statuses=Approved&statuses=New'
-          : 'statuses=Approved'
-        : `statuses=${filters.status}`;
-    const searchQueryParameter = filters.search
-      ? `&query=${filters.search}`
+        : `&impact_rating=${trendFilters.impact}`;
+    const statusQueryParameter = isArchived
+      ? `statuses=Archived`
+      : trendFilters.status === 'All Status'
+      ? role === 'Admin' || role === 'Curator'
+        ? 'statuses=Approved&statuses=New'
+        : 'statuses=Approved'
+      : `statuses=${trendFilters.status}`;
+    const searchQueryParameter = trendFilters.search
+      ? `&query=${trendFilters.search}`
       : '';
-    const orderByQueryParameter = `&order_by_field=${trendsOrderBy}&order_by_direction=${
-      trendsOrderBy === 'created_at' || trendsOrderBy === 'modified_at'
+    const orderByQueryParameter = `&order_by_field=${
+      isArchived ? 'modified_at' : trendsSortBy
+    }&order_by_direction=${
+      trendsSortBy === 'created_at' ||
+      trendsSortBy === 'modified_at' ||
+      isArchived
         ? 'desc'
         : 'asc'
     }`;
@@ -90,7 +100,7 @@ export function AllTrends(props: Props) {
     return isExportLink ? urlForExport : urlForListing;
   };
   useEffect(() => {
-    setTrendsList(undefined);
+    updateTrendList(undefined);
     setError(undefined);
     axios
       .get(GetURL(false), {
@@ -99,13 +109,13 @@ export function AllTrends(props: Props) {
         },
       })
       .then((response: AxiosResponse) => {
-        setTrendsList(
+        updateTrendList(
           sortBy(response.data.data, d => Date.parse(d.created_at)).reverse(),
         );
       })
       .catch(err => {
         if (err.response?.status === 404) {
-          setTrendsList([]);
+          updateTrendList([]);
           setTotalCount(0);
         } else {
           setError(
@@ -119,7 +129,7 @@ export function AllTrends(props: Props) {
       });
   }, [paginationValue]);
   useEffect(() => {
-    setTrendsList(undefined);
+    updateTrendList(undefined);
     setError(undefined);
     axios
       .get(GetURL(false), {
@@ -128,7 +138,7 @@ export function AllTrends(props: Props) {
         },
       })
       .then((response: AxiosResponse) => {
-        setTrendsList(
+        updateTrendList(
           sortBy(response.data.data, d => Date.parse(d.created_at)).reverse(),
         );
         setTotalCount(response.data.total_count);
@@ -136,7 +146,7 @@ export function AllTrends(props: Props) {
       })
       .catch(err => {
         if (err.response?.status === 404) {
-          setTrendsList([]);
+          updateTrendList([]);
           setTotalCount(0);
         } else {
           setError(
@@ -148,10 +158,10 @@ export function AllTrends(props: Props) {
           );
         }
       });
-  }, [filters, pageSize, trendsOrderBy]);
+  }, [trendFilters, pageSize, trendsSortBy]);
   return (
     <div style={{ padding: '0 1rem' }} className='margin-bottom-09'>
-      {trendsList && totalCount !== undefined ? (
+      {trendList && totalCount !== undefined ? (
         <div>
           <div
             className='margin-bottom-05 flex-div'
@@ -201,13 +211,39 @@ export function AllTrends(props: Props) {
                 Download Excel
               </button>
             ) : null}
+            <button
+              type='button'
+              className='undp-button button-primary'
+              onClick={() => {
+                const cardToPrintTemp = [...cardsToPrint];
+                trendList.forEach(s => {
+                  if (
+                    cardsToPrint.findIndex(
+                      el =>
+                        el.id === `${s.id}` &&
+                        el.mode === 'card' &&
+                        el.type === 'trend',
+                    ) === -1
+                  ) {
+                    cardToPrintTemp.push({
+                      type: 'trend',
+                      mode: 'card',
+                      id: `${s.id}`,
+                    });
+                  }
+                });
+                updateCardsToPrint(cardToPrintTemp);
+              }}
+            >
+              Add signals on page to PDF
+            </button>
           </div>
           <div className='flex-div flex-wrap'>
-            {trendsList.length > 0 ? (
+            {trendList.length > 0 && trendList ? (
               view === 'cardView' ? (
-                <CardList data={trendsList} />
+                <CardList />
               ) : (
-                <ListView data={trendsList} />
+                <ListView />
               )
             ) : (
               <h5
@@ -224,7 +260,7 @@ export function AllTrends(props: Props) {
               </h5>
             )}
           </div>
-          {trendsList.length > 0 ? (
+          {trendList.length > 0 ? (
             <div className='flex-div flex-hor-align-center margin-top-07'>
               <Pagination
                 className='undp-pagination'

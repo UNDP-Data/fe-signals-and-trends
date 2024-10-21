@@ -1,17 +1,16 @@
-import { TrendDataType } from '../../Types';
+import { useContext } from 'react';
 import { TrendCard } from '../../Components/TrendCard';
+import Context from '../../Context/Context';
 
-interface Props {
-  data: TrendDataType[];
-}
-
-export function CardList(props: Props) {
-  const { data } = props;
-  return (
-    <>
-      {data.map((d, i) => (
-        <TrendCard key={i} data={d} forAllTrends />
-      ))}
-    </>
-  );
+export function CardList() {
+  const { trendList } = useContext(Context);
+  if (trendList)
+    return (
+      <>
+        {trendList.map((d, i) => (
+          <TrendCard key={i} data={d} forAllTrends />
+        ))}
+      </>
+    );
+  return null;
 }

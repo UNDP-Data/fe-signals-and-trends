@@ -315,12 +315,20 @@ function MainBody() {
                         width: '100%',
                       }}
                     >
-                      <h6
-                        className='undp-typography undp-chip margin-top-00 margin-bottom-05 undp-chip-green'
-                        style={{ padding: '0.25rem 0.5rem' }}
-                      >
-                        Signal
-                      </h6>
+                      <div className='flex-div margin-top-00 margin-bottom-05 gap-05'>
+                        <h6
+                          className='undp-typography undp-chip margin-top-00 margin-bottom-00 undp-chip-blue'
+                          style={{ padding: '0.25rem 0.5rem' }}
+                        >
+                          Signal
+                        </h6>
+                        <p
+                          className='undp-typography undp-chip margin-top-00 margin-bottom-00'
+                          style={{ padding: '0.25rem 0.5rem' }}
+                        >
+                          {d.mode === 'card' ? 'Card View' : 'Detail View'}
+                        </p>
+                      </div>
                       <h6 className='undp-typography'>{s.headline}</h6>
                       <p
                         className='undp-typography margin-bottom-07 small-font'
@@ -367,12 +375,20 @@ function MainBody() {
                       width: '100%',
                     }}
                   >
-                    <h6
-                      className='undp-typography undp-chip margin-top-00 margin-bottom-05 undp-chip-blue'
-                      style={{ padding: '0.25rem 0.5rem' }}
-                    >
-                      Trend
-                    </h6>
+                    <div className='flex-div margin-top-00 margin-bottom-05 gap-05'>
+                      <h6
+                        className='undp-typography undp-chip margin-top-00 margin-bottom-00 undp-chip-blue'
+                        style={{ padding: '0.25rem 0.5rem' }}
+                      >
+                        Trend
+                      </h6>
+                      <p
+                        className='undp-typography undp-chip margin-top-00 margin-bottom-00'
+                        style={{ padding: '0.25rem 0.5rem' }}
+                      >
+                        {d.mode === 'card' ? 'Card View' : 'Detail View'}
+                      </p>
+                    </div>
                     <h6 className='undp-typography'>{s.headline}</h6>
                     <p
                       className='undp-typography margin-bottom-07 small-font'
@@ -414,6 +430,7 @@ function MainBody() {
                     d.type === 'signal'
                       ? {
                           type: 'signal',
+                          mode: d.mode,
                           data: signalsForPrinting[
                             signalsForPrinting.findIndex(
                               el => `${el.id}` === d.id,
@@ -422,6 +439,7 @@ function MainBody() {
                         }
                       : {
                           type: 'trend',
+                          mode: d.mode,
                           data: trendsForPrinting[
                             trendsForPrinting.findIndex(
                               el => `${el.id}` === d.id,

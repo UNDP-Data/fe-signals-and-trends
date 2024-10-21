@@ -5,11 +5,21 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import { useEffect, useReducer, useMemo, useState } from 'react';
 import { Footer } from './Components/FooterEl';
 import { SignUpButton } from './Components/SignUpButton';
-import { API_ACCESS_TOKEN, CHOICES, CLIENT_ID } from './Constants';
+import {
+  API_ACCESS_TOKEN,
+  CHOICES,
+  CLIENT_ID,
+  REDIRECT_URL,
+} from './Constants';
 import Context from './Context/Context';
 import Reducer from './Context/Reducer';
 import MainBody from './MainBody';
-import { CardsToPrintDataType, ChoicesDataType } from './Types';
+import {
+  CardsToPrintDataType,
+  ChoicesDataType,
+  SignalFiltersDataType,
+  TrendFiltersDataType,
+} from './Types';
 
 import './App.css';
 import { Header } from './Components/HeaderEl';
@@ -17,6 +27,8 @@ import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
 import { signOutClickHandler } from './Utils/SignOutClickHandler';
 
 function App() {
+  // eslint-disable-next-line no-console
+  console.log(REDIRECT_URL, CLIENT_ID);
   const isAuthenticated = useIsAuthenticated();
   const [openModal, setOpenModal] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<string | undefined>(
@@ -42,6 +54,39 @@ function App() {
     choices: undefined,
     isAcceleratorLab: undefined,
     cardsToPrint: [],
+    trendFilters: {
+      impact: 'All Ratings',
+      horizon: 'All Horizons',
+      steep_primary: 'All Primary STEEP+V',
+      steep_secondary: 'All Secondary STEEP+V',
+      sdg: 'All SDGs',
+      signature_primary: 'All Primary Signature Solutions/Enabler',
+      signature_secondary: 'All Secondary Signature Solutions/Enabler',
+      created_for: 'All Options',
+      assigned_to: undefined,
+      status: 'All Status',
+      search: undefined,
+    },
+    signalFilters: {
+      steep_primary: 'All Primary STEEP+V',
+      steep_secondary: 'All Secondary STEEP+V',
+      sdg: 'All SDGs',
+      signature_primary: 'All Primary Signature Solutions/Enabler',
+      signature_secondary: 'All Secondary Signature Solutions/Enabler',
+      status: 'All Status',
+      location: 'All Locations',
+      score: 'All Scores',
+      created_for: 'All Options',
+      created_by: undefined,
+      unit_region: 'All Units',
+      search: undefined,
+    },
+    noOfTrendsFiltersActive: 0,
+    noOfSignalsFiltersActive: 0,
+    signalsSortBy: 'created_at',
+    trendsSortBy: 'created_at',
+    trendList: undefined,
+    signalList: undefined,
   };
 
   const [state, dispatch] = useReducer(Reducer, initialState);
@@ -110,6 +155,54 @@ function App() {
   const updateUserID = (d?: number) => {
     dispatch({
       type: 'UPDATE_USER_ID',
+      payload: d,
+    });
+  };
+  const updateTrendFilters = (d: TrendFiltersDataType) => {
+    dispatch({
+      type: 'UPDATE_TREND_FILTERS',
+      payload: d,
+    });
+  };
+  const updateSignalFilters = (d: SignalFiltersDataType) => {
+    dispatch({
+      type: 'UPDATE_SIGNAL_FILTERS',
+      payload: d,
+    });
+  };
+  const updateNoOfTrendsFiltersActive = (d: number) => {
+    dispatch({
+      type: 'UPDATE_NO_OF_TRENDS_FILTERS_ACTIVE',
+      payload: d,
+    });
+  };
+  const updateNoOfSignalsFiltersActive = (d: number) => {
+    dispatch({
+      type: 'UPDATE_NO_OF_SIGNALS_FILTERS_ACTIVE',
+      payload: d,
+    });
+  };
+  const updateTrendsSortBy = (d: string) => {
+    dispatch({
+      type: 'UPDATE_TRENDS_SORT_BY',
+      payload: d,
+    });
+  };
+  const updateSignalsSortBy = (d: string) => {
+    dispatch({
+      type: 'UPDATE_SIGNALS_SORT_BY',
+      payload: d,
+    });
+  };
+  const updateTrendList = (d: string) => {
+    dispatch({
+      type: 'UPDATE_TREND_LIST',
+      payload: d,
+    });
+  };
+  const updateSignalList = (d: string) => {
+    dispatch({
+      type: 'UPDATE_SIGNAL_LIST',
       payload: d,
     });
   };
@@ -211,6 +304,14 @@ function App() {
       updateNotificationText,
       updateCardsToPrint,
       updateIsAcceleratorLab,
+      updateSignalFilters,
+      updateTrendFilters,
+      updateNoOfTrendsFiltersActive,
+      updateNoOfSignalsFiltersActive,
+      updateSignalsSortBy,
+      updateTrendsSortBy,
+      updateTrendList,
+      updateSignalList,
     }),
     [
       state,
@@ -224,6 +325,14 @@ function App() {
       updateNotificationText,
       updateCardsToPrint,
       updateIsAcceleratorLab,
+      updateSignalFilters,
+      updateTrendFilters,
+      updateNoOfTrendsFiltersActive,
+      updateNoOfSignalsFiltersActive,
+      updateSignalsSortBy,
+      updateTrendsSortBy,
+      updateTrendList,
+      updateSignalList,
     ],
   );
   return (
