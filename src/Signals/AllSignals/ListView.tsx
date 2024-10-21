@@ -3,14 +3,9 @@ import styled from 'styled-components';
 import { useContext } from 'react';
 import UNDPColorModule from 'undp-viz-colors';
 import { SSCOLOR } from '../../Constants';
-import { SignalDataType } from '../../Types';
 import Context from '../../Context/Context';
 import { ChipEl } from '../../Components/ChipEl';
 import { getSDGIcon } from '../../Utils/GetSDGIcons';
-
-interface Props {
-  data: SignalDataType[];
-}
 
 const TableRowEl = styled.div`
   cursor: pointer;
@@ -36,9 +31,8 @@ function formatDate(dateStr: string) {
   })}-${d.getFullYear().toString()}`;
 }
 
-export function ListView(props: Props) {
-  const { data } = props;
-  const { choices } = useContext(Context);
+export function ListView() {
+  const { choices, signalList } = useContext(Context);
   const navigate = useNavigate();
   return (
     <div
@@ -89,7 +83,7 @@ export function ListView(props: Props) {
           <CellDiv>ID</CellDiv>
         </div>
       </div>
-      {data.map((d, i) => (
+      {signalList?.map((d, i) => (
         // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
         <TableRowEl
           className='undp-table-row'

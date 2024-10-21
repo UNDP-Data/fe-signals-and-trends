@@ -20,26 +20,20 @@ const HeroImageEl = styled.div`
 `;
 
 export function SignalsListing() {
-  const { role, choices } = useContext(Context);
+  const {
+    role,
+    choices,
+    signalFilters,
+    updateSignalFilters,
+    noOfSignalsFiltersActive,
+    updateNoOfSignalsFiltersActive,
+    signalsSortBy,
+    updateSignalsSortBy,
+  } = useContext(Context);
   const [viewType, setViewType] = useState<'cardView' | 'listView'>('cardView');
-  const [noOfFilter, setNoOfFilter] = useState(0);
-  const [signalSortBy, setSignalSortBy] = useState('created_at');
-  const [searchQuery, setSearchQuery] = useState<undefined | string>(undefined);
-
-  const [filters, setFilters] = useState<SignalFiltersDataType>({
-    steep_primary: 'All Primary STEEP+V',
-    steep_secondary: 'All Secondary STEEP+V',
-    sdg: 'All SDGs',
-    signature_primary: 'All Primary Signature Solutions/Enabler',
-    signature_secondary: 'All Secondary Signature Solutions/Enabler',
-    status: 'All Status',
-    location: 'All Locations',
-    score: 'All Scores',
-    created_for: 'All Options',
-    created_by: undefined,
-    unit_region: 'All Units',
-    search: undefined,
-  });
+  const [searchQuery, setSearchQuery] = useState<undefined | string>(
+    signalFilters.search,
+  );
   const [tempFilters, setTempFilters] = useState<SignalFiltersDataType>({
     steep_primary: 'All Primary STEEP+V',
     steep_secondary: 'All Secondary STEEP+V',
@@ -92,9 +86,9 @@ export function SignalsListing() {
               width: '15rem',
             }}
             placeholder='Sort by'
-            value={signalSortBy}
+            value={signalsSortBy}
             onChange={value => {
-              setSignalSortBy(value);
+              updateSignalsSortBy(value);
             }}
           >
             {SIGNAL_ORDER_BY_OPTIONS.map(d => (
@@ -107,11 +101,12 @@ export function SignalsListing() {
             type='button'
             className='undp-button button-secondary'
             onClick={() => {
-              setTempFilters(filters);
+              setTempFilters(signalFilters);
               setShowFilterModal(true);
             }}
           >
-            Filters{noOfFilter ? ` (${noOfFilter})` : ''}
+            Filters
+            {noOfSignalsFiltersActive ? ` (${noOfSignalsFiltersActive})` : ''}
           </button>
           <Radio.Group
             defaultValue='cardView'
@@ -133,14 +128,14 @@ export function SignalsListing() {
                 setSearchQuery(d.target.value);
               }}
               onPressEnter={() => {
-                setFilters({ ...filters, search: searchQuery });
+                updateSignalFilters({ ...signalFilters, search: searchQuery });
               }}
             />
             <button
               type='button'
               className='undp-button button-secondary'
               onClick={() => {
-                setFilters({ ...filters, search: searchQuery });
+                updateSignalFilters({ ...signalFilters, search: searchQuery });
               }}
             >
               Search
@@ -148,7 +143,7 @@ export function SignalsListing() {
           </div>
         </div>
       </div>
-      {noOfFilter > 0 ? (
+      {noOfSignalsFiltersActive > 0 ? (
         <div
           className='flex-div flex-wrap margin-top-02 margin-bottom-05'
           style={{
@@ -156,65 +151,72 @@ export function SignalsListing() {
             paddingRight: '1rem',
           }}
         >
-          {filters.steep_primary !== 'All Primary STEEP+V' ? (
+          {signalFilters.steep_primary !== 'All Primary STEEP+V' ? (
             <div className='undp-chip undp-chip-blue'>
-              Primary STEEP+V: {filters.steep_primary.split('–')[0]}
+              Primary STEEP+V: {signalFilters.steep_primary.split('–')[0]}
             </div>
           ) : null}
-          {filters.steep_secondary !== 'All Secondary STEEP+V' ? (
+          {signalFilters.steep_secondary !== 'All Secondary STEEP+V' ? (
             <div className='undp-chip undp-chip-blue'>
-              Secondary STEEP+V: {filters.steep_secondary.split('–')[0]}
+              Secondary STEEP+V: {signalFilters.steep_secondary.split('–')[0]}
             </div>
           ) : null}
-          {filters.sdg !== 'All SDGs' ? (
-            <div className='undp-chip undp-chip-blue'>{filters.sdg}</div>
+          {signalFilters.sdg !== 'All SDGs' ? (
+            <div className='undp-chip undp-chip-blue'>{signalFilters.sdg}</div>
           ) : null}
-          {filters.signature_primary !==
+          {signalFilters.signature_primary !==
           'All Primary Signature Solutions/Enabler' ? (
             <div className='undp-chip undp-chip-blue'>
-              Primary Signature Solutions/Enabler: {filters.signature_primary}
+              Primary Signature Solutions/Enabler:{' '}
+              {signalFilters.signature_primary}
             </div>
           ) : null}
-          {filters.signature_secondary !==
+          {signalFilters.signature_secondary !==
           'All Secondary Signature Solutions/Enabler' ? (
             <div className='undp-chip undp-chip-blue'>
               Secondary Signature Solutions/Enabler:{' '}
-              {filters.signature_secondary}
+              {signalFilters.signature_secondary}
             </div>
           ) : null}
-          {filters.location !== 'All Locations' ? (
-            <div className='undp-chip undp-chip-blue'>{filters.location}</div>
-          ) : null}
-          {filters.unit_region !== 'All Units' ? (
+          {signalFilters.location !== 'All Locations' ? (
             <div className='undp-chip undp-chip-blue'>
-              {filters.unit_region}
+              {signalFilters.location}
             </div>
           ) : null}
-          {filters.created_for !== 'All Options' ? (
+          {signalFilters.unit_region !== 'All Units' ? (
             <div className='undp-chip undp-chip-blue'>
-              {filters.created_for}
+              {signalFilters.unit_region}
             </div>
           ) : null}
-          {filters.status !== 'All Status' ? (
+          {signalFilters.created_for !== 'All Options' ? (
             <div className='undp-chip undp-chip-blue'>
-              {filters.status === 'New' ? 'Awaiting Approval' : filters.status}
+              {signalFilters.created_for}
             </div>
           ) : null}
-          {filters.score !== 'All Scores' ? (
+          {signalFilters.status !== 'All Status' ? (
             <div className='undp-chip undp-chip-blue'>
-              Score: {filters.score}
+              {signalFilters.status === 'New'
+                ? 'Awaiting Approval'
+                : signalFilters.status}
             </div>
           ) : null}
-          {filters.created_by !== undefined ? (
-            <div className='undp-chip undp-chip-blue'>{filters.created_by}</div>
+          {signalFilters.score !== 'All Scores' ? (
+            <div className='undp-chip undp-chip-blue'>
+              Score: {signalFilters.score}
+            </div>
+          ) : null}
+          {signalFilters.created_by !== undefined ? (
+            <div className='undp-chip undp-chip-blue'>
+              {signalFilters.created_by}
+            </div>
           ) : null}
           <button
             type='button'
             className='undp-chip'
             onClick={() => {
-              setNoOfFilter(0);
+              updateNoOfSignalsFiltersActive(0);
               setSearchQuery(undefined);
-              setFilters({
+              updateSignalFilters({
                 steep_primary: 'All Primary STEEP+V',
                 steep_secondary: 'All Secondary STEEP+V',
                 sdg: 'All SDGs',
@@ -235,16 +237,12 @@ export function SignalsListing() {
           </button>
         </div>
       ) : null}
-      <AllSignals
-        filters={filters}
-        view={viewType}
-        signalOrderBy={signalSortBy}
-      />
+      <AllSignals view={viewType} />
       <Modal
         className='undp-modal'
         open={showFilterModal}
         onCancel={() => {
-          setTempFilters(filters);
+          setTempFilters(signalFilters);
           setShowFilterModal(false);
         }}
       >
@@ -676,8 +674,8 @@ export function SignalsListing() {
             if (tempFilters.status !== 'All Status') {
               i += 1;
             }
-            setFilters(tempFilters);
-            setNoOfFilter(i);
+            updateSignalFilters(tempFilters);
+            updateNoOfSignalsFiltersActive(i);
             setShowFilterModal(false);
           }}
         >
@@ -731,23 +729,7 @@ export function ArchivedSignalsListing() {
       </div>
       <AuthenticatedTemplate>
         {role === 'Admin' || role === 'Curator' ? (
-          <AllSignals
-            filters={{
-              sdg: 'All SDGs',
-              location: 'All Locations',
-              score: 'All Scores',
-              status: 'Archived',
-              unit_region: 'All Units',
-              steep_primary: 'All Primary STEEP+V',
-              steep_secondary: 'All Secondary STEEP+V',
-              signature_primary: 'All Primary Signature Solutions/Enabler',
-              signature_secondary: 'All Secondary Signature Solutions/Enabler',
-              created_for: 'All Options',
-              created_by: 'All',
-            }}
-            view={viewType}
-            signalOrderBy='modified_at'
-          />
+          <AllSignals isArchived view={viewType} />
         ) : (
           <p className='undp-typography' style={{ color: 'var(--dark-red)' }}>
             Admin rights required to view this page

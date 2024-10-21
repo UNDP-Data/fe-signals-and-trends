@@ -215,24 +215,76 @@ export function SignalCard(props: Props) {
               </button>
             </NavLink>
             <button
-              className='undp-button button-tertiary button-arrow'
-              type='button'
-              onClick={e => {
-                e.stopPropagation();
-                const cardToPrintTemp = [...cardsToPrint];
-                cardToPrintTemp.push({
-                  type: 'signal',
-                  id: `${data.id}`,
-                });
-                updateCardsToPrint(cardToPrintTemp);
-              }}
+              className={`undp-button button-tertiary button-arrow${
+                cardsToPrint.findIndex(
+                  el =>
+                    el.id === `${data.id}` &&
+                    el.mode === 'card' &&
+                    el.type === 'signal',
+                ) !== -1
+                  ? 'disabled'
+                  : ''
+              }`}
+              disabled={
+                cardsToPrint.findIndex(
+                  el =>
+                    el.id === `${data.id}` &&
+                    el.mode === 'card' &&
+                    el.type === 'signal',
+                ) !== -1
+              }
               style={{
+                opacity:
+                  cardsToPrint.findIndex(
+                    el =>
+                      el.id === `${data.id}` &&
+                      el.mode === 'card' &&
+                      el.type === 'signal',
+                  ) !== -1
+                    ? 0.4
+                    : 1,
+                cursor:
+                  cardsToPrint.findIndex(
+                    el =>
+                      el.id === `${data.id}` &&
+                      el.mode === 'card' &&
+                      el.type === 'signal',
+                  ) !== -1
+                    ? 'not-allowed'
+                    : 'pointer',
                 flexGrow: 1,
                 marginBottom: '-1rem',
                 paddingBottom: 0,
               }}
+              type='button'
+              onClick={e => {
+                e.stopPropagation();
+                if (
+                  cardsToPrint.findIndex(
+                    el =>
+                      el.id === `${data.id}` &&
+                      el.mode === 'card' &&
+                      el.type === 'signal',
+                  ) === -1
+                ) {
+                  const cardToPrintTemp = [...cardsToPrint];
+                  cardToPrintTemp.push({
+                    type: 'signal',
+                    mode: 'card',
+                    id: `${data.id}`,
+                  });
+                  updateCardsToPrint(cardToPrintTemp);
+                }
+              }}
             >
-              Download
+              {cardsToPrint.findIndex(
+                el =>
+                  el.id === `${data.id}` &&
+                  el.mode === 'card' &&
+                  el.type === 'signal',
+              ) === -1
+                ? 'Download'
+                : 'Added to PDF'}
             </button>
           </div>
         </div>

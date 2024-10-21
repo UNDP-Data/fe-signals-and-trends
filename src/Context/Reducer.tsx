@@ -23,6 +23,22 @@ export default (state: any, action: any) => {
       return { ...state, cardsToPrint: action.payload };
     case 'UPDATE_IS_ACCELERATOR_LAB':
       return { ...state, isAcceleratorLab: action.payload };
+    case 'UPDATE_TREND_FILTERS':
+      return { ...state, trendFilters: action.payload };
+    case 'UPDATE_SIGNAL_FILTERS':
+      return { ...state, signalFilters: action.payload };
+    case 'UPDATE_NO_OF_TRENDS_FILTERS_ACTIVE':
+      return { ...state, noOfTrendsFiltersActive: action.payload };
+    case 'UPDATE_NO_OF_SIGNALS_FILTERS_ACTIVE':
+      return { ...state, noOfSignalsFiltersActive: action.payload };
+    case 'UPDATE_SIGNALS_SORT_BY':
+      return { ...state, signalsSortBy: action.payload };
+    case 'UPDATE_TRENDS_SORT_BY':
+      return { ...state, trendsSortBy: action.payload };
+    case 'UPDATE_TREND_LIST':
+      return { ...state, trendList: action.payload };
+    case 'UPDATE_SIGNAL_LIST':
+      return { ...state, signalList: action.payload };
     default:
       return { ...state };
   }

@@ -21,6 +21,7 @@ interface HeroImageProps {
 
 const ImageContainerEl = styled.div<HeroImageProps>`
   width: 100%;
+  display: flex;
   @media (max-width: 600px) {
     display: none;
   }
@@ -30,9 +31,9 @@ const HeroImageEl = styled.div<HeroImageProps>`
       props.bgImage ? `url(${props.bgImage})` : `url(${Background})`}
     no-repeat center;
   background-size: cover;
-  height: 0;
-  padding-bottom: 150%;
   filter: brightness(100%);
+  width: 100%;
+  justify-items: stretch;
   &:hover {
     filter: brightness(80%);
     transition: filter 0.2s;
@@ -55,7 +56,7 @@ const CardEl = styled.div`
 const DescriptionEl = styled.p`
   display: -webkit-box;
   max-width: 100%;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 3;
   overflow: hidden;
   word-wrap: break-word;
   -webkit-box-orient: vertical;
@@ -97,7 +98,10 @@ export function TrendCard(props: Props) {
           style={{ alignItems: 'stretch', flexGrow: 1 }}
         >
           <NavLink
-            className='trend-image'
+            className='trend-image flex-div'
+            style={{
+              justifyContent: 'stretch',
+            }}
             to={
               data.status === 'Archived'
                 ? `/archived-trends/${data.id}`
@@ -243,24 +247,76 @@ export function TrendCard(props: Props) {
                   </button>
                 </NavLink>
                 <button
-                  className='undp-button button-tertiary button-arrow padding-bottom-00'
+                  className={`undp-button button-tertiary padding-bottom-00 button-arrow${
+                    cardsToPrint.findIndex(
+                      el =>
+                        el.id === `${data.id}` &&
+                        el.mode === 'card' &&
+                        el.type === 'trend',
+                    ) !== -1
+                      ? 'disabled'
+                      : ''
+                  }`}
                   type='button'
+                  disabled={
+                    cardsToPrint.findIndex(
+                      el =>
+                        el.id === `${data.id}` &&
+                        el.mode === 'card' &&
+                        el.type === 'trend',
+                    ) !== -1
+                  }
                   onClick={e => {
                     e.stopPropagation();
-                    const cardToPrintTemp = [...cardsToPrint];
-                    cardToPrintTemp.push({
-                      type: 'trend',
-                      id: `${data.id}`,
-                    });
-                    updateCardsToPrint(cardToPrintTemp);
+                    if (
+                      cardsToPrint.findIndex(
+                        el =>
+                          el.id === `${data.id}` &&
+                          el.mode === 'card' &&
+                          el.type === 'trend',
+                      ) === -1
+                    ) {
+                      const cardToPrintTemp = [...cardsToPrint];
+                      cardToPrintTemp.push({
+                        type: 'trend',
+                        mode: 'card',
+                        id: `${data.id}`,
+                      });
+                      updateCardsToPrint(cardToPrintTemp);
+                    }
                   }}
                   style={{
+                    opacity:
+                      cardsToPrint.findIndex(
+                        el =>
+                          el.id === `${data.id}` &&
+                          el.mode === 'card' &&
+                          el.type === 'trend',
+                      ) !== -1
+                        ? 0.4
+                        : 1,
+                    cursor:
+                      cardsToPrint.findIndex(
+                        el =>
+                          el.id === `${data.id}` &&
+                          el.mode === 'card' &&
+                          el.type === 'trend',
+                      ) !== -1
+                        ? 'not-allowed'
+                        : 'pointer',
                     flexGrow: 1,
                     marginBottom: '-1rem',
                     paddingBottom: '1rem',
                   }}
                 >
-                  Download
+                  {cardsToPrint.findIndex(
+                    el =>
+                      el.id === `${data.id}` &&
+                      el.mode === 'card' &&
+                      el.type === 'trend',
+                  ) === -1
+                    ? 'Download'
+                    : 'Added to PDF'}
                 </button>
               </div>
             </div>

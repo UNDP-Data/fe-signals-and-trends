@@ -2,14 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useContext } from 'react';
 import UNDPColorModule from 'undp-viz-colors';
-import { TrendDataType } from '../../Types';
 import Context from '../../Context/Context';
 import { ImpactCircleEl } from '../../Components/ImpactRatingEl';
 import { ChipEl } from '../../Components/ChipEl';
-
-interface Props {
-  data: TrendDataType[];
-}
 
 const TableRowEl = styled.div`
   cursor: pointer;
@@ -35,9 +30,8 @@ function formatDate(dateStr: string) {
   })}-${d.getFullYear().toString()}`;
 }
 
-export function ListView(props: Props) {
-  const { data } = props;
-  const { choices } = useContext(Context);
+export function ListView() {
+  const { choices, trendList } = useContext(Context);
   const navigate = useNavigate();
   return (
     <div
@@ -82,7 +76,7 @@ export function ListView(props: Props) {
           <CellDiv>ID</CellDiv>
         </div>
       </div>
-      {data.map((d, i) => (
+      {trendList?.map((d, i) => (
         // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
         <TableRowEl
           className='undp-table-row'
