@@ -5,12 +5,7 @@ import axios, { AxiosError, AxiosResponse } from 'axios';
 import { useEffect, useReducer, useMemo, useState } from 'react';
 import { Footer } from './Components/FooterEl';
 import { SignUpButton } from './Components/SignUpButton';
-import {
-  API_ACCESS_TOKEN,
-  CHOICES,
-  CLIENT_ID,
-  REDIRECT_URL,
-} from './Constants';
+import { API_ACCESS_TOKEN, CHOICES, CLIENT_ID } from './Constants';
 import Context from './Context/Context';
 import Reducer from './Context/Reducer';
 import MainBody from './MainBody';
@@ -27,8 +22,6 @@ import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
 import { signOutClickHandler } from './Utils/SignOutClickHandler';
 
 function App() {
-  // eslint-disable-next-line no-console
-  console.log(REDIRECT_URL, CLIENT_ID);
   const isAuthenticated = useIsAuthenticated();
   const [openModal, setOpenModal] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<string | undefined>(
