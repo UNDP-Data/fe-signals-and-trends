@@ -8,13 +8,12 @@ import {
   Select,
   Tabs,
 } from 'antd';
-import axios, { AxiosResponse } from 'axios';
 import sortBy from 'lodash.sortby';
 import { useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { API_ACCESS_TOKEN } from '../Constants';
 import { TrendDataType, TrendFiltersDataType } from '../Types';
 import Context from '../Context/Context';
+import { searchTrends } from '../api';
 
 interface Props {
   setTrendModal: (_d: boolean) => void;
@@ -36,7 +35,7 @@ const RadioOutline = styled.div`
 
 export function AddTrendsModal(props: Props) {
   const { setTrendModal, selectedTrendsList, setSelectedTrendsList } = props;
-  const { accessToken, choices } = useContext(Context);
+  const { choices } = useContext(Context);
   const [paginationValue, setPaginationValue] = useState(1);
   const [activeTab, setActiveTab] = useState('1');
   const [pageSize, setPageSize] = useState(20);
@@ -68,17 +67,11 @@ export function AddTrendsModal(props: Props) {
     if (ids?.length > 0 && ids[0] !== '') {
       setLoading(true);
       setError(undefined);
-      const trendsIds = ids.toString().replaceAll(',', '&ids=');
-      axios
-        .get(
-          `https://signals-and-trends-api.azurewebsites.net/v1/trends/fetch?ids=${trendsIds}`,
-          {
-            headers: {
-              access_token: accessToken || API_ACCESS_TOKEN,
-            },
-          },
-        )
-        .then((response: AxiosResponse) => {
+      const trendsIds = ids
+        .map(id => Number(id))
+        .filter(id => !Number.isNaN(id));
+      searchTrends({ ids: trendsIds })
+        .then(response => {
           setTrendsList(
             sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
           );
@@ -123,63 +116,58 @@ export function AddTrendsModal(props: Props) {
       });
     }
   };
+
+  const getQueryParams = () => {
+    const params: Record<string, unknown> = {
+      page: paginationValue,
+      per_page: pageSize,
+      statuses: ['Approved'],
+    };
+
+    if (filters.horizon !== 'All Horizons') {
+      params.time_horizon = filters.horizon;
+    }
+    if (filters.impact !== 'All Ratings') {
+      params.impact_rating = filters.impact;
+    }
+    if (filters.steep_primary !== 'All Primary STEEP+V') {
+      params.steep_primary = filters.steep_primary;
+    }
+    if (filters.steep_secondary !== 'All Secondary STEEP+V') {
+      params.steep_secondary = filters.steep_secondary;
+    }
+    if (
+      filters.signature_primary !== 'All Primary Signature Solutions/Enabler'
+    ) {
+      params.signature_primary = filters.signature_primary;
+    }
+    if (
+      filters.signature_secondary !==
+      'All Secondary Signature Solutions/Enabler'
+    ) {
+      params.signature_secondary = filters.signature_secondary;
+    }
+    if (filters.sdg !== 'All SDGs') {
+      params.sdgs = filters.sdg;
+    }
+    if (filters.created_for !== 'All Options') {
+      params.created_for = filters.created_for;
+    }
+    if (filters.search) {
+      params.query = filters.search;
+    }
+
+    return params;
+  };
+
   useEffect(() => {
     setLoading(true);
     setError(undefined);
-    const horizonQueryParameter =
-      filters.horizon === 'All Horizons'
-        ? ''
-        : `&time_horizon=${filters.horizon.replace('+', '%2B')}`;
-    const ratingQueryParameter =
-      filters.impact === 'All Ratings'
-        ? ''
-        : `&impact_rating=${filters.impact}`;
-    const steepPrimaryQueryParameter =
-      filters.steep_primary === 'All Primary STEEP+V'
-        ? ''
-        : `&steep_primary=${filters.steep_primary}`;
-    const steepSecondaryQueryParameter =
-      filters.steep_secondary === 'All Secondary STEEP+V'
-        ? ''
-        : `&steep_secondary=${filters.steep_secondary}`;
-    const ss1QueryParameter =
-      filters.signature_primary === 'All Primary Signature Solutions/Enabler'
-        ? ''
-        : `&signature_primary=${filters.signature_primary.replaceAll(
-            ' ',
-            '%20',
-          )}`;
-    const ss2QueryParameter =
-      filters.signature_secondary ===
-      'All Secondary Signature Solutions/Enabler'
-        ? ''
-        : `&signature_secondary=${filters.signature_secondary.replaceAll(
-            ' ',
-            '%20',
-          )}`;
-    const sdgQueryParameter =
-      filters.sdg === 'All SDGs'
-        ? ''
-        : `&sdgs=${filters.sdg.replaceAll(' ', '%20')}`;
-    const createdForQueryParameter =
-      filters.created_for === 'All Options'
-        ? ''
-        : `&created_for=${filters.created_for.replaceAll(' ', '%20')}`;
-    const searchQueryParameter = filters.search
-      ? `&query=${filters.search}`
-      : '';
-    axios
-      .get(
-        `https://signals-and-trends-api.azurewebsites.net/v1/trends/list?page=${paginationValue}&per_page=${pageSize}&statuses=Approved${horizonQueryParameter}${ratingQueryParameter}${steepPrimaryQueryParameter}${steepSecondaryQueryParameter}${sdgQueryParameter}${ss1QueryParameter}${ss2QueryParameter}${createdForQueryParameter}${searchQueryParameter}`,
-        {
-          headers: {
-            access_token: accessToken || API_ACCESS_TOKEN,
-          },
-        },
-      )
-      .then((response: AxiosResponse) => {
+
+    searchTrends(getQueryParams())
+      .then(response => {
         setTrendsList(
-          sortBy(response.data.data, d => Date.parse(d.created_at)).reverse(),
+          sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
         );
         setLoading(false);
       })
@@ -199,65 +187,17 @@ export function AddTrendsModal(props: Props) {
         }
       });
   }, [paginationValue]);
+
   useEffect(() => {
     setLoading(true);
     setError(undefined);
-    const horizonQueryParameter =
-      filters.horizon === 'All Horizons'
-        ? ''
-        : `&time_horizon=${filters.horizon.replace('+', '%2B')}`;
-    const ratingQueryParameter =
-      filters.impact === 'All Ratings'
-        ? ''
-        : `&impact_rating=${filters.impact}`;
-    const steepPrimaryQueryParameter =
-      filters.steep_primary === 'All Primary STEEP+V'
-        ? ''
-        : `&steep_primary=${filters.steep_primary}`;
-    const steepSecondaryQueryParameter =
-      filters.steep_secondary === 'All Secondary STEEP+V'
-        ? ''
-        : `&steep_secondary=${filters.steep_secondary}`;
-    const ss1QueryParameter =
-      filters.signature_primary === 'All Primary Signature Solutions/Enabler'
-        ? ''
-        : `&signature_primary=${filters.signature_primary.replaceAll(
-            ' ',
-            '%20',
-          )}`;
-    const ss2QueryParameter =
-      filters.signature_secondary ===
-      'All Secondary Signature Solutions/Enabler'
-        ? ''
-        : `&signature_secondary=${filters.signature_secondary.replaceAll(
-            ' ',
-            '%20',
-          )}`;
-    const sdgQueryParameter =
-      filters.sdg === 'All SDGs'
-        ? ''
-        : `&sdgs=${filters.sdg.replaceAll(' ', '%20')}`;
-    const createdForQueryParameter =
-      filters.created_for === 'All Options'
-        ? ''
-        : `&created_for=${filters.created_for.replaceAll(' ', '%20')}`;
-    const searchQueryParameter = filters.search
-      ? `&query=${filters.search}`
-      : '';
-    axios
-      .get(
-        `https://signals-and-trends-api.azurewebsites.net/v1/trends/list?page=1&per_page=${pageSize}&statuses=Approved${horizonQueryParameter}${ratingQueryParameter}${steepPrimaryQueryParameter}${steepSecondaryQueryParameter}${sdgQueryParameter}${ss1QueryParameter}${ss2QueryParameter}${createdForQueryParameter}${searchQueryParameter}`,
-        {
-          headers: {
-            access_token: accessToken || API_ACCESS_TOKEN,
-          },
-        },
-      )
-      .then((response: AxiosResponse) => {
+
+    searchTrends(getQueryParams())
+      .then(response => {
         setTrendsList(
-          sortBy(response.data.data, d => Date.parse(d.created_at)).reverse(),
+          sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
         );
-        setTotalNoOfPages(response.data.total_pages);
+        setTotalNoOfPages(response.total_pages);
         setPaginationValue(1);
         setLoading(false);
       })
@@ -277,6 +217,7 @@ export function AddTrendsModal(props: Props) {
         }
       });
   }, [filters, pageSize]);
+
   return (
     <Modal
       className='undp-modal'
@@ -347,7 +288,7 @@ export function AddTrendsModal(props: Props) {
                     >
                       All Horizons
                     </Select.Option>
-                    {choices?.horizons.map(d => (
+                    {choices?.horizon.map(d => (
                       <Select.Option className='undp-select-option' key={d}>
                         {d}
                       </Select.Option>
@@ -380,7 +321,7 @@ export function AddTrendsModal(props: Props) {
                     >
                       All Ratings
                     </Select.Option>
-                    {choices?.ratings.map(d => (
+                    {choices?.rating.map(d => (
                       <Select.Option className='undp-select-option' key={d}>
                         {d}
                       </Select.Option>
@@ -410,7 +351,7 @@ export function AddTrendsModal(props: Props) {
                     >
                       All Primary STEEP+V
                     </Select.Option>
-                    {choices?.steepv.map(d => (
+                    {choices?.steep.map(d => (
                       <Select.Option className='undp-select-option' key={d}>
                         {d}
                       </Select.Option>
@@ -442,7 +383,7 @@ export function AddTrendsModal(props: Props) {
                     >
                       All Secondary STEEP+V
                     </Select.Option>
-                    {choices?.steepv.map(d => (
+                    {choices?.steep.map(d => (
                       <Select.Option className='undp-select-option' key={d}>
                         {d}
                       </Select.Option>
@@ -474,7 +415,7 @@ export function AddTrendsModal(props: Props) {
                     >
                       All Primary Signature Solutions/Enabler
                     </Select.Option>
-                    {choices?.signatures.map(d => (
+                    {choices?.signature.map(d => (
                       <Select.Option className='undp-select-option' key={d}>
                         {d}
                       </Select.Option>
@@ -506,7 +447,7 @@ export function AddTrendsModal(props: Props) {
                     >
                       All Secondary Signature Solutions/Enabler
                     </Select.Option>
-                    {choices?.signatures.map(d => (
+                    {choices?.signature.map(d => (
                       <Select.Option className='undp-select-option' key={d}>
                         {d}
                       </Select.Option>
@@ -539,7 +480,7 @@ export function AddTrendsModal(props: Props) {
                     >
                       All SDGs
                     </Select.Option>
-                    {choices?.sdgs.map(d => (
+                    {choices?.goal.map(d => (
                       <Select.Option className='undp-select-option' key={d}>
                         {d}
                       </Select.Option>
