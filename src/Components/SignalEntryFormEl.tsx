@@ -1,14 +1,19 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { Input, Select, Popconfirm } from 'antd';
-import axios, { AxiosResponse } from 'axios';
 import sortBy from 'lodash.sortby';
 import { useNavigate } from 'react-router-dom';
 import { useContext, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { API_ACCESS_TOKEN } from '../Constants';
 import { NewSignalDataType, SignalDataType, TrendDataType } from '../Types';
 import { AddTrendsModal } from './AddTrendsModal';
 import Context from '../Context/Context';
+import {
+  createSignal,
+  updateSignal as updateSignalApi,
+  deleteSignal,
+  // generateSignal,
+  searchTrends,
+} from '../api';
 
 interface Props {
   updateSignal?: SignalDataType;
@@ -133,8 +138,10 @@ export function isSignalInvalid(
 }
 
 export function SignalEntryFormEl(props: Props) {
+  const navigate = useNavigate();
+
   const { updateSignal, draft } = props;
-  const { userName, role, accessToken, updateNotificationText, choices, unit } =
+  const { userName, role, updateNotificationText, choices, unit } =
     useContext(Context);
   // const [loading, setLoading] = useState(false);
   // const [error, setError] = useState(false);
@@ -163,7 +170,6 @@ export function SignalEntryFormEl(props: Props) {
       created_for: undefined,
     },
   );
-  const navigate = useNavigate();
   const [buttonDisabled, setButtonDisabled] = useState(false);
   // const [acceptTOS, setAcceptTOS] = useState(false);
   const [trendsList, setTrendsList] = useState<undefined | TrendDataType[]>(
@@ -185,16 +191,10 @@ export function SignalEntryFormEl(props: Props) {
   const [keyword3, setKeyword3] = useState<string | undefined>(
     updateSignal?.keywords ? updateSignal?.keywords[2] || undefined : undefined,
   );
+
   const confirmDelete = (id: number, navigatePath: string) => {
-    axios({
-      method: 'delete',
-      url: `https://signals-and-trends-api.azurewebsites.net/v1/signals/delete?ids=${id}`,
-      data: {},
-      headers: {
-        'Content-Type': 'application/json',
-        access_token: accessToken,
-      },
-    })
+    setButtonDisabled(true);
+    deleteSignal(id)
       .then(() => {
         setButtonDisabled(false);
         navigate(navigatePath);
@@ -209,22 +209,22 @@ export function SignalEntryFormEl(props: Props) {
         );
       });
   };
+
   useEffect(() => {
     if (selectedTrendsList.length > 0) {
-      axios
-        .get(
-          `https://signals-and-trends-api.azurewebsites.net/v1/trends/fetch?ids=${selectedTrendsList.join(
-            '&ids=',
-          )}`,
-          {
-            headers: {
-              access_token: accessToken || API_ACCESS_TOKEN,
-            },
-          },
-        )
-        .then((response: AxiosResponse) => {
+      searchTrends({ ids: selectedTrendsList })
+        .then(response => {
           setTrendsList(
             sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
+          );
+        })
+        .catch(err => {
+          setSubmittingError(
+            `Error code ${err.response?.status}: ${err.response?.data}. ${
+              err.response?.status === 500
+                ? 'Please try again in some time'
+                : ''
+            }`,
           );
         });
     } else {
@@ -263,7 +263,7 @@ export function SignalEntryFormEl(props: Props) {
 
         const tosRes = await axios.get(
           `https://s.jina.ai/${rootUrl}+terms+of+service`,
-        );
+        ); // TODO: use generateSignal call 
         const tos = tosRes.data;
         console.log(rootUrl, tos);
         const firstSearch = getStringBeforeSubstring(tos, '[2] Title:');
@@ -520,7 +520,7 @@ export function SignalEntryFormEl(props: Props) {
             value={signalData.location}
             showSearch
           >
-            {choices?.locations.map((d, i) => (
+            {choices?.location.map((d, i) => (
               <Select.Option className='undp-select-option' key={i} value={d}>
                 {d}
               </Select.Option>
@@ -563,7 +563,7 @@ export function SignalEntryFormEl(props: Props) {
             }}
             value={signalData.steep_primary}
           >
-            {choices?.steepv.map((d, i) => (
+            {choices?.steep.map((d, i) => (
               <Select.Option className='undp-select-option' key={i} value={d}>
                 {d}
               </Select.Option>
@@ -604,7 +604,7 @@ export function SignalEntryFormEl(props: Props) {
               : undefined
           }
         >
-          {choices?.steepv.map((d, i) => (
+          {choices?.steep.map((d, i) => (
             <Select.Option className='undp-select-option' key={i} value={d}>
               {d}
             </Select.Option>
@@ -714,7 +714,7 @@ export function SignalEntryFormEl(props: Props) {
             }}
             value={signalData.signature_primary}
           >
-            {choices?.signatures.map((d, i) => (
+            {choices?.signature.map((d, i) => (
               <Select.Option className='undp-select-option' key={i} value={d}>
                 {d}
               </Select.Option>
@@ -753,7 +753,7 @@ export function SignalEntryFormEl(props: Props) {
             clearIcon={<div className='clearIcon' />}
             allowClear
           >
-            {choices?.signatures.map((d, i) => (
+            {choices?.signature.map((d, i) => (
               <Select.Option className='undp-select-option' key={i} value={d}>
                 {d}
               </Select.Option>
@@ -791,7 +791,7 @@ export function SignalEntryFormEl(props: Props) {
               : undefined
           }
         >
-          {choices?.sdgs.map((d, i) => (
+          {choices?.goal.map((d, i) => (
             <Select.Option className='undp-select-option' key={i} value={d}>
               {d}
             </Select.Option>
@@ -816,7 +816,7 @@ export function SignalEntryFormEl(props: Props) {
             }}
             value={signalData.score}
           >
-            {choices?.scores.map((d, i) => (
+            {choices?.score.map((d, i) => (
               <Select.Option className='undp-select-option' key={i} value={d}>
                 {d}
               </Select.Option>
@@ -916,7 +916,7 @@ export function SignalEntryFormEl(props: Props) {
           }}
           value={signalData.created_unit}
         >
-          {choices?.unit_names.map((d, i) => (
+          {choices?.unit_name.map((d, i) => (
             <Select.Option className='undp-select-option' key={i} value={d}>
               {d}
             </Select.Option>
@@ -969,21 +969,13 @@ export function SignalEntryFormEl(props: Props) {
                   // submit signal
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
-                  axios({
-                    method: 'put',
-                    url: `https://signals-and-trends-api.azurewebsites.net/v1/signals/update`,
-                    data: {
-                      ...signalData,
-                      connected_trends: selectedTrendsList,
-                      status: 'New',
-                      keywords: [keyword1, keyword2, keyword3].filter(
-                        d => d !== null && d !== undefined,
-                      ),
-                    },
-                    headers: {
-                      'Content-Type': 'application/json',
-                      access_token: accessToken,
-                    },
+                  updateSignalApi(updateSignal.id, {
+                    ...signalData,
+                    connected_trends: selectedTrendsList,
+                    status: 'New',
+                    keywords: [keyword1, keyword2, keyword3].filter(
+                      (d): d is string => d !== null && d !== undefined,
+                    ),
                   })
                     .then(() => {
                       setButtonDisabled(false);
@@ -1015,21 +1007,13 @@ export function SignalEntryFormEl(props: Props) {
                   // save as draft
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
-                  axios({
-                    method: 'put',
-                    url: `https://signals-and-trends-api.azurewebsites.net/v1/signals/update`,
-                    data: {
-                      ...signalData,
-                      connected_trends: selectedTrendsList,
-                      keywords: [keyword1, keyword2, keyword3].filter(
-                        d => d !== null && d !== undefined,
-                      ),
-                      status: 'Draft',
-                    },
-                    headers: {
-                      'Content-Type': 'application/json',
-                      access_token: accessToken,
-                    },
+                  updateSignalApi(updateSignal.id, {
+                    ...signalData,
+                    connected_trends: selectedTrendsList,
+                    keywords: [keyword1, keyword2, keyword3].filter(
+                      (d): d is string => d !== null && d !== undefined,
+                    ),
+                    status: 'Draft',
                   })
                     .then(() => {
                       setButtonDisabled(false);
@@ -1093,20 +1077,12 @@ export function SignalEntryFormEl(props: Props) {
                 // update signal
                 setButtonDisabled(true);
                 setSubmittingError(undefined);
-                axios({
-                  method: 'put',
-                  url: `https://signals-and-trends-api.azurewebsites.net/v1/signals/update`,
-                  data: {
-                    ...signalData,
-                    connected_trends: selectedTrendsList,
-                    keywords: [keyword1, keyword2, keyword3].filter(
-                      d => d !== null && d !== undefined,
-                    ),
-                  },
-                  headers: {
-                    'Content-Type': 'application/json',
-                    access_token: accessToken,
-                  },
+                updateSignalApi(updateSignal.id, {
+                  ...signalData,
+                  connected_trends: selectedTrendsList,
+                  keywords: [keyword1, keyword2, keyword3].filter(
+                    (d): d is string => d !== null && d !== undefined,
+                  ),
                 })
                   .then(() => {
                     setButtonDisabled(false);
@@ -1151,21 +1127,24 @@ export function SignalEntryFormEl(props: Props) {
               onClick={() => {
                 setButtonDisabled(true);
                 setSubmittingError(undefined);
-                axios({
-                  method: 'post',
-                  url: `https://signals-and-trends-api.azurewebsites.net/v1/signals/submit`,
-                  data: {
-                    ...signalData,
-                    connected_trends: selectedTrendsList,
-                    status: 'New',
-                    keywords: [keyword1, keyword2, keyword3].filter(
-                      d => d !== null && d !== undefined,
-                    ),
-                  },
-                  headers: {
-                    'Content-Type': 'application/json',
-                    access_token: accessToken,
-                  },
+                createSignal({
+                  headline: signalData?.headline || '',
+                  description: signalData?.description || '',
+                  attachment: signalData?.attachment || '',
+                  steep_primary: signalData?.steep_primary || '',
+                  signature_primary: signalData?.signature_primary || '',
+                  signature_secondary: signalData?.signature_secondary || [],
+                  sdgs: signalData?.sdgs || [],
+                  created_unit: signalData.created_unit || '',
+                  url: signalData?.url || '',
+                  relevance: signalData?.relevance || '',
+                  created_for: signalData?.created_for || '',
+                  location: signalData?.location || '',
+                  connected_trends: selectedTrendsList,
+                  status: 'New',
+                  keywords: [keyword1, keyword2, keyword3].filter(
+                    (d): d is string => d !== null && d !== undefined,
+                  ),
                 })
                   .then(() => {
                     setButtonDisabled(false);
@@ -1196,21 +1175,24 @@ export function SignalEntryFormEl(props: Props) {
               onClick={() => {
                 setButtonDisabled(true);
                 setSubmittingError(undefined);
-                axios({
-                  method: 'post',
-                  url: `https://signals-and-trends-api.azurewebsites.net/v1/signals/submit`,
-                  data: {
-                    ...signalData,
-                    connected_trends: selectedTrendsList,
-                    status: 'Draft',
-                    keywords: [keyword1, keyword2, keyword3].filter(
-                      d => d !== null && d !== undefined,
-                    ),
-                  },
-                  headers: {
-                    'Content-Type': 'application/json',
-                    access_token: accessToken,
-                  },
+                createSignal({
+                  headline: signalData?.headline || '',
+                  description: signalData?.description || '',
+                  attachment: signalData?.attachment || '',
+                  steep_primary: signalData?.steep_primary || '',
+                  signature_primary: signalData?.signature_primary || '',
+                  signature_secondary: signalData?.signature_secondary || [],
+                  sdgs: signalData?.sdgs || [],
+                  created_unit: signalData.created_unit || '',
+                  url: signalData?.url || '',
+                  relevance: signalData?.relevance || '',
+                  created_for: signalData?.created_for || '',
+                  location: signalData?.location || '',
+                  connected_trends: selectedTrendsList,
+                  status: 'Draft',
+                  keywords: [keyword1, keyword2, keyword3].filter(
+                    (d): d is string => d !== null && d !== undefined,
+                  ),
                 })
                   .then(() => {
                     setButtonDisabled(false);
