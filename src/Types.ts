@@ -71,6 +71,9 @@ export interface TrendDataType {
   impact_rating: string;
   impact_description: string;
   connected_signals: number[];
+  keywords?: string[];
+  location?: string;
+  relevance?: string;
 }
 export interface NewTrendDataType {
   id?: number;
@@ -93,6 +96,9 @@ export interface NewTrendDataType {
   impact_rating?: string;
   impact_description?: string;
   connected_signals: number[];
+  keywords?: string[];
+  location?: string;
+  relevance?: string;
 }
 
 export interface UserDataType {
@@ -105,6 +111,9 @@ export interface UserDataType {
 }
 
 export interface SignalFiltersDataType {
+  horizon?: string;
+  impact?: string;
+  bureau?: string;
   steep_primary: 'All Primary STEEP+V' | string;
   steep_secondary: 'All Secondary STEEP+V' | string;
   sdg: 'All SDGs' | string;
@@ -134,17 +143,17 @@ export interface TrendFiltersDataType {
 }
 
 export interface ChoicesDataType {
-  horizons: string[];
+  horizon: string[];
   created_for: string[];
-  locations: string[];
-  ratings: string[];
-  roles: string[];
-  sdgs: string[];
-  signatures: string[];
-  steepv: string[];
-  unit_names: string[];
-  unit_regions: string[];
-  scores: string[];
+  location: string[];
+  rating: string[];
+  role: string[];
+  goal: string[];
+  signature: string[];
+  steep: string[];
+  unit_name: string[];
+  unit_region: string[];
+  score: string[];
 }
 
 export interface CardsToPrintDataType {
@@ -198,4 +207,208 @@ export interface ObjForPrintingDataType {
   type: 'trend' | 'signal';
   mode: 'card' | 'detail';
   data: SignalDataType | TrendDataType;
+}
+
+export interface BaseSignalsParams {
+  page?: number;
+  per_page?: number;
+  order_by?: string;
+  direction?: 'desc' | 'asc';
+  ids?: number[];
+  statuses?: ('Draft' | 'New' | 'Approved' | 'Archived')[];
+  created_by?: string;
+  created_for?: string;
+  steep_primary?: string;
+  steep_secondary?: string[];
+  signature_primary?: string;
+  signature_secondary?: string[];
+  sdgs?: string[];
+  query?: string;
+  location?: string;
+  bureau?: string;
+  score?: string;
+  unit?: string;
+}
+
+export interface SignalsSearchResponse {
+  current_page: number;
+  per_page: number;
+  total_pages: number;
+  total_count: number;
+  data: SignalDataType[];
+}
+
+export interface ReadMySignalsParams {
+  status: 'Draft' | 'New' | 'Approved' | 'Archived';
+}
+
+export interface CreateSignalParams {
+  headline: string;
+  description: string;
+  attachment?: string;
+  steep_primary: string;
+  steep_secondary?: string[];
+  signature_primary: string;
+  signature_secondary?: string[];
+  sdgs: string[];
+  created_unit: string;
+  url: string;
+  relevance: string;
+  keywords: string[];
+  location: string;
+  score?: string;
+  created_for?: string;
+  status: string;
+  connected_trends: number[];
+}
+
+export interface UpdateSignalParams {
+  attachment?: string;
+  description?: string;
+  headline?: string;
+  keywords?: string[];
+  location?: string;
+  relevance?: string;
+  sdgs?: string[];
+  signature_primary?: string;
+  signature_secondary?: string[];
+  steep?: string;
+  url?: string;
+  connected_trends?: number[];
+  status?: string;
+  modified_by?: string;
+  steep_primary?: string;
+  steep_secondary?: string[];
+  assigned_to?: string;
+  score?: string;
+}
+
+export interface BaseTrendsParams {
+  page?: number;
+  per_page?: number;
+  order_by?: string;
+  direction?: 'asc' | 'desc';
+  statuses?: string[];
+  ids?: number[];
+  created_by?: string;
+  created_for?: string;
+  steep_primary?: string;
+  steep_secondary?: string[];
+  signature_primary?: string;
+  signature_secondary?: string[];
+  sdgs?: string[];
+  query?: string;
+  assigned_to?: string;
+  time_horizon?: string;
+  impact_rating?: string;
+}
+
+export interface TrendSearchResponse {
+  per_page: number;
+  current_page: number;
+  total_pages: number;
+  total_count: number;
+  data: TrendDataType[];
+}
+
+export interface CreateTrendParams {
+  description: string;
+  headline: string;
+  impact_description: string;
+  impact_rating: string;
+  time_horizon: string;
+  sdgs: string[];
+  status: string;
+  attachment?: string;
+  keywords?: string[];
+  location?: string;
+  relevance?: string;
+  signature_primary?: string;
+  signature_secondary?: string[];
+  steep?: string;
+  modified_by?: string;
+  steep_primary?: string;
+  steep_secondary?: string[];
+  assigned_to?: string;
+  connected_signals?: number[];
+}
+
+export interface UpdateTrendParams {
+  description: string;
+  headline: string;
+  impact_description: string;
+  impact_rating: string;
+  time_horizon: string;
+  sdgs?: string[];
+  status?: string;
+  attachment?: string;
+  keywords?: string[];
+  location?: string;
+  relevance?: string;
+  signature_primary?: string;
+  signature_secondary?: string[];
+  steep?: string;
+  modified_by?: string;
+  steep_primary?: string;
+  steep_secondary?: string[];
+  assigned_to?: string;
+  connected_signals?: number[];
+}
+
+export type AllowedRoles = 'Admin' | 'Curator' | 'User' | 'Visitor';
+
+export interface SearchUsersParams {
+  page?: number;
+  per_page?: number;
+  order_by?: string;
+  direction?: 'desc' | 'asc';
+  roles?: AllowedRoles[];
+  query?: string;
+}
+
+export interface UserSearchResponse {
+  per_page: number;
+  current_page: number;
+  total_pages: number;
+  total_count: number;
+  data: UserDataType[];
+}
+
+export interface CurrentUserResponse {
+  acclab: boolean;
+  email: string;
+  id: number;
+  name: string;
+  role: 'Admin' | 'Curator' | 'User' | 'Visitor';
+  unit: string;
+}
+
+export interface ReadUserParams {
+  uid: number;
+}
+
+export interface UserDataTypeResponse {
+  acclab: boolean;
+  email: string;
+  id: number;
+  name: string;
+  role: string;
+  unit: string;
+}
+
+export interface UpdateUserParams {
+  acclab?: boolean;
+  email?: string;
+  name?: string;
+  role?: 'Admin' | 'Curator' | 'User' | 'Visitor';
+  id?: number;
+  unit?: string;
+}
+
+export interface UpdateUserResponse {
+  acclab: boolean;
+  email: string;
+  name: string;
+  role: string;
+  unit: string;
 }
