@@ -49,6 +49,11 @@ interface Props {
 
 export function SignalCardPage(props: Props) {
   const { data } = props;
+
+  if (!data) {
+    return <Text>No data available</Text>;
+  }
+
   return (
     <Page style={styles.page} size={[430, 400]} orientation='landscape'>
       <View
@@ -59,7 +64,7 @@ export function SignalCardPage(props: Props) {
       >
         <Image
           src={
-            data.attachment ||
+            data?.attachment ||
             'https://signals.data.undp.org/UNDP-hero-image.jpg'
           }
           style={{
