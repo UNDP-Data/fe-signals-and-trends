@@ -269,7 +269,7 @@ export function TrendsListing() {
                 >
                   All Primary STEEP+V
                 </Select.Option>
-                {choices?.steepv.map(d => (
+                {choices?.steep.map(d => (
                   <Select.Option className='undp-select-option' key={d}>
                     {d}
                   </Select.Option>
@@ -310,7 +310,7 @@ export function TrendsListing() {
                 >
                   All Secondary STEEP+V
                 </Select.Option>
-                {choices?.steepv.map(d => (
+                {choices?.steep.map(d => (
                   <Select.Option className='undp-select-option' key={d}>
                     {d}
                   </Select.Option>
@@ -354,7 +354,7 @@ export function TrendsListing() {
                 >
                   All Primary Signature Solutions/Enabler
                 </Select.Option>
-                {choices?.signatures.map(d => (
+                {choices?.signature.map(d => (
                   <Select.Option className='undp-select-option' key={d}>
                     {d}
                   </Select.Option>
@@ -396,7 +396,7 @@ export function TrendsListing() {
                 >
                   All Secondary Signature Solutions/Enabler
                 </Select.Option>
-                {choices?.signatures.map(d => (
+                {choices?.signature.map(d => (
                   <Select.Option className='undp-select-option' key={d}>
                     {d}
                   </Select.Option>
@@ -428,7 +428,7 @@ export function TrendsListing() {
               <Select.Option className='undp-select-option' key='All SDGs'>
                 All SDGs
               </Select.Option>
-              {choices?.sdgs.map(d => (
+              {choices?.goal.map(d => (
                 <Select.Option className='undp-select-option' key={d}>
                   {d}
                 </Select.Option>
@@ -459,7 +459,7 @@ export function TrendsListing() {
               <Select.Option className='undp-select-option' key='All Ratings'>
                 All Ratings
               </Select.Option>
-              {choices?.ratings.map(d => (
+              {choices?.rating.map(d => (
                 <Select.Option className='undp-select-option' key={d}>
                   {d}
                 </Select.Option>
@@ -490,7 +490,7 @@ export function TrendsListing() {
               <Select.Option className='undp-select-option' key='All Horizons'>
                 All Horizons
               </Select.Option>
-              {choices?.horizons.map(d => (
+              {choices?.horizon.map(d => (
                 <Select.Option className='undp-select-option' key={d}>
                   {d}
                 </Select.Option>

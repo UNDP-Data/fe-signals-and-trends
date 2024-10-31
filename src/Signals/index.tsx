@@ -281,7 +281,7 @@ export function SignalsListing() {
                 >
                   All Primary STEEP+V
                 </Select.Option>
-                {choices?.steepv.map(d => (
+                {choices?.steep.map(d => (
                   <Select.Option className='undp-select-option' key={d}>
                     {d}
                   </Select.Option>
@@ -322,7 +322,7 @@ export function SignalsListing() {
                 >
                   All Secondary STEEP+V
                 </Select.Option>
-                {choices?.steepv.map(d => (
+                {choices?.steep.map(d => (
                   <Select.Option className='undp-select-option' key={d}>
                     {d}
                   </Select.Option>
@@ -366,7 +366,7 @@ export function SignalsListing() {
                 >
                   All Primary Signature Solutions/Enabler
                 </Select.Option>
-                {choices?.signatures.map(d => (
+                {choices?.signature.map(d => (
                   <Select.Option className='undp-select-option' key={d}>
                     {d}
                   </Select.Option>
@@ -408,7 +408,7 @@ export function SignalsListing() {
                 >
                   All Secondary Signature Solutions/Enabler
                 </Select.Option>
-                {choices?.signatures.map(d => (
+                {choices?.signature.map(d => (
                   <Select.Option className='undp-select-option' key={d}>
                     {d}
                   </Select.Option>
@@ -440,7 +440,7 @@ export function SignalsListing() {
               <Select.Option className='undp-select-option' key='All SDGs'>
                 All SDGs
               </Select.Option>
-              {choices?.sdgs.map(d => (
+              {choices?.goal.map(d => (
                 <Select.Option className='undp-select-option' key={d}>
                   {d}
                 </Select.Option>
@@ -474,7 +474,7 @@ export function SignalsListing() {
                 }}
                 clearIcon={<div className='clearIcon' />}
               >
-                {choices?.locations.map(d => (
+                {choices?.location.map(d => (
                   <Select.Option className='undp-select-option' key={d}>
                     {d}
                   </Select.Option>
@@ -511,14 +511,14 @@ export function SignalsListing() {
                   All Units
                 </Select.Option>
                 <Select.OptGroup label='Parent units'>
-                  {choices?.unit_regions.map(d => (
+                  {choices?.unit_region.map(d => (
                     <Select.Option className='undp-select-option' key={d}>
                       {d}
                     </Select.Option>
                   ))}
                 </Select.OptGroup>
                 <Select.OptGroup label='Units'>
-                  {choices?.unit_names.map(d => (
+                  {choices?.unit_name.map(d => (
                     <Select.Option className='undp-select-option' key={d}>
                       {d}
                     </Select.Option>
@@ -588,7 +588,7 @@ export function SignalsListing() {
                   >
                     All Scores
                   </Select.Option>
-                  {choices?.scores.map(d => (
+                  {choices?.score.map(d => (
                     <Select.Option className='undp-select-option' key={d}>
                       {d}
                     </Select.Option>
