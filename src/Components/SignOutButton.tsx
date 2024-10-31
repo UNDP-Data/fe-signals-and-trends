@@ -1,9 +1,9 @@
 import { AuthenticatedTemplate } from '@azure/msal-react';
 import { Dropdown, Input, MenuProps, Modal, Select, Switch } from 'antd';
-import axios, { AxiosError } from 'axios';
 import { useContext, useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import Context from '../Context/Context';
+import { updateUser } from '../api';
 
 interface Props {
   signOutClickHandler: () => void;
@@ -19,7 +19,6 @@ export function SignOutButton(props: Props) {
     unit,
     updateName,
     updateUnit,
-    accessToken,
     userID,
     updateNotificationText,
     updateIsAcceleratorLab,
@@ -310,7 +309,7 @@ export function SignOutButton(props: Props) {
               value={selectedUnit || unit}
               showSearch
             >
-              {choices?.unit_names.map((d, i) => (
+              {choices?.unit_name.map((d, i) => (
                 <Select.Option className='undp-select-option' key={i} value={d}>
                   {d}
                 </Select.Option>
@@ -353,42 +352,35 @@ export function SignOutButton(props: Props) {
             onClick={() => {
               setButtonDisabled(true);
               setSubmittingError(undefined);
-              axios({
-                method: 'put',
-                url: 'https://signals-and-trends-api.azurewebsites.net/v1/users/update',
-                data: {
+              if (userID)
+                updateUser(userID, {
                   email: userName,
                   name: nameOfUser,
                   unit: selectedUnit,
                   role,
                   id: userID,
                   acclab: acceleratorLab,
-                },
-                headers: {
-                  'Content-Type': 'application/json',
-                  access_token: accessToken,
-                },
-              })
-                .then(() => {
-                  setOpenModal(false);
-                  setButtonDisabled(false);
-                  updateName(nameOfUser);
-                  updateUnit(selectedUnit);
-                  updateIsAcceleratorLab(acceleratorLab);
-                  updateNotificationText('Successfully updated the profile');
                 })
-                .catch((err: AxiosError) => {
-                  setButtonDisabled(false);
-                  setSubmittingError(
-                    `Error code ${err.response?.status}: ${
-                      err.response?.data
-                    }. ${
-                      err.response?.status === 500
-                        ? 'Please try again in some time'
-                        : ''
-                    }`,
-                  );
-                });
+                  .then(() => {
+                    setOpenModal(false);
+                    setButtonDisabled(false);
+                    updateName(nameOfUser);
+                    updateUnit(selectedUnit);
+                    updateIsAcceleratorLab(acceleratorLab);
+                    updateNotificationText('Successfully updated the profile');
+                  })
+                  .catch(err => {
+                    setButtonDisabled(false);
+                    setSubmittingError(
+                      `Error code ${err.response?.status}: ${
+                        err.response?.data
+                      }. ${
+                        err.response?.status === 500
+                          ? 'Please try again in some time'
+                          : ''
+                      }`,
+                    );
+                  });
             }}
           >
             Update Profile
