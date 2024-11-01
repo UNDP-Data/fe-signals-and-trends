@@ -63,10 +63,7 @@ export function SignalCardPage(props: Props) {
         }}
       >
         <Image
-          src={
-            data?.attachment ||
-            'https://signals.data.undp.org/UNDP-hero-image.jpg'
-          }
+          src={data?.attachment || '../assets/UNDP-hero-image.jpg'}
           style={{
             width: '100%',
             maxHeight: 200,

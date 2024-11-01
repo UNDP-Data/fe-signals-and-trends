@@ -67,10 +67,7 @@ export function TrendCardPage(props: Props) {
           }}
         >
           <Image
-            src={
-              data.attachment ||
-              'https://signals.data.undp.org/UNDP-hero-image.jpg'
-            }
+            src={data?.attachment || '../assets/UNDP-hero-image.jpg'}
             style={{
               width: '200px',
               height: '230px',
@@ -95,7 +92,9 @@ export function TrendCardPage(props: Props) {
             }}
           >
             <View>
-              <Text style={styles.titleFirst}>{data.headline}</Text>
+              <Text style={styles.titleFirst}>
+                {data?.headline || 'loading...'}
+              </Text>
               <Text
                 style={{
                   fontSize: 10.5,
@@ -108,7 +107,7 @@ export function TrendCardPage(props: Props) {
                   lineHeight: 1.5,
                 }}
               >
-                {data.description}
+                {data?.description || 'loading...'}
               </Text>
             </View>
             <View
@@ -131,7 +130,9 @@ export function TrendCardPage(props: Props) {
                 >
                   Time horizon
                 </Text>
-                <Text style={styles.tagText}>{data.time_horizon}</Text>
+                <Text style={styles.tagText}>
+                  {data?.time_horizon || 'loading...'}
+                </Text>
               </View>
               <View>
                 <Text
@@ -147,7 +148,7 @@ export function TrendCardPage(props: Props) {
                 >
                   Impact
                 </Text>
-                {data.impact_rating ? (
+                {data?.impact_rating ? (
                   <>
                     <View
                       style={{
