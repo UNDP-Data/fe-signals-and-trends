@@ -76,7 +76,11 @@ function MainBody() {
         .filter(d => d.type === 'signal')
         .map(d => Number(d.id))
         .filter(id => !Number.isNaN(id));
-      searchSignals({ ids: signalIds })
+      searchSignals({
+        ids: signalIds,
+        statuses: ['Approved', 'Archived', 'Draft', 'New'],
+        per_page: signalIds.length,
+      })
         .then(res => {
           const sList: string[] = [];
           res.data.forEach((d: SignalDataType) => {
@@ -89,7 +93,11 @@ function MainBody() {
           });
           if (sList.length > 0) {
             const connectedTrends = sList.map(id => Number(id));
-            searchTrends({ ids: connectedTrends })
+            searchTrends({
+              ids: connectedTrends,
+              statuses: ['Approved', 'Archived', 'Draft', 'New'],
+              per_page: connectedTrends.length,
+            })
               .then(trendRes => {
                 setConnectedTrendsForSignalsForPrinting(trendRes.data);
                 setSignalsForPrinting(res.data);
@@ -114,7 +122,11 @@ function MainBody() {
         .filter(d => d.type === 'trend')
         .map(d => Number(d.id))
         .filter(id => !Number.isNaN(id));
-      searchTrends({ ids: signalIds })
+      searchTrends({
+        ids: signalIds,
+        statuses: ['Approved', 'Archived', 'Draft', 'New'],
+        per_page: signalIds.length,
+      })
         .then(res => {
           const sList: string[] = [];
           res.data.forEach((d: TrendDataType) => {
@@ -129,7 +141,11 @@ function MainBody() {
             const connectedSignals = sList
               .map(id => Number(id))
               .filter(id => !Number.isNaN(id));
-            searchSignals({ ids: connectedSignals })
+            searchSignals({
+              ids: connectedSignals,
+              statuses: ['Approved', 'Archived', 'Draft', 'New'],
+              per_page: connectedSignals.length,
+            })
               .then(trendRes => {
                 setConnectedSignalsForTrendsForPrinting(trendRes.data);
                 setTrendsForPrinting(res.data);
@@ -357,12 +373,14 @@ function MainBody() {
                         {d.mode === 'card' ? 'Card View' : 'Detail View'}
                       </p>
                     </div>
-                    <h6 className='undp-typography'>{s.headline}</h6>
+                    <h6 className='undp-typography'>
+                      {s?.headline || 'loading...'}
+                    </h6>
                     <p
                       className='undp-typography margin-bottom-07 small-font'
                       style={{ textAlign: 'left' }}
                     >
-                      {s.description}
+                      {s?.description || 'loading...'}
                     </p>
                     <button
                       type='button'
