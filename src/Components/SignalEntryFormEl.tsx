@@ -212,7 +212,11 @@ export function SignalEntryFormEl(props: Props) {
 
   useEffect(() => {
     if (selectedTrendsList.length > 0) {
-      searchTrends({ ids: selectedTrendsList })
+      searchTrends({
+        ids: selectedTrendsList,
+        per_page: selectedTrendsList.length,
+        statuses: ['Approved', 'Archived', 'Draft', 'New'],
+      })
         .then(response => {
           setTrendsList(
             sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
@@ -969,33 +973,46 @@ export function SignalEntryFormEl(props: Props) {
                   // submit signal
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
-                  updateSignalApi(updateSignal.id, {
-                    ...signalData,
-                    connected_trends: selectedTrendsList,
-                    status: 'New',
-                    keywords: [keyword1, keyword2, keyword3].filter(
-                      (d): d is string => d !== null && d !== undefined,
-                    ),
-                  })
-                    .then(() => {
-                      setButtonDisabled(false);
-                      navigate('/signals');
-                      updateNotificationText(
-                        'Successfully submitted the signal for review',
-                      );
+                  if (signalData.id)
+                    updateSignalApi(updateSignal.id, {
+                      // ...signalData,
+                      id: signalData.id,
+                      headline: signalData?.headline || '',
+                      description: signalData?.description || '',
+                      attachment: signalData?.attachment || '',
+                      steep_primary: signalData?.steep_primary || '',
+                      signature_primary: signalData?.signature_primary || '',
+                      signature_secondary:
+                        signalData?.signature_secondary || [],
+                      sdgs: signalData?.sdgs || [],
+                      url: signalData?.url || '',
+                      relevance: signalData?.relevance || '',
+                      location: signalData?.location || '',
+                      connected_trends: selectedTrendsList,
+                      status: 'New',
+                      keywords: [keyword1, keyword2, keyword3].filter(
+                        (d): d is string => d !== null && d !== undefined,
+                      ),
                     })
-                    .catch(err => {
-                      setButtonDisabled(false);
-                      setSubmittingError(
-                        `Error code ${err.response?.status}: ${
-                          err.response?.data
-                        }. ${
-                          err.response?.status === 500
-                            ? 'Please try again in some time'
-                            : ''
-                        }`,
-                      );
-                    });
+                      .then(() => {
+                        setButtonDisabled(false);
+                        navigate('/signals');
+                        updateNotificationText(
+                          'Successfully submitted the signal for review',
+                        );
+                      })
+                      .catch(err => {
+                        setButtonDisabled(false);
+                        setSubmittingError(
+                          `Error code ${err.response?.status}: ${
+                            err.response?.data
+                          }. ${
+                            err.response?.status === 500
+                              ? 'Please try again in some time'
+                              : ''
+                          }`,
+                        );
+                      });
                 }}
               >
                 Submit Signal
@@ -1007,33 +1024,46 @@ export function SignalEntryFormEl(props: Props) {
                   // save as draft
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
-                  updateSignalApi(updateSignal.id, {
-                    ...signalData,
-                    connected_trends: selectedTrendsList,
-                    keywords: [keyword1, keyword2, keyword3].filter(
-                      (d): d is string => d !== null && d !== undefined,
-                    ),
-                    status: 'Draft',
-                  })
-                    .then(() => {
-                      setButtonDisabled(false);
-                      navigate('/my-drafts');
-                      updateNotificationText(
-                        'Successfully saved the signal to draft',
-                      );
+                  if (signalData.id)
+                    updateSignalApi(updateSignal.id, {
+                      // ...signalData,
+                      id: signalData.id,
+                      headline: signalData?.headline || '',
+                      description: signalData?.description || '',
+                      attachment: signalData?.attachment || '',
+                      steep_primary: signalData?.steep_primary || '',
+                      signature_primary: signalData?.signature_primary || '',
+                      signature_secondary:
+                        signalData?.signature_secondary || [],
+                      sdgs: signalData?.sdgs || [],
+                      url: signalData?.url || '',
+                      relevance: signalData?.relevance || '',
+                      location: signalData?.location || '',
+                      connected_trends: selectedTrendsList,
+                      keywords: [keyword1, keyword2, keyword3].filter(
+                        (d): d is string => d !== null && d !== undefined,
+                      ),
+                      status: 'Draft',
                     })
-                    .catch(err => {
-                      setButtonDisabled(false);
-                      setSubmittingError(
-                        `Error code ${err.response?.status}: ${
-                          err.response?.data
-                        }. ${
-                          err.response?.status === 500
-                            ? 'Please try again in some time'
-                            : ''
-                        }`,
-                      );
-                    });
+                      .then(() => {
+                        setButtonDisabled(false);
+                        navigate('/my-drafts');
+                        updateNotificationText(
+                          'Successfully saved the signal to draft',
+                        );
+                      })
+                      .catch(err => {
+                        setButtonDisabled(false);
+                        setSubmittingError(
+                          `Error code ${err.response?.status}: ${
+                            err.response?.data
+                          }. ${
+                            err.response?.status === 500
+                              ? 'Please try again in some time'
+                              : ''
+                          }`,
+                        );
+                      });
                 }}
               >
                 Save Signal as Draft
@@ -1077,30 +1107,45 @@ export function SignalEntryFormEl(props: Props) {
                 // update signal
                 setButtonDisabled(true);
                 setSubmittingError(undefined);
-                updateSignalApi(updateSignal.id, {
-                  ...signalData,
-                  connected_trends: selectedTrendsList,
-                  keywords: [keyword1, keyword2, keyword3].filter(
-                    (d): d is string => d !== null && d !== undefined,
-                  ),
-                })
-                  .then(() => {
-                    setButtonDisabled(false);
-                    navigate(`/signals/${updateSignal.id}`);
-                    updateNotificationText('Successfully updated the signal');
+                if (signalData.id)
+                  updateSignalApi(updateSignal.id, {
+                    // ...signalData,
+                    id: signalData.id,
+                    headline: signalData?.headline || '',
+                    description: signalData?.description || '',
+                    attachment: signalData?.attachment || '',
+                    steep_primary: signalData?.steep_primary || '',
+                    signature_primary: signalData?.signature_primary || '',
+                    signature_secondary: signalData?.signature_secondary || [],
+                    sdgs: signalData?.sdgs || [],
+                    url: signalData?.url || '',
+                    relevance: signalData?.relevance || '',
+                    location: signalData?.location || '',
+                    status: signalData?.status || '',
+                    created_for: signalData?.created_for || '',
+                    created_unit: signalData?.created_unit || '',
+                    connected_trends: selectedTrendsList,
+                    keywords: [keyword1, keyword2, keyword3].filter(
+                      (d): d is string => d !== null && d !== undefined,
+                    ),
                   })
-                  .catch(err => {
-                    setButtonDisabled(false);
-                    setSubmittingError(
-                      `Error code ${err.response?.status}: ${
-                        err.response?.data
-                      }. ${
-                        err.response?.status === 500
-                          ? 'Please try again in some time'
-                          : ''
-                      }`,
-                    );
-                  });
+                    .then(() => {
+                      setButtonDisabled(false);
+                      navigate(`/signals/${updateSignal.id}`);
+                      updateNotificationText('Successfully updated the signal');
+                    })
+                    .catch(err => {
+                      setButtonDisabled(false);
+                      setSubmittingError(
+                        `Error code ${err.response?.status}: ${
+                          err.response?.data
+                        }. ${
+                          err.response?.status === 500
+                            ? 'Please try again in some time'
+                            : ''
+                        }`,
+                      );
+                    });
               }}
             >
               Update Signal

@@ -155,7 +155,11 @@ export function TrendEntryFormEl(props: Props) {
         .map(id => Number(id))
         .filter(id => !Number.isNaN(id));
 
-      searchSignals({ ids: signalIds }).then(res => {
+      searchSignals({
+        ids: signalIds,
+        per_page: signalIds.length,
+        statuses: ['Approved', 'Archived', 'Draft', 'New'],
+      }).then(res => {
         setConnectedSignals(res.data);
       });
     } else {
@@ -208,6 +212,7 @@ export function TrendEntryFormEl(props: Props) {
 
   const buildUpdateTrendParams = (): UpdateTrendParams => {
     return {
+      id: trendData.id || 0,
       description: trendData.description || '',
       headline: trendData.headline || '',
       impact_description: trendData.impact_description || '',
