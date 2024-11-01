@@ -36,7 +36,7 @@ function App() {
     undefined,
   );
   const [accLabs, setAccLabs] = useState(false);
-  const [expiresOn, setExpiresOn] = useState<Date | undefined>(undefined);
+
   const initialState = {
     userName: undefined,
     name: undefined,
@@ -201,16 +201,7 @@ function App() {
     });
   };
   const { accounts, instance } = useMsal();
-  useEffect(() => {
-    getChoices()
-      .then(data => {
-        updateChoices(data);
-      })
-      .catch(err => {
-        // eslint-disable-next-line no-console
-        console.warn(err);
-      });
-  }, []);
+
   useEffect(() => {
     if (isAuthenticated) {
       const accessTokenRequest = {
@@ -232,8 +223,18 @@ function App() {
 
             updateAccessToken(accessTokenResponse.accessToken);
             setAccessTokenTemp(accessTokenResponse.accessToken);
-            setExpiresOn(accessTokenResponse.expiresOn as Date);
             updateExpiresOn(accessTokenResponse.expiresOn as Date);
+          })
+          .then(() => {
+            getChoices()
+              .then(data => {
+                updateChoices(data);
+              })
+              .catch(err => {
+                // eslint-disable-next-line no-console
+                console.warn(err);
+              });
+
             readCurrentUser()
               .then((data: CurrentUserResponse) => {
                 updateUserName(data.email);
@@ -254,33 +255,6 @@ function App() {
                   setOpenModal(true);
                 }
               });
-            setInterval(async () => {
-              const now = new Date().getTime() / 1000;
-              if (expiresOn && expiresOn.getTime() / 1000 < now) {
-                try {
-                  const refreshedAccessToken =
-                    await instance.acquireTokenSilent({
-                      ...accessTokenRequest,
-                      forceRefresh: true,
-                    });
-                  localStorage.setItem(
-                    'token',
-                    accessTokenResponse.accessToken,
-                  );
-                  if (accessTokenResponse.expiresOn) {
-                    localStorage.setItem(
-                      'tokenExp',
-                      accessTokenResponse.expiresOn.toISOString(),
-                    );
-                  }
-                  updateAccessToken(refreshedAccessToken.accessToken);
-                  setExpiresOn(refreshedAccessToken.expiresOn as Date);
-                  updateExpiresOn(refreshedAccessToken.expiresOn as Date);
-                } catch (error) {
-                  // eslint-disable-next-line no-console
-                }
-              }
-            }, 60000);
           })
           .catch(_error => {
             setLoginError(true);

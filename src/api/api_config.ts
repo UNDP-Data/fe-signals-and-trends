@@ -24,11 +24,18 @@ axiosInstance.interceptors.request.use(
     const accessTokenExp = localStorage.getItem('tokenExp');
 
     if (!accessToken || Number(accessTokenExp) < Date.now() / 1000) {
-      const [newAccessToken, newAccessTokenExp] = await refreshHandler();
-      if (newAccessToken && newAccessTokenExp) {
-        config.headers.access_token = newAccessToken;
-        localStorage.setItem('token', String(newAccessToken));
-        localStorage.setItem('tokenExp', String(newAccessTokenExp));
+      try {
+        const [newAccessToken, newAccessTokenExp] = await refreshHandler();
+
+        if (newAccessToken && newAccessTokenExp) {
+          config.headers.access_token = newAccessToken;
+          localStorage.setItem('token', String(newAccessToken));
+          localStorage.setItem('tokenExp', String(newAccessTokenExp));
+        } else {
+          throw new Error('Failed to refresh access token');
+        }
+      } catch (error) {
+        return Promise.reject(error);
       }
     } else {
       config.headers.access_token = accessToken;

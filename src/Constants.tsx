@@ -324,5 +324,3 @@ export const WEB_ADDRESS = 'https://signals.data.undp.org';
 export const API_BASEURL = import.meta.env.VITE_API_BASEURL;
 // export const CLIENT_ID = process.env.INPUT_MSAL_CLIENT_ID;
 export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
-// export const REDIRECT_URL = process.env.INPUT_REDIRECT_URI_FOR_MSAL;
-export const REDIRECT_URL = import.meta.env.VITE_REDIRECT_URL;

@@ -2,8 +2,9 @@ import { PublicClientApplication } from '@azure/msal-browser';
 import { msalConfig } from '../Config';
 import { CLIENT_ID } from '../Constants';
 
+const msalInstance = new PublicClientApplication(msalConfig);
+
 export function signOutClickHandler() {
-  const msalInstance = new PublicClientApplication(msalConfig);
   const logoutRequest = {
     postLogoutRedirectUri: '/',
   };
@@ -13,11 +14,14 @@ export function signOutClickHandler() {
 }
 
 export async function refreshHandler() {
-  const msalInstance = new PublicClientApplication(msalConfig);
+  try {
+    const res = await msalInstance.acquireTokenSilent({
+      scopes: [`${CLIENT_ID}/.default`],
+    });
 
-  const res = await msalInstance.acquireTokenSilent({
-    scopes: [`${CLIENT_ID}/.default`],
-  });
-
-  return [res.accessToken, res.expiresOn];
+    return [res.accessToken, res.expiresOn];
+  } catch (error) {
+    localStorage.removeItem('token');
+    return [];
+  }
 }
