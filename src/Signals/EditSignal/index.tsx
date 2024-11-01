@@ -9,7 +9,7 @@ import { SignalEntryFormEl } from '../../Components/SignalEntryFormEl';
 import { SignInButton } from '../../Components/SignInButton';
 import Context from '../../Context/Context';
 import { SignalDataType, StatusList } from '../../Types';
-import { searchSignals } from '../../api';
+import { readSignal } from '../../api';
 
 export function EditSignal() {
   const navigate = useNavigate();
@@ -21,9 +21,9 @@ export function EditSignal() {
   const [err, setError] = useState<any>(undefined);
   useEffect(() => {
     if (isAuthenticated) {
-      searchSignals({ ids: [Number(id)] })
+      readSignal(Number(id))
         .then(response => {
-          setSignal(response.data[0]);
+          setSignal(response);
         })
         .catch(error => {
           setError(error.toJSON());

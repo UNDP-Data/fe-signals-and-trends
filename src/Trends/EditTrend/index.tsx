@@ -9,7 +9,7 @@ import { SignInButton } from '../../Components/SignInButton';
 import { TrendEntryFormEl } from '../../Components/TrendEntryFormEl';
 import Context from '../../Context/Context';
 import { TrendDataType } from '../../Types';
-import { searchTrends } from '../../api';
+import { readTrend } from '../../api';
 
 export function EditTrend() {
   const navigate = useNavigate();
@@ -23,9 +23,9 @@ export function EditTrend() {
     if (isAuthenticated) {
       setError(undefined);
 
-      searchTrends({ ids: [Number(id)] })
+      readTrend(Number(id))
         .then(response => {
-          setTrend(response.data[0]);
+          setTrend(response);
         })
         .catch(err => {
           setError(
