@@ -263,13 +263,14 @@ export interface CreateSignalParams {
 }
 
 export interface UpdateSignalParams {
+  id: number;
   attachment?: string;
-  description?: string;
-  headline?: string;
-  keywords?: string[];
+  description: string;
+  headline: string;
+  keywords: string[];
   location?: string;
   relevance?: string;
-  sdgs?: string[];
+  sdgs: string[];
   signature_primary?: string;
   signature_secondary?: string[];
   steep?: string;
@@ -277,9 +278,11 @@ export interface UpdateSignalParams {
   connected_trends?: number[];
   status?: string;
   modified_by?: string;
-  steep_primary?: string;
+  steep_primary: string;
   steep_secondary?: string[];
   assigned_to?: string;
+  created_for?: string;
+  created_unit?: string;
   score?: string;
 }
 
@@ -334,6 +337,7 @@ export interface CreateTrendParams {
 }
 
 export interface UpdateTrendParams {
+  id: number;
   description: string;
   headline: string;
   impact_description: string;
