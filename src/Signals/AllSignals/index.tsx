@@ -42,11 +42,11 @@ export function AllSignals(props: Props) {
           : 'asc',
       statuses: isArchived
         ? ['Archived']
-        : role === 'Curator' || role === 'Admin'
-        ? signalFilters.status === 'All Status'
-          ? ['New', 'Approved']
-          : [signalFilters.status]
-        : ['Approved'],
+        : signalFilters.status === 'All Status'
+        ? role === 'Curator' || role === 'Admin'
+          ? ['New', 'Approved', 'Archived']
+          : ['Approved', 'New', 'Archived']
+        : [signalFilters.status],
     };
 
     if (signalFilters.steep_primary !== 'All Primary STEEP+V') {

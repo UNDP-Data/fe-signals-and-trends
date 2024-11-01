@@ -49,8 +49,8 @@ export function AllTrends(props: Props) {
         ? ['Archived']
         : trendFilters.status === 'All Status'
         ? role === 'Admin' || role === 'Curator'
-          ? ['Approved', 'New']
-          : ['Approved']
+          ? ['Approved', 'New', 'Archived']
+          : ['Approved', 'New', 'Archived']
         : [trendFilters.status],
     };
 
