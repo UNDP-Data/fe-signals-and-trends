@@ -282,6 +282,7 @@ export interface UpdateSignalParams {
   steep_secondary?: string[];
   assigned_to?: string;
   created_for?: string;
+  created_by: string;
   created_unit?: string;
   score?: string;
 }
@@ -356,6 +357,7 @@ export interface UpdateTrendParams {
   steep_primary?: string;
   steep_secondary?: string[];
   assigned_to?: string;
+  created_by?: string;
   connected_signals?: number[];
 }
 
