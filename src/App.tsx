@@ -264,6 +264,23 @@ function App() {
       }
     }
   }, [isAuthenticated, instance]);
+
+  useEffect(() => {
+    const checkTokenExpiration = () => {
+      const accessTokenExp = localStorage.getItem('tokenExp');
+      if (accessTokenExp && Number(accessTokenExp) < Date.now() / 1000) {
+        dispatch({ type: 'LOGOUT' });
+        signOutClickHandler();
+      }
+    };
+
+    checkTokenExpiration();
+
+    const interval = setInterval(checkTokenExpiration, 60000);
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated, instance]);
+
   const contextValue = useMemo(
     () => ({
       ...state,
