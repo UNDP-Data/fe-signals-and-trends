@@ -45,7 +45,7 @@ interface HeroImageProps {
 
 const UploadedImgEl = styled.div<HeroImageProps>`
   background: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)),
-    ${props => `url(data:${props.bgImage})`} no-repeat center;
+    ${props => `url(${props.bgImage})`} no-repeat center;
   background-size: cover;
   width: 7.5rem;
   height: 7.5rem;
@@ -197,40 +197,56 @@ export function TrendEntryFormEl(props: Props) {
       time_horizon: trendData.time_horizon || '',
       sdgs: trendData.sdgs || [],
       status: 'New',
-      attachment: trendData.attachment,
-      keywords: trendData.keywords || [],
-      location: trendData.location || '',
-      relevance: trendData.relevance || '',
-      signature_primary: trendData.signature_primary || '',
+      attachment: trendData.attachment || undefined,
+      keywords: trendData.keywords,
+      location: trendData.location,
+      relevance: trendData.relevance,
+      signature_primary: trendData.signature_primary,
       signature_secondary: trendData.signature_secondary || undefined,
-      steep_primary: trendData.steep_primary || '',
+      steep_primary: trendData.steep_primary,
       steep_secondary: trendData.steep_secondary || undefined,
-      assigned_to: trendData.assigned_to || '',
-      connected_signals: trendsSignal || [],
+      assigned_to: trendData.assigned_to || undefined,
+      connected_signals: trendsSignal || undefined,
     };
   };
 
   const buildUpdateTrendParams = (): UpdateTrendParams => {
-    return {
+    const params: UpdateTrendParams = {
       id: trendData.id || 0,
       description: trendData.description || '',
       headline: trendData.headline || '',
       impact_description: trendData.impact_description || '',
+      signature_primary: trendData.signature_primary,
       impact_rating: trendData.impact_rating || '',
       time_horizon: trendData.time_horizon || '',
-      sdgs: trendData.sdgs || [],
+      sdgs: trendData.sdgs,
+      steep_primary: trendData.steep_primary,
       status: trendData.status,
-      attachment: trendData.attachment,
-      keywords: trendData.keywords || [],
-      location: trendData.location || '',
-      relevance: trendData.relevance || '',
-      signature_primary: trendData.signature_primary || '',
-      signature_secondary: trendData.signature_secondary || undefined,
-      steep_primary: trendData.steep_primary || '',
-      steep_secondary: trendData.steep_secondary || undefined,
-      assigned_to: trendData.assigned_to || '',
-      connected_signals: trendsSignal || [],
+      keywords: trendData.keywords,
+      location: trendData.location,
+      relevance: trendData.relevance,
+      created_by: trendData.created_by,
+      assigned_to: trendData?.assigned_to || undefined,
+      connected_signals:
+        connectedSignal?.map(signal => Number(signal.id)) || undefined,
     };
+
+    if (trendData.attachment) {
+      params.attachment = trendData.attachment;
+    }
+
+    if (
+      trendData.signature_secondary &&
+      trendData.signature_secondary.length > 0
+    ) {
+      params.signature_secondary = trendData.signature_secondary;
+    }
+
+    if (trendData.steep_secondary && trendData.steep_secondary.length > 0) {
+      params.steep_secondary = trendData.steep_secondary;
+    }
+
+    return params;
   };
 
   return (

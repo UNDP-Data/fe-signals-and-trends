@@ -61,7 +61,7 @@ interface HeroImageProps {
 
 const UploadedImgEl = styled.div<HeroImageProps>`
   background: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)),
-    ${props => `url(data:${props.bgImage})`} no-repeat center;
+    ${props => `url(${props.bgImage})`} no-repeat center;
   background-size: cover;
   width: 7.5rem;
   height: 7.5rem;
@@ -988,6 +988,7 @@ export function SignalEntryFormEl(props: Props) {
                       url: signalData?.url || '',
                       relevance: signalData?.relevance || '',
                       location: signalData?.location || '',
+                      created_by: signalData?.created_by || '',
                       connected_trends: selectedTrendsList,
                       status: 'New',
                       keywords: [keyword1, keyword2, keyword3].filter(
@@ -1039,6 +1040,7 @@ export function SignalEntryFormEl(props: Props) {
                       url: signalData?.url || '',
                       relevance: signalData?.relevance || '',
                       location: signalData?.location || '',
+                      created_by: signalData?.created_by || '',
                       connected_trends: selectedTrendsList,
                       keywords: [keyword1, keyword2, keyword3].filter(
                         (d): d is string => d !== null && d !== undefined,
@@ -1113,7 +1115,7 @@ export function SignalEntryFormEl(props: Props) {
                     id: signalData.id,
                     headline: signalData?.headline || '',
                     description: signalData?.description || '',
-                    attachment: signalData?.attachment || '',
+                    attachment: signalData?.attachment || undefined,
                     steep_primary: signalData?.steep_primary || '',
                     signature_primary: signalData?.signature_primary || '',
                     signature_secondary: signalData?.signature_secondary || [],
@@ -1122,6 +1124,7 @@ export function SignalEntryFormEl(props: Props) {
                     relevance: signalData?.relevance || '',
                     location: signalData?.location || '',
                     status: signalData?.status || '',
+                    created_by: signalData.created_by || '',
                     created_for: signalData?.created_for || '',
                     created_unit: signalData?.created_unit || '',
                     connected_trends: selectedTrendsList,
