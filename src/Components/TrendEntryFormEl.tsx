@@ -197,7 +197,7 @@ export function TrendEntryFormEl(props: Props) {
       time_horizon: trendData.time_horizon || '',
       sdgs: trendData.sdgs || [],
       status: 'New',
-      attachment: trendData.attachment || undefined,
+      attachment: trendData.attachment,
       keywords: trendData.keywords,
       location: trendData.location,
       relevance: trendData.relevance,
