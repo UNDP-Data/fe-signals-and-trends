@@ -1,18 +1,21 @@
-import { CLIENT_ID } from './Constants';
+import { CLIENT_ID, CLIENT_SECRET, AUTHORITY } from './Constants';
 
 export const msalConfig = {
   auth: {
     clientId: CLIENT_ID as string,
-    clientSecret: process.env.INPUT_CLIENT_SECRET_FOR_MSAL as string,
+    authority: AUTHORITY as string,
+    clientSecret: CLIENT_SECRET as string,
     redirectUri: '/',
     postLogoutRedirectUri: '/',
-    authority:
-      'https://login.microsoftonline.com/b3e5db5e-2944-4837-99f5-7488ace54319',
+    navigateToLoginRequestUrl: false,
   },
+
   cache: {
     cacheLocation: 'localStorage',
     storeAuthStateInCookie: false,
   },
+
+  piiLoggingEnabled: false,
 };
 
 export const loginRequest = {
