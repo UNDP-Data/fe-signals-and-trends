@@ -117,7 +117,10 @@ export function exportSignals(params: BaseSignalsParams = {}) {
   if (unit) queryParams.unit = unit;
 
   return axiosInstance
-    .get<string>('/signals/export', { params: queryParams })
+    .get<string>('/signals/export', {
+      params: queryParams,
+      responseType: 'blob',
+    })
     .then(response => response.data)
     .catch(error => {
       if (isAxiosError(error)) {
