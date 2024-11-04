@@ -989,6 +989,7 @@ export function SignalEntryFormEl(props: Props) {
                       relevance: signalData?.relevance || '',
                       location: signalData?.location || '',
                       created_by: signalData?.created_by || '',
+                      score: signalData?.score || '',
                       connected_trends: selectedTrendsList,
                       status: 'New',
                       keywords: [keyword1, keyword2, keyword3].filter(
@@ -1040,6 +1041,7 @@ export function SignalEntryFormEl(props: Props) {
                       url: signalData?.url || '',
                       relevance: signalData?.relevance || '',
                       location: signalData?.location || '',
+                      score: signalData?.score || '',
                       created_by: signalData?.created_by || '',
                       connected_trends: selectedTrendsList,
                       keywords: [keyword1, keyword2, keyword3].filter(
@@ -1126,6 +1128,7 @@ export function SignalEntryFormEl(props: Props) {
                     status: signalData?.status || '',
                     created_by: signalData.created_by || '',
                     created_for: signalData?.created_for || '',
+                    score: signalData?.score || '',
                     created_unit: signalData?.created_unit || '',
                     connected_trends: selectedTrendsList,
                     keywords: [keyword1, keyword2, keyword3].filter(

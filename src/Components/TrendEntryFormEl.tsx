@@ -206,6 +206,7 @@ export function TrendEntryFormEl(props: Props) {
       steep_primary: trendData.steep_primary,
       steep_secondary: trendData.steep_secondary || undefined,
       assigned_to: trendData.assigned_to || undefined,
+      created_for: trendData.created_for || undefined,
       connected_signals: trendsSignal || undefined,
     };
   };
@@ -217,15 +218,19 @@ export function TrendEntryFormEl(props: Props) {
       headline: trendData.headline || '',
       impact_description: trendData.impact_description || '',
       signature_primary: trendData.signature_primary,
+      signature_secondary: trendData.signature_secondary,
       impact_rating: trendData.impact_rating || '',
       time_horizon: trendData.time_horizon || '',
       sdgs: trendData.sdgs,
+      attachment: trendData.attachment,
       steep_primary: trendData.steep_primary,
+      steep_secondary: trendData.steep_secondary,
       status: trendData.status,
       keywords: trendData.keywords,
       location: trendData.location,
       relevance: trendData.relevance,
       created_by: trendData.created_by,
+      created_for: trendData.created_for || undefined,
       assigned_to: trendData?.assigned_to || undefined,
       connected_signals:
         connectedSignal?.map(signal => Number(signal.id)) || undefined,
