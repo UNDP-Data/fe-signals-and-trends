@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     env:
-      VITE_API_BASEURL: ${{ github.ref == 'refs/heads/production' && secrets.VITE_API_BASEURL || secrets.VITE_API_BASEURL_STAGING }}
-      VITE_CLIENT_ID: ${{ github.ref == 'refs/heads/production' && secrets.VITE_CLIENT_ID || secrets.VITE_CLIENT_ID }}
-      VITE_AUTHORITY: ${{ github.ref == 'refs/heads/production' && secrets.VITE_AUTHORITY || secrets.VITE_AUTHORITY }}
-      VITE_CLIENT_SECRET: ${{ github.ref == 'refs/heads/production' && secrets.CLIENT_SECRET_FOR_MSAL || secrets.CLIENT_SECRET_FOR_MSAL }}
+      VITE_API_BASEURL: ${{ github.ref == 'refs/heads/production' && secrets.VITE_API_BASEURL_PRODUCTION || secrets.VITE_API_BASEURL_STAGING }}
+      VITE_CLIENT_ID: ${{ secrets.VITE_CLIENT_ID }}
+      VITE_AUTHORITY: ${{ secrets.VITE_AUTHORITY }}
+      VITE_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET_FOR_MSAL }}
     steps:
       - uses: actions/checkout@v3
         with:
