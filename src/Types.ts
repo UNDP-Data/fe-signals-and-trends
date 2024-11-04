@@ -334,6 +334,7 @@ export interface CreateTrendParams {
   steep_primary?: string;
   steep_secondary?: string[];
   assigned_to?: string;
+  created_for?: string;
   connected_signals?: number[];
 }
 
@@ -358,6 +359,7 @@ export interface UpdateTrendParams {
   steep_secondary?: string[];
   assigned_to?: string;
   created_by?: string;
+  created_for?: string;
   connected_signals?: number[];
 }
 

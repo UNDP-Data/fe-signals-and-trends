@@ -129,7 +129,10 @@ export function exportTrends(params: BaseTrendsParams = {}) {
   if (impact_rating) queryParams.impact_rating = impact_rating;
 
   return axiosInstance
-    .get<string>('/trends/export', { params: queryParams })
+    .get<string>('/trends/export', {
+      params: queryParams,
+      responseType: 'blob',
+    })
     .then(response => response.data)
     .catch(error => {
       if (isAxiosError(error)) {
