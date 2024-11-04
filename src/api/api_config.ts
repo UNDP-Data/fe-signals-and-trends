@@ -2,7 +2,10 @@
 import axios from 'axios';
 import QueryString from 'qs';
 import { API_BASEURL } from '../Constants';
-import { refreshHandler } from '../Utils/AuthStatusHandler';
+import {
+  refreshHandler,
+  signOutClickHandler,
+} from '../Utils/AuthStatusHandler';
 
 export const axiosInstance = axios.create({
   baseURL: API_BASEURL,
@@ -15,7 +18,7 @@ export const axiosInstance = axios.create({
       return QueryString.stringify(params, { arrayFormat: 'repeat' });
     },
   },
-  timeout: 10000,
+  timeout: 60000,
 });
 
 axiosInstance.interceptors.request.use(
@@ -35,7 +38,8 @@ axiosInstance.interceptors.request.use(
           throw new Error('Failed to refresh access token');
         }
       } catch (error) {
-        return Promise.reject(error);
+        await signOutClickHandler();
+        throw error;
       }
     } else {
       config.headers.access_token = accessToken;
