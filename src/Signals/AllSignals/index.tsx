@@ -1,11 +1,10 @@
 import { useContext, useEffect, useState } from 'react';
 import { Modal, Pagination, PaginationProps } from 'antd';
-import axios, { AxiosResponse } from 'axios';
 import sortBy from 'lodash.sortby';
 import { CardList } from './GridView';
 import { ListView } from './ListView';
-import { API_ACCESS_TOKEN } from '../../Constants';
 import Context from '../../Context/Context';
+import { exportSignals, searchSignals } from '../../api';
 
 interface Props {
   view: 'cardView' | 'listView';
@@ -30,91 +29,86 @@ export function AllSignals(props: Props) {
   } = useContext(Context);
   const [error, setError] = useState<undefined | string>(undefined);
 
-  const GetURL = (isExportLink: boolean) => {
-    const steepPrimaryQueryParameter =
-      signalFilters.steep_primary === 'All Primary STEEP+V'
-        ? ''
-        : `&steep_primary=${signalFilters.steep_primary}`;
-    const steepSecondaryQueryParameter =
-      signalFilters.steep_secondary === 'All Secondary STEEP+V'
-        ? ''
-        : `&steep_secondary=${signalFilters.steep_secondary}`;
-    const ss1QueryParameter =
-      signalFilters.signature_primary ===
+  const getQueryParams = () => {
+    const params: Record<string, unknown> = {
+      page: paginationValue,
+      per_page: pageSize,
+      order_by: isArchived ? 'modified_at' : signalsSortBy,
+      direction:
+        signalsSortBy === 'created_at' ||
+        signalsSortBy === 'modified_at' ||
+        isArchived
+          ? 'desc'
+          : 'asc',
+      statuses: isArchived
+        ? ['Archived']
+        : signalFilters.status === 'All Status'
+        ? role === 'Curator' || role === 'Admin'
+          ? ['New', 'Approved', 'Archived']
+          : ['Approved', 'New', 'Archived']
+        : [signalFilters.status],
+    };
+
+    if (signalFilters.steep_primary !== 'All Primary STEEP+V') {
+      params.steep_primary = signalFilters.steep_primary;
+    }
+    if (signalFilters.steep_secondary !== 'All Secondary STEEP+V') {
+      params.steep_secondary = signalFilters.steep_secondary;
+    }
+    if (
+      signalFilters.signature_primary !==
       'All Primary Signature Solutions/Enabler'
-        ? ''
-        : `&signature_primary=${signalFilters.signature_primary.replaceAll(
-            ' ',
-            '%20',
-          )}`;
-    const ss2QueryParameter =
-      signalFilters.signature_secondary ===
+    ) {
+      params.signature_primary = signalFilters.signature_primary;
+    }
+    if (
+      signalFilters.signature_secondary !==
       'All Secondary Signature Solutions/Enabler'
-        ? ''
-        : `&signature_secondary=${signalFilters.signature_secondary.replaceAll(
-            ' ',
-            '%20',
-          )}`;
-    const statusQueryParameter = isArchived
-      ? `&statuses=Archived`
-      : role === 'Curator' || role === 'Admin'
-      ? signalFilters.status === 'All Status'
-        ? '&statuses=New&statuses=Approved'
-        : `&statuses=${signalFilters.status}`
-      : '&statuses=Approved';
-    const sdgQueryParameter =
-      signalFilters.sdg === 'All SDGs'
-        ? ''
-        : `&sdgs=${signalFilters.sdg.replaceAll(' ', '%20')}`;
-    const locationQueryParameter =
-      signalFilters.location === 'All Locations'
-        ? ''
-        : `&location=${signalFilters.location}`;
-    const scoreQueryParameter =
-      signalFilters.score === 'All Scores'
-        ? ''
-        : `&score=${signalFilters.score.replaceAll(' ', '%20')}`;
-    const createdForQueryParameter =
-      signalFilters.created_for === 'All Options'
-        ? ''
-        : `&created_for=${signalFilters.created_for.replaceAll(' ', '%20')}`;
-    const searchQueryParameter = signalFilters.search
-      ? `&query=${signalFilters.search}`
-      : '';
-    const unitQueryParameter =
-      signalFilters.unit_region === 'All Units'
-        ? ''
-        : `&unit=${signalFilters.unit_region.replaceAll(' ', '%20')}`;
-    const createdByQueryParameter =
-      signalFilters.created_by && signalFilters.created_by !== 'All'
-        ? `&created_by=${signalFilters.created_by}`
-        : '';
-    const orderByQueryParameter = `&order_by_field=${
-      isArchived ? 'modified_at' : signalsSortBy
-    }&order_by_direction=${
-      signalsSortBy === 'created_at' ||
-      signalsSortBy === 'modified_at' ||
-      isArchived
-        ? 'desc'
-        : 'asc'
-    }`;
-    const urlForExport = `https://signals-and-trends-api.azurewebsites.net/v1/export/signals?${statusQueryParameter}${steepPrimaryQueryParameter}${steepSecondaryQueryParameter}${sdgQueryParameter}${ss1QueryParameter}${ss2QueryParameter}${locationQueryParameter}${createdForQueryParameter}${createdByQueryParameter}${unitQueryParameter}${scoreQueryParameter}${searchQueryParameter}`;
-    const urlForListing = `https://signals-and-trends-api.azurewebsites.net/v1/signals/list?page=${paginationValue}&per_page=${pageSize}${statusQueryParameter}${steepPrimaryQueryParameter}${steepSecondaryQueryParameter}${sdgQueryParameter}${ss1QueryParameter}${ss2QueryParameter}${locationQueryParameter}${createdForQueryParameter}${createdByQueryParameter}${unitQueryParameter}${scoreQueryParameter}${searchQueryParameter}${orderByQueryParameter}`;
-    return isExportLink ? urlForExport : urlForListing;
+    ) {
+      params.signature_secondary = signalFilters.signature_secondary;
+    }
+    if (signalFilters.sdg !== 'All SDGs') {
+      params.sdgs = signalFilters.sdg;
+    }
+    if (signalFilters.created_for !== 'All Options') {
+      params.created_for = signalFilters.created_for;
+    }
+    if (signalFilters.horizon !== 'All Horizons') {
+      params.time_horizon = signalFilters.horizon;
+    }
+    if (signalFilters.impact !== 'All Ratings') {
+      params.impact_rating = signalFilters.impact;
+    }
+    if (signalFilters.search) {
+      params.query = signalFilters.search;
+    }
+    if (signalFilters.location !== 'All Locations') {
+      params.location = signalFilters.location;
+    }
+    if (signalFilters.bureau) {
+      params.bureau = signalFilters.bureau;
+    }
+    if (signalFilters.score !== 'All Scores') {
+      params.score = signalFilters.score;
+    }
+    if (signalFilters.unit_region !== 'All Units') {
+      params.unit = signalFilters.unit_region;
+    }
+    if (signalFilters.created_by && signalFilters.created_by !== 'All') {
+      params.created_by = signalFilters.created_by;
+    }
+
+    return params;
   };
 
   useEffect(() => {
     updateSignalList(undefined);
-    axios
-      .get(GetURL(false), {
-        headers: {
-          access_token: accessToken || API_ACCESS_TOKEN,
-        },
-      })
-      .then((response: AxiosResponse) => {
+    searchSignals(getQueryParams())
+      .then(response => {
         updateSignalList(
-          sortBy(response.data.data, d => Date.parse(d.created_at)).reverse(),
+          sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
         );
+        setTotalCount(response.total_count);
       })
       .catch(err => {
         if (err.response?.status === 404) {
@@ -134,17 +128,12 @@ export function AllSignals(props: Props) {
   useEffect(() => {
     setError(undefined);
     updateSignalList(undefined);
-    axios
-      .get(GetURL(false), {
-        headers: {
-          access_token: accessToken || API_ACCESS_TOKEN,
-        },
-      })
-      .then((response: AxiosResponse) => {
+    searchSignals(getQueryParams())
+      .then(response => {
         updateSignalList(
-          sortBy(response.data.data, d => Date.parse(d.created_at)).reverse(),
+          sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
         );
-        setTotalCount(response.data.total_count);
+        setTotalCount(response.total_count);
         setPaginationValue(1);
       })
       .catch(err => {
@@ -193,29 +182,22 @@ export function AllSignals(props: Props) {
                 className='undp-button button-primary'
                 onClick={() => {
                   setLoading(true);
-                  axios
-                    .get(GetURL(true), {
-                      headers: {
-                        access_token: accessToken,
-                      },
-                      responseType: 'blob',
-                    })
-                    .then((response: AxiosResponse) => {
-                      const url = window.URL.createObjectURL(
-                        new Blob([response.data]),
-                      );
-                      const link = document.createElement('a');
-                      link.href = url;
-                      link.setAttribute(
-                        'download',
-                        `FTSS_signals_${new Date(Date.now()).getFullYear()}-${
-                          new Date(Date.now()).getMonth() + 1
-                        }-${new Date(Date.now()).getDate()}.xlsx`,
-                      );
-                      document.body.appendChild(link);
-                      link.click();
-                      setLoading(false);
-                    });
+                  exportSignals(getQueryParams()).then(response => {
+                    const url = window.URL.createObjectURL(
+                      new Blob([response]),
+                    );
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute(
+                      'download',
+                      `FTSS_signals_${new Date(Date.now()).getFullYear()}-${
+                        new Date(Date.now()).getMonth() + 1
+                      }-${new Date(Date.now()).getDate()}.xlsx`,
+                    );
+                    document.body.appendChild(link);
+                    link.click();
+                    setLoading(false);
+                  });
                 }}
               >
                 Download Excel

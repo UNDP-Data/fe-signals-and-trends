@@ -49,7 +49,7 @@ export function TrendsVis() {
                 <h6 className='undp-typography margin-bottom-01'>STEEP+V</h6>
                 <div className='flex-div margin-bottom-02 flex-wrap'>
                   <div className='flex-div flex-vert-align-center flex-wrap'>
-                    {choices?.steepv.map((d, i) => (
+                    {choices?.steep.map((d, i) => (
                       <div
                         key={i}
                         className='flex-div flex-vert-align-center gap-02'

@@ -1,13 +1,23 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { Input, Select, Popconfirm } from 'antd';
-import axios, { AxiosError, AxiosResponse } from 'axios';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { API_ACCESS_TOKEN } from '../Constants';
-import { TrendDataType, SignalDataType, NewTrendDataType } from '../Types';
+import {
+  TrendDataType,
+  SignalDataType,
+  NewTrendDataType,
+  CreateTrendParams,
+  UpdateTrendParams,
+} from '../Types';
 import { AddSignalsModal } from './AddSignalsModal';
 import Context from '../Context/Context';
+import {
+  createTrend,
+  updateTrend as updateTrendApi,
+  deleteTrend,
+  searchSignals,
+} from '../api';
 
 interface Props {
   updateTrend?: TrendDataType;
@@ -35,7 +45,7 @@ interface HeroImageProps {
 
 const UploadedImgEl = styled.div<HeroImageProps>`
   background: linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)),
-    ${props => `url(data:${props.bgImage})`} no-repeat center;
+    ${props => `url(${props.bgImage})`} no-repeat center;
   background-size: cover;
   width: 7.5rem;
   height: 7.5rem;
@@ -87,8 +97,7 @@ export function isTrendInvalid(trend: TrendDataType | NewTrendDataType) {
 
 export function TrendEntryFormEl(props: Props) {
   const { updateTrend } = props;
-  const { accessToken, updateNotificationText, choices, userName } =
-    useContext(Context);
+  const { updateNotificationText, choices, userName } = useContext(Context);
   const navigate = useNavigate();
   const [trendData, updateTrendData] = useState<
     TrendDataType | NewTrendDataType
@@ -125,15 +134,7 @@ export function TrendEntryFormEl(props: Props) {
     SignalDataType[] | null
   >(null);
   const confirmDelete = (id: number, navigatePath: string) => {
-    axios({
-      method: 'delete',
-      url: `https://signals-and-trends-api.azurewebsites.net/v1/trends/delete?ids=${id}`,
-      data: {},
-      headers: {
-        'Content-Type': 'application/json',
-        access_token: accessToken,
-      },
-    })
+    deleteTrend(id)
       .then(() => {
         setButtonDisabled(false);
         navigate(navigatePath);
@@ -150,19 +151,17 @@ export function TrendEntryFormEl(props: Props) {
   };
   useEffect(() => {
     if (trendsSignal.length > 0) {
-      const signalIds = trendsSignal.toString().replaceAll(',', '&ids=');
-      axios
-        .get(
-          `https://signals-and-trends-api.azurewebsites.net/v1/signals/fetch?ids=${signalIds}`,
-          {
-            headers: {
-              access_token: API_ACCESS_TOKEN,
-            },
-          },
-        )
-        .then((res: AxiosResponse) => {
-          setConnectedSignals(res.data);
-        });
+      const signalIds = trendsSignal
+        .map(id => Number(id))
+        .filter(id => !Number.isNaN(id));
+
+      searchSignals({
+        ids: signalIds,
+        per_page: signalIds.length,
+        statuses: ['Approved', 'Archived', 'Draft', 'New'],
+      }).then(res => {
+        setConnectedSignals(res.data);
+      });
     } else {
       setConnectedSignals([]);
     }
@@ -188,6 +187,68 @@ export function TrendEntryFormEl(props: Props) {
       setSelectedFileName(event.target.files[0].name);
     }
   };
+
+  const buildCreateTrendParams = (): CreateTrendParams => {
+    return {
+      description: trendData.description || '',
+      headline: trendData.headline || '',
+      impact_description: trendData.impact_description || '',
+      impact_rating: trendData.impact_rating || '',
+      time_horizon: trendData.time_horizon || '',
+      sdgs: trendData.sdgs || [],
+      status: 'New',
+      attachment: trendData.attachment || undefined,
+      keywords: trendData.keywords,
+      location: trendData.location,
+      relevance: trendData.relevance,
+      signature_primary: trendData.signature_primary,
+      signature_secondary: trendData.signature_secondary || undefined,
+      steep_primary: trendData.steep_primary,
+      steep_secondary: trendData.steep_secondary || undefined,
+      assigned_to: trendData.assigned_to || undefined,
+      connected_signals: trendsSignal || undefined,
+    };
+  };
+
+  const buildUpdateTrendParams = (): UpdateTrendParams => {
+    const params: UpdateTrendParams = {
+      id: trendData.id || 0,
+      description: trendData.description || '',
+      headline: trendData.headline || '',
+      impact_description: trendData.impact_description || '',
+      signature_primary: trendData.signature_primary,
+      impact_rating: trendData.impact_rating || '',
+      time_horizon: trendData.time_horizon || '',
+      sdgs: trendData.sdgs,
+      steep_primary: trendData.steep_primary,
+      status: trendData.status,
+      keywords: trendData.keywords,
+      location: trendData.location,
+      relevance: trendData.relevance,
+      created_by: trendData.created_by,
+      assigned_to: trendData?.assigned_to || undefined,
+      connected_signals:
+        connectedSignal?.map(signal => Number(signal.id)) || undefined,
+    };
+
+    if (trendData.attachment) {
+      params.attachment = trendData.attachment;
+    }
+
+    if (
+      trendData.signature_secondary &&
+      trendData.signature_secondary.length > 0
+    ) {
+      params.signature_secondary = trendData.signature_secondary;
+    }
+
+    if (trendData.steep_secondary && trendData.steep_secondary.length > 0) {
+      params.steep_secondary = trendData.steep_secondary;
+    }
+
+    return params;
+  };
+
   return (
     <div className='undp-container max-width padding-top-00 padding-bottom-00'>
       <div className='margin-bottom-07'>
@@ -256,7 +317,7 @@ export function TrendEntryFormEl(props: Props) {
             }}
             value={trendData.time_horizon}
           >
-            {choices?.horizons.map((d, i) => (
+            {choices?.horizon.map((d, i) => (
               <Select.Option className='undp-select-option' key={i} value={d}>
                 {d}
               </Select.Option>
@@ -282,7 +343,7 @@ export function TrendEntryFormEl(props: Props) {
             }}
             value={trendData.impact_rating || undefined}
           >
-            {choices?.ratings.map((d, i) => (
+            {choices?.rating.map((d, i) => (
               <Select.Option className='undp-select-option' key={i} value={d}>
                 {d}
               </Select.Option>
@@ -389,7 +450,7 @@ export function TrendEntryFormEl(props: Props) {
               }}
               value={trendData.steep_primary}
             >
-              {choices?.steepv.map((d, i) => (
+              {choices?.steep.map((d, i) => (
                 <Select.Option className='undp-select-option' key={i} value={d}>
                   {d}
                 </Select.Option>
@@ -426,7 +487,7 @@ export function TrendEntryFormEl(props: Props) {
                   : undefined
               }
             >
-              {choices?.steepv.map((d, i) => (
+              {choices?.steep.map((d, i) => (
                 <Select.Option className='undp-select-option' key={i} value={d}>
                   {d}
                 </Select.Option>
@@ -455,7 +516,7 @@ export function TrendEntryFormEl(props: Props) {
             }}
             value={trendData.signature_primary}
           >
-            {choices?.signatures.map((d, i) => (
+            {choices?.signature.map((d, i) => (
               <Select.Option className='undp-select-option' key={i} value={d}>
                 {d}
               </Select.Option>
@@ -494,7 +555,7 @@ export function TrendEntryFormEl(props: Props) {
             clearIcon={<div className='clearIcon' />}
             allowClear
           >
-            {choices?.signatures.map((d, i) => (
+            {choices?.signature.map((d, i) => (
               <Select.Option className='undp-select-option' key={i} value={d}>
                 {d}
               </Select.Option>
@@ -532,7 +593,7 @@ export function TrendEntryFormEl(props: Props) {
               : undefined
           }
         >
-          {choices?.sdgs.map((d, i) => (
+          {choices?.goal.map((d, i) => (
             <Select.Option className='undp-select-option' key={i} value={d}>
               {d}
             </Select.Option>
@@ -658,19 +719,8 @@ export function TrendEntryFormEl(props: Props) {
               onClick={() => {
                 setButtonDisabled(true);
                 setSubmittingError(undefined);
-                axios({
-                  method: 'post',
-                  url: `https://signals-and-trends-api.azurewebsites.net/v1/trends/submit`,
-                  data: {
-                    ...trendData,
-                    connected_signals: trendsSignal,
-                    status: 'New',
-                  },
-                  headers: {
-                    'Content-Type': 'application/json',
-                    access_token: accessToken,
-                  },
-                })
+                const currentParams = buildCreateTrendParams();
+                createTrend(currentParams)
                   .then(() => {
                     setButtonDisabled(false);
                     navigate('/trends');
@@ -715,35 +765,25 @@ export function TrendEntryFormEl(props: Props) {
               onClick={() => {
                 setButtonDisabled(true);
                 setSubmittingError(undefined);
-                axios({
-                  method: 'put',
-                  url: 'https://signals-and-trends-api.azurewebsites.net/v1/trends/update',
-                  data: {
-                    ...trendData,
-                    connected_signals: trendsSignal,
-                  },
-                  headers: {
-                    'Content-Type': 'application/json',
-                    access_token: accessToken,
-                  },
-                })
-                  .then(() => {
-                    setButtonDisabled(false);
-                    navigate(`/trends/${updateTrend.id}`);
-                    updateNotificationText('Successfully updated the trend');
-                  })
-                  .catch((err: AxiosError) => {
-                    setButtonDisabled(false);
-                    setSubmittingError(
-                      `Error code ${err.response?.status}: ${
-                        err.response?.data
-                      }. ${
-                        err.response?.status === 500
-                          ? 'Please try again in some time'
-                          : ''
-                      }`,
-                    );
-                  });
+                if (trendData.id)
+                  updateTrendApi(trendData.id, buildUpdateTrendParams())
+                    .then(() => {
+                      setButtonDisabled(false);
+                      navigate(`/trends/${updateTrend.id}`);
+                      updateNotificationText('Successfully updated the trend');
+                    })
+                    .catch(err => {
+                      setButtonDisabled(false);
+                      setSubmittingError(
+                        `Error code ${err.response?.status}: ${
+                          err.response?.data
+                        }. ${
+                          err.response?.status === 500
+                            ? 'Please try again in some time'
+                            : ''
+                        }`,
+                      );
+                    });
               }}
             >
               Update Trend

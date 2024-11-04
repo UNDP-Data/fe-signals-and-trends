@@ -1,7 +1,6 @@
 import { Popconfirm } from 'antd';
 import { NavLink, useParams, useNavigate } from 'react-router-dom';
 import { useContext, useEffect, useState } from 'react';
-import axios, { AxiosResponse } from 'axios';
 import {
   AuthenticatedTemplate,
   UnauthenticatedTemplate,
@@ -10,13 +9,14 @@ import styled from 'styled-components';
 import UNDPColorModule from 'undp-viz-colors';
 import Background from '../../assets/UNDP-hero-image.jpg';
 import { SignalDataType, TrendDataType } from '../../Types';
-import { API_ACCESS_TOKEN, MONTHS, SSCOLOR } from '../../Constants';
+import { MONTHS, SSCOLOR } from '../../Constants';
 import { SignalCard } from '../../Components/SignalCard';
 import { SignInButton } from '../../Components/SignInButton';
 import Context from '../../Context/Context';
 import { ChipEl } from '../../Components/ChipEl';
 import { ImpactCircleEl } from '../../Components/ImpactRatingEl';
 import { getSDGIcon } from '../../Utils/GetSDGIcons';
+import { deleteTrend, readTrend, searchSignals } from '../../api';
 
 interface HeroImageProps {
   bgImage?: string;
@@ -39,7 +39,6 @@ export function TrendDetail() {
   const { id } = useParams();
   const {
     role,
-    accessToken,
     updateNotificationText,
     choices,
     updateCardsToPrint,
@@ -51,50 +50,34 @@ export function TrendDetail() {
     undefined,
   );
   useEffect(() => {
-    axios
-      .get(
-        `https://signals-and-trends-api.azurewebsites.net/v1/trends/fetch?ids=${id}`,
-        {
-          headers: {
-            access_token: accessToken || API_ACCESS_TOKEN,
-          },
-        },
-      )
-      .then((response: AxiosResponse) => {
-        setData(response.data[0]);
-        if (response.data[0].connected_signals?.length) {
-          const signalIds = response.data[0].connected_signals
-            .toString()
-            .replaceAll(',', '&ids=');
-          axios
-            .get(
-              `https://signals-and-trends-api.azurewebsites.net/v1/signals/fetch?ids=${signalIds}`,
-              {
-                headers: {
-                  access_token: accessToken || API_ACCESS_TOKEN,
-                },
-              },
-            )
-            .then((res: AxiosResponse) => {
-              setConnectedSignal(res.data);
-            })
-            .catch(err => {
-              setError(
-                `Error code ${err.response?.status}: ${
-                  err.response?.status === 404
-                    ? 'No trend available with the selected IDs'
-                    : err.response?.data
-                }. ${
-                  err.response?.status === 500
-                    ? 'Please try again in some time'
-                    : ''
-                }`,
-              );
-            });
-        } else {
-          setConnectedSignal([]);
-        }
-      });
+    readTrend(Number(id)).then(response => {
+      setData(response);
+      if (response && response?.connected_signals?.length) {
+        const signalIds = response.connected_signals
+          .map(d => Number(d))
+          .filter(d => !Number.isNaN(d));
+
+        searchSignals({ ids: signalIds })
+          .then(res => {
+            setConnectedSignal(res.data);
+          })
+          .catch(err => {
+            setError(
+              `Error code ${err.response?.status}: ${
+                err.response?.status === 404
+                  ? 'No trend available with the selected IDs'
+                  : err.response?.data
+              }. ${
+                err.response?.status === 500
+                  ? 'Please try again in some time'
+                  : ''
+              }`,
+            );
+          });
+      } else {
+        setConnectedSignal([]);
+      }
+    });
   }, [id]);
   return (
     <div>
@@ -213,7 +196,7 @@ export function TrendDetail() {
                         ? 'var(--black)'
                         : UNDPColorModule.categoricalColors.colors[
                             8 -
-                              (choices.horizons.findIndex(
+                              (choices.horizon.findIndex(
                                 el => el === data.time_horizon,
                               ) as number)
                           ]
@@ -241,7 +224,7 @@ export function TrendDetail() {
                         !choices
                           ? 'var(--black)'
                           : UNDPColorModule.categoricalColors.colors[
-                              choices.steepv.findIndex(
+                              choices.steep.findIndex(
                                 el => el === data.steep_primary,
                               )
                             ]
@@ -260,7 +243,7 @@ export function TrendDetail() {
                           !choices
                             ? 'var(--black)'
                             : UNDPColorModule.categoricalColors.colors[
-                                choices.steepv.findIndex(el => el === d)
+                                choices.steep.findIndex(el => el === d)
                               ]
                         }
                       />
@@ -279,7 +262,7 @@ export function TrendDetail() {
                         !choices
                           ? 'var(--black)'
                           : SSCOLOR[
-                              choices.signatures.findIndex(
+                              choices.signature.findIndex(
                                 el => el === data.signature_primary,
                               )
                             ].textColor
@@ -298,7 +281,7 @@ export function TrendDetail() {
                           !choices
                             ? 'var(--black)'
                             : SSCOLOR[
-                                choices.signatures.findIndex(el => el === d)
+                                choices.signature.findIndex(el => el === d)
                               ].textColor
                         }
                       />
@@ -363,15 +346,7 @@ export function TrendDetail() {
                             title='Delete Trend'
                             description='Are you sure to delete this trend?'
                             onConfirm={() => {
-                              axios({
-                                method: 'delete',
-                                url: `https://signals-and-trends-api.azurewebsites.net/v1/trends/delete?ids=${id}`,
-                                data: {},
-                                headers: {
-                                  'Content-Type': 'application/json',
-                                  access_token: accessToken,
-                                },
-                              })
+                              deleteTrend(Number(id))
                                 .then(() => {
                                   setButtonDisabled(false);
                                   navigate('../../archived-trends');

@@ -1,11 +1,10 @@
 import { useContext, useEffect, useState } from 'react';
 import { Modal, Pagination, PaginationProps } from 'antd';
 import sortBy from 'lodash.sortby';
-import axios, { AxiosResponse } from 'axios';
 import { CardList } from './GridView';
 import { ListView } from './ListView';
-import { API_ACCESS_TOKEN } from '../../Constants';
 import Context from '../../Context/Context';
+import { exportTrends, searchTrends } from '../../api';
 
 interface Props {
   view: 'cardView' | 'listView';
@@ -16,7 +15,6 @@ export function AllTrends(props: Props) {
   const { view, isArchived } = props;
   const {
     role,
-    accessToken,
     trendFilters,
     trendsSortBy,
     trendList,
@@ -35,83 +33,73 @@ export function AllTrends(props: Props) {
   ) => {
     setPageSize(size);
   };
-  const GetURL = (isExportLink: boolean) => {
-    const steepPrimaryQueryParameter =
-      trendFilters.steep_primary === 'All Primary STEEP+V'
-        ? ''
-        : `&steep_primary=${trendFilters.steep_primary}`;
-    const steepSecondaryQueryParameter =
-      trendFilters.steep_secondary === 'All Secondary STEEP+V'
-        ? ''
-        : `&steep_secondary=${trendFilters.steep_secondary}`;
-    const ss1QueryParameter =
-      trendFilters.signature_primary ===
+
+  const getQueryParams = () => {
+    const params: Record<string, unknown> = {
+      page: paginationValue,
+      per_page: pageSize,
+      order_by: isArchived ? 'modified_at' : trendsSortBy,
+      direction:
+        trendsSortBy === 'created_at' ||
+        trendsSortBy === 'modified_at' ||
+        isArchived
+          ? 'desc'
+          : 'asc',
+      statuses: isArchived
+        ? ['Archived']
+        : trendFilters.status === 'All Status'
+        ? role === 'Admin' || role === 'Curator'
+          ? ['Approved', 'New', 'Archived']
+          : ['Approved', 'New', 'Archived']
+        : [trendFilters.status],
+    };
+
+    if (trendFilters.steep_primary !== 'All Primary STEEP+V') {
+      params.steep_primary = trendFilters.steep_primary;
+    }
+    if (trendFilters.steep_secondary !== 'All Secondary STEEP+V') {
+      params.steep_secondary = trendFilters.steep_secondary;
+    }
+    if (
+      trendFilters.signature_primary !==
       'All Primary Signature Solutions/Enabler'
-        ? ''
-        : `&signature_primary=${trendFilters.signature_primary.replaceAll(
-            ' ',
-            '%20',
-          )}`;
-    const ss2QueryParameter =
-      trendFilters.signature_secondary ===
+    ) {
+      params.signature_primary = trendFilters.signature_primary;
+    }
+    if (
+      trendFilters.signature_secondary !==
       'All Secondary Signature Solutions/Enabler'
-        ? ''
-        : `&signature_secondary=${trendFilters.signature_secondary.replaceAll(
-            ' ',
-            '%20',
-          )}`;
-    const sdgQueryParameter =
-      trendFilters.sdg === 'All SDGs'
-        ? ''
-        : `&sdgs=${trendFilters.sdg.replaceAll(' ', '%20')}`;
-    const createdForQueryParameter =
-      trendFilters.created_for === 'All Options'
-        ? ''
-        : `&created_for=${trendFilters.created_for.replaceAll(' ', '%20')}`;
-    const horizonQueryParameter =
-      trendFilters.horizon === 'All Horizons'
-        ? ''
-        : `&time_horizon=${trendFilters.horizon.replace('+', '%2B')}`;
-    const ratingQueryParameter =
-      trendFilters.impact === 'All Ratings'
-        ? ''
-        : `&impact_rating=${trendFilters.impact}`;
-    const statusQueryParameter = isArchived
-      ? `statuses=Archived`
-      : trendFilters.status === 'All Status'
-      ? role === 'Admin' || role === 'Curator'
-        ? 'statuses=Approved&statuses=New'
-        : 'statuses=Approved'
-      : `statuses=${trendFilters.status}`;
-    const searchQueryParameter = trendFilters.search
-      ? `&query=${trendFilters.search}`
-      : '';
-    const orderByQueryParameter = `&order_by_field=${
-      isArchived ? 'modified_at' : trendsSortBy
-    }&order_by_direction=${
-      trendsSortBy === 'created_at' ||
-      trendsSortBy === 'modified_at' ||
-      isArchived
-        ? 'desc'
-        : 'asc'
-    }`;
-    const urlForExport = `https://signals-and-trends-api.azurewebsites.net/v1/export/trends?${statusQueryParameter}${steepPrimaryQueryParameter}${steepSecondaryQueryParameter}${sdgQueryParameter}${ss1QueryParameter}${ss2QueryParameter}${createdForQueryParameter}${horizonQueryParameter}${ratingQueryParameter}${searchQueryParameter}${orderByQueryParameter}`;
-    const urlForListing = `https://signals-and-trends-api.azurewebsites.net/v1/trends/list?page=${paginationValue}&per_page=${pageSize}&${statusQueryParameter}${steepPrimaryQueryParameter}${steepSecondaryQueryParameter}${sdgQueryParameter}${ss1QueryParameter}${ss2QueryParameter}${createdForQueryParameter}${horizonQueryParameter}${ratingQueryParameter}${searchQueryParameter}${orderByQueryParameter}`;
-    return isExportLink ? urlForExport : urlForListing;
+    ) {
+      params.signature_secondary = trendFilters.signature_secondary;
+    }
+    if (trendFilters.sdg !== 'All SDGs') {
+      params.sdgs = trendFilters.sdg;
+    }
+    if (trendFilters.created_for !== 'All Options') {
+      params.created_for = trendFilters.created_for;
+    }
+    if (trendFilters.horizon !== 'All Horizons') {
+      params.time_horizon = trendFilters.horizon;
+    }
+    if (trendFilters.impact !== 'All Ratings') {
+      params.impact_rating = trendFilters.impact;
+    }
+    if (trendFilters.search) {
+      params.query = trendFilters.search;
+    }
+
+    return params;
   };
+
   useEffect(() => {
     updateTrendList(undefined);
     setError(undefined);
-    axios
-      .get(GetURL(false), {
-        headers: {
-          access_token: accessToken || API_ACCESS_TOKEN,
-        },
-      })
-      .then((response: AxiosResponse) => {
+    searchTrends(getQueryParams())
+      .then(response => {
         updateTrendList(
-          sortBy(response.data.data, d => Date.parse(d.created_at)).reverse(),
+          sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
         );
+        setTotalCount(response.total_count);
       })
       .catch(err => {
         if (err.response?.status === 404) {
@@ -131,17 +119,12 @@ export function AllTrends(props: Props) {
   useEffect(() => {
     updateTrendList(undefined);
     setError(undefined);
-    axios
-      .get(GetURL(false), {
-        headers: {
-          access_token: accessToken || API_ACCESS_TOKEN,
-        },
-      })
-      .then((response: AxiosResponse) => {
+    searchTrends(getQueryParams())
+      .then(response => {
         updateTrendList(
-          sortBy(response.data.data, d => Date.parse(d.created_at)).reverse(),
+          sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
         );
-        setTotalCount(response.data.total_count);
+        setTotalCount(response.total_count);
         setPaginationValue(1);
       })
       .catch(err => {
@@ -183,29 +166,22 @@ export function AllTrends(props: Props) {
                 className='undp-button button-primary'
                 onClick={() => {
                   setLoading(true);
-                  axios
-                    .get(GetURL(true), {
-                      headers: {
-                        access_token: accessToken,
-                      },
-                      responseType: 'blob',
-                    })
-                    .then((response: AxiosResponse) => {
-                      const url = window.URL.createObjectURL(
-                        new Blob([response.data]),
-                      );
-                      const link = document.createElement('a');
-                      link.href = url;
-                      link.setAttribute(
-                        'download',
-                        `FTSS_trends_${new Date(Date.now()).getFullYear()}-${
-                          new Date(Date.now()).getMonth() + 1
-                        }-${new Date(Date.now()).getDate()}.xlsx`,
-                      );
-                      document.body.appendChild(link);
-                      link.click();
-                      setLoading(false);
-                    });
+                  exportTrends(getQueryParams()).then(response => {
+                    const url = window.URL.createObjectURL(
+                      new Blob([response]),
+                    );
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute(
+                      'download',
+                      `FTSS_trends_${new Date(Date.now()).getFullYear()}-${
+                        new Date(Date.now()).getMonth() + 1
+                      }-${new Date(Date.now()).getDate()}.xlsx`,
+                    );
+                    document.body.appendChild(link);
+                    link.click();
+                    setLoading(false);
+                  });
                 }}
               >
                 Download Excel

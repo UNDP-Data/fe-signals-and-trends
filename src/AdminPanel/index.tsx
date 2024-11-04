@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { useContext, useEffect, useState } from 'react';
-import axios, { AxiosResponse } from 'axios';
 import {
   AuthenticatedTemplate,
   UnauthenticatedTemplate,
@@ -8,41 +7,49 @@ import {
 import { Input, Pagination, Select } from 'antd';
 import { SignInButton } from '../Components/SignInButton';
 import Context from '../Context/Context';
-import { UserDataType } from '../Types';
+import { AllowedRoles, UserDataType } from '../Types';
 import { UserListEl } from './userList';
+import { searchUsers } from '../api';
 
 export function AdminPanel() {
+  const navigate = useNavigate();
   const { role, accessToken } = useContext(Context);
   const [userList, setUserList] = useState<UserDataType[] | undefined>(
     undefined,
   );
   const [paginationValue, setPaginationValue] = useState(1);
-  const [filterRole, setFilterRole] = useState('All Roles');
+  const [filterRole, setFilterRole] = useState<
+    'All Roles' | 'Admin' | 'Curator' | 'User'
+  >('All Roles');
   const [searchQuery, setSearchQuery] = useState<undefined | string>(undefined);
   const [error, setError] = useState<undefined | string>(undefined);
   const [filter, setFilter] = useState<undefined | string>(undefined);
   const [totalCount, setTotalCount] = useState(0);
+
+  const getRoleQueryParameter = (
+    currentRole: 'All Roles' | AllowedRoles,
+  ): AllowedRoles[] => {
+    return currentRole === 'All Roles'
+      ? ['User', 'Curator', 'Admin']
+      : [currentRole as AllowedRoles];
+  };
+
   useEffect(() => {
     if (role === 'Admin') {
       setUserList(undefined);
       setError(undefined);
-      const roleQueryParameter =
-        filterRole === 'All Roles'
-          ? 'roles=User&roles=Curator&roles=Admin'
-          : `roles=${filterRole}`;
-      const searchQueryParameter = filter ? `&query=${filter}` : '';
-      axios
-        .get(
-          `https://signals-and-trends-api.azurewebsites.net/v1/users/list?&page=1&per_page=50&${roleQueryParameter}${searchQueryParameter}`,
-          {
-            headers: {
-              access_token: accessToken,
-            },
-          },
-        )
-        .then((response: AxiosResponse) => {
-          setUserList(response.data.data);
-          setTotalCount(response.data.total_count);
+      const roleQueryParameter = getRoleQueryParameter(filterRole);
+      const searchQueryParameter = filter || '';
+
+      searchUsers({
+        page: 1,
+        per_page: 50,
+        roles: roleQueryParameter,
+        query: searchQueryParameter,
+      })
+        .then(response => {
+          setUserList(response.data);
+          setTotalCount(response.total_count);
           setPaginationValue(1);
         })
         .catch(err => {
@@ -61,31 +68,26 @@ export function AdminPanel() {
         });
     }
   }, [role, accessToken, filterRole, filter]);
+
   useEffect(() => {
     if (role === 'Admin') {
       setUserList(undefined);
       setError(undefined);
-      const roleQueryParameter =
-        filterRole === 'All Roles'
-          ? 'roles=User&roles=Curator&roles=Admin'
-          : `roles=${filterRole}`;
-      const searchQueryParameter = filter ? `&query=${filter}` : '';
-      axios
-        .get(
-          `https://signals-and-trends-api.azurewebsites.net/v1/users/list?&page=${paginationValue}&per_page=50&${roleQueryParameter}${searchQueryParameter}`,
-          {
-            headers: {
-              access_token: accessToken,
-            },
-          },
-        )
-        .then((response: AxiosResponse) => {
-          setTotalCount(response.data.total_count);
-          setUserList(response.data.data);
-        });
+      const roleQueryParameter = getRoleQueryParameter(filterRole);
+      const searchQueryParameter = filter || '';
+
+      searchUsers({
+        page: paginationValue,
+        per_page: 50,
+        roles: roleQueryParameter,
+        query: searchQueryParameter,
+      }).then(response => {
+        setTotalCount(response.total_count);
+        setUserList(response.data);
+      });
     }
   }, [paginationValue]);
-  const navigate = useNavigate();
+
   return (
     <div
       className='margin-top-13 padding-top-09 margin-bottom-09'
@@ -118,7 +120,7 @@ export function AdminPanel() {
             className='undp-select'
             placeholder='Filter by role'
             onChange={e => {
-              setFilterRole(e);
+              setFilterRole(e as 'All Roles' | 'Admin' | 'Curator' | 'User');
             }}
             value={filterRole}
             showSearch

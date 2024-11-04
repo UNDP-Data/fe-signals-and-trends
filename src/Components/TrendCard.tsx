@@ -194,7 +194,7 @@ export function TrendCard(props: Props) {
                           ? 'var(--black)'
                           : UNDPColorModule.categoricalColors.colors[
                               8 -
-                                (choices?.horizons.findIndex(
+                                (choices?.horizon.findIndex(
                                   el => el === data.time_horizon,
                                 ) as number)
                             ]

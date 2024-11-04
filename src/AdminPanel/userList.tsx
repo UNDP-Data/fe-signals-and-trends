@@ -1,10 +1,9 @@
 import { Modal, Radio } from 'antd';
-import axios from 'axios';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { UserDataType } from '../Types';
-import Context from '../Context/Context';
+import { updateUser } from '../api';
 
 interface Props {
   userList: UserDataType[];
@@ -20,7 +19,6 @@ const ListRow = styled.div`
 
 export function UserListEl(props: Props) {
   const { userList } = props;
-  const { accessToken } = useContext(Context);
   const [selectedUser, setSelectedUser] = useState<undefined | UserDataType>(
     undefined,
   );
@@ -101,16 +99,11 @@ export function UserListEl(props: Props) {
             type='button'
             className='undp-button button-primary button-arrow'
             onClick={() => {
-              axios
-                .get(
-                  `https://signals-and-trends-api.azurewebsites.net/v1/users/assign?email=${selectedUser?.email}&role=${role}`,
-                  {
-                    headers: {
-                      access_token: accessToken,
-                    },
-                  },
-                )
-                .then(() => {
+              if (selectedUser)
+                updateUser(selectedUser?.id, {
+                  ...selectedUser,
+                  role: role as 'Admin' | 'Curator' | 'User' | 'Visitor',
+                }).then(() => {
                   setRole(undefined);
                   setSelectedUser(undefined);
                   navigate(0);

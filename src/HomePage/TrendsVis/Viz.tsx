@@ -9,12 +9,11 @@ import {
   forceY,
 } from 'd3-force';
 import { scaleOrdinal } from 'd3-scale';
-import axios, { AxiosResponse } from 'axios';
 import { useNavigate } from 'react-router-dom';
 import UNDPColorModule from 'undp-viz-colors';
 import Context from '../../Context/Context';
 import { TrendDataType } from '../../Types';
-import { API_ACCESS_TOKEN } from '../../Constants';
+import { searchTrends } from '../../api';
 
 interface Props {
   svgWidth: number;
@@ -63,7 +62,7 @@ export function Viz(props: Props) {
   );
   const [hoveredDot, setHoveredDot] = useState<null | DotHoveredProps>(null);
   const [error, setError] = useState<undefined | string>(undefined);
-  const { choices, accessToken } = useContext(Context);
+  const { choices } = useContext(Context);
   const margin = {
     top: 75,
     bottom: 25,
@@ -78,10 +77,10 @@ export function Viz(props: Props) {
 
   const navigate = useNavigate();
   const xCenter = scaleOrdinal()
-    .domain(choices?.horizons as string[])
+    .domain(choices?.horizon as string[])
     .range([gridSize.width * 0.5, 1.5 * gridSize.width, 2.5 * gridSize.width]);
   const yCenter = scaleOrdinal()
-    .domain(choices?.ratings as string[])
+    .domain(choices?.rating as string[])
     .range([
       gridSize.height * 2.5,
       1.5 * gridSize.height,
@@ -92,17 +91,9 @@ export function Viz(props: Props) {
     setTrendsList([]);
     setNodesList(undefined);
     setError(undefined);
-    axios
-      .get(
-        `https://signals-and-trends-api.azurewebsites.net/v1/trends/list?per_page=500`,
-        {
-          headers: {
-            access_token: accessToken || API_ACCESS_TOKEN,
-          },
-        },
-      )
-      .then((response: AxiosResponse) => {
-        setTrendsList(response.data.data);
+    searchTrends({ per_page: 500 })
+      .then(response => {
+        setTrendsList(response.data as VisTrendDataType[]);
       })
       .catch(err => {
         if (err.response?.status === 404) {
@@ -161,7 +152,7 @@ export function Viz(props: Props) {
                       fill: !choices
                         ? 'var(--black)'
                         : UNDPColorModule.categoricalColors.colors[
-                            choices?.steepv.findIndex(
+                            choices?.steep.findIndex(
                               el => el === d.steep_primary,
                             )
                           ],
@@ -192,7 +183,7 @@ export function Viz(props: Props) {
                 ))}
               </g>
               <g transform={`translate(${margin.left},80)`}>
-                {choices.horizons.map((d, i) => (
+                {choices.horizon.map((d, i) => (
                   <text
                     key={i}
                     x={xCenter(d) as number}
@@ -207,7 +198,7 @@ export function Viz(props: Props) {
               </g>
               {showGroups ? (
                 <g transform={`translate(60,${margin.top})`}>
-                  {choices.ratings.map((d, i) => (
+                  {choices.rating.map((d, i) => (
                     <g
                       key={i}
                       transform={`translate(30,${yCenter(d) as number})`}

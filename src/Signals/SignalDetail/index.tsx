@@ -1,7 +1,6 @@
 import { Popconfirm } from 'antd';
 import { NavLink, useParams, useNavigate } from 'react-router-dom';
 import { useContext, useEffect, useState } from 'react';
-import axios, { AxiosResponse } from 'axios';
 import {
   AuthenticatedTemplate,
   UnauthenticatedTemplate,
@@ -10,12 +9,13 @@ import styled from 'styled-components';
 import UNDPColorModule from 'undp-viz-colors';
 import Background from '../../assets/UNDP-hero-image.jpg';
 import { SignalDataType, TrendDataType } from '../../Types';
-import { API_ACCESS_TOKEN, MONTHS, SSCOLOR } from '../../Constants';
+import { MONTHS, SSCOLOR } from '../../Constants';
 import { TrendCard } from '../../Components/TrendCard';
 import { SignInButton } from '../../Components/SignInButton';
 import Context from '../../Context/Context';
 import { ChipEl } from '../../Components/ChipEl';
 import { getSDGIcon } from '../../Utils/GetSDGIcons';
+import { deleteSignal, readSignal, searchTrends } from '../../api';
 
 interface HeroImageProps {
   bgImage?: string;
@@ -60,37 +60,20 @@ export function SignalDetail() {
     undefined,
   );
   useEffect(() => {
-    axios
-      .get(
-        `https://signals-and-trends-api.azurewebsites.net/v1/signals/fetch?ids=${id}`,
-        {
-          headers: {
-            access_token: accessToken || API_ACCESS_TOKEN,
-          },
-        },
-      )
-      .then((response: AxiosResponse) => {
-        setData(response.data[0]);
-        if (response.data[0].connected_trends?.length) {
-          const trendsIds = response.data[0].connected_trends
-            .toString()
-            .replaceAll(',', '&ids=');
-          axios
-            .get(
-              `https://signals-and-trends-api.azurewebsites.net/v1/trends/fetch?ids=${trendsIds}`,
-              {
-                headers: {
-                  access_token: accessToken || API_ACCESS_TOKEN,
-                },
-              },
-            )
-            .then((res: AxiosResponse) => {
-              setConnectedTrends(res.data);
-            });
-        } else {
-          setConnectedTrends([]);
-        }
-      });
+    readSignal(Number(id)).then(response => {
+      setData(response);
+      if (response?.connected_trends?.length) {
+        const trendsIds = response.connected_trends
+          .map(d => Number(d))
+          .filter(d => !Number.isNaN(d));
+
+        searchTrends({ ids: trendsIds }).then(res => {
+          setConnectedTrends(res.data);
+        });
+      } else {
+        setConnectedTrends([]);
+      }
+    });
   }, [id, accessToken]);
   return (
     <div>
@@ -229,7 +212,7 @@ export function SignalDetail() {
                         !choices
                           ? 'var(--black)'
                           : UNDPColorModule.categoricalColors.colors[
-                              choices.steepv.findIndex(
+                              choices.steep.findIndex(
                                 el => el === data.steep_primary,
                               )
                             ]
@@ -246,7 +229,7 @@ export function SignalDetail() {
                           !choices
                             ? 'var(--black)'
                             : UNDPColorModule.categoricalColors.colors[
-                                choices.steepv.findIndex(el => el === d)
+                                choices.steep.findIndex(el => el === d)
                               ]
                         }
                       />
@@ -265,7 +248,7 @@ export function SignalDetail() {
                         !choices
                           ? 'var(--black)'
                           : SSCOLOR[
-                              choices.signatures.findIndex(
+                              choices.signature.findIndex(
                                 el => el === data.signature_primary,
                               )
                             ].textColor
@@ -282,7 +265,7 @@ export function SignalDetail() {
                           !choices
                             ? 'var(--black)'
                             : SSCOLOR[
-                                choices.signatures.findIndex(el => el === d)
+                                choices.signature.findIndex(el => el === d)
                               ].textColor
                         }
                       />
@@ -373,15 +356,7 @@ export function SignalDetail() {
                             title='Delete Signal'
                             description='Are you sure to delete this signal?'
                             onConfirm={() => {
-                              axios({
-                                method: 'delete',
-                                url: `https://signals-and-trends-api.azurewebsites.net/v1/signals/delete?ids=${id}`,
-                                data: {},
-                                headers: {
-                                  'Content-Type': 'application/json',
-                                  access_token: accessToken,
-                                },
-                              })
+                              deleteSignal(Number(id))
                                 .then(() => {
                                   setButtonDisabled(false);
                                   navigate('../../archived-signals');

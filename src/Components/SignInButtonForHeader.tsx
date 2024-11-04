@@ -1,6 +1,6 @@
 import { IPublicClientApplication } from '@azure/msal-browser';
 import { useMsal } from '@azure/msal-react';
-import { loginRequest } from '../Config';
+import { loginRequest } from '../AuthConfig';
 
 function signInClickHandler(instance: IPublicClientApplication) {
   instance.loginRedirect(loginRequest);
