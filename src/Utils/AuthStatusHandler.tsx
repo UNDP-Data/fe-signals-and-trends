@@ -1,5 +1,5 @@
 import { PublicClientApplication } from '@azure/msal-browser';
-import { msalConfig } from '../Config';
+import { msalConfig } from '../AuthConfig';
 import { CLIENT_ID } from '../Constants';
 
 const msalInstance = new PublicClientApplication(msalConfig);
