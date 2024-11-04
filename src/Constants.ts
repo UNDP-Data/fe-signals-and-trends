@@ -322,5 +322,6 @@ export const TREND_ORDER_BY_OPTIONS = [
 export const WEB_ADDRESS = 'https://signals.data.undp.org';
 
 export const API_BASEURL = import.meta.env.VITE_API_BASEURL;
-// export const CLIENT_ID = process.env.INPUT_MSAL_CLIENT_ID;
 export const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
+export const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET;
+export const AUTHORITY = import.meta.env.VITE_AUTHORITY;
