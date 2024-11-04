@@ -3,13 +3,13 @@ import {
   UnauthenticatedTemplate,
   useIsAuthenticated,
 } from '@azure/msal-react';
-import axios, { AxiosError } from 'axios';
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { SignalEntryFormEl } from '../../Components/SignalEntryFormEl';
 import { SignInButton } from '../../Components/SignInButton';
 import Context from '../../Context/Context';
 import { SignalDataType, StatusList } from '../../Types';
+import { readSignal } from '../../api';
 
 export function EditSignal() {
   const navigate = useNavigate();
@@ -21,21 +21,12 @@ export function EditSignal() {
   const [err, setError] = useState<any>(undefined);
   useEffect(() => {
     if (isAuthenticated) {
-      axios
-        .get(
-          `https://signals-and-trends-api.azurewebsites.net/v1/signals/fetch?ids=${id}`,
-          {
-            headers: {
-              access_token: accessToken,
-            },
-          },
-        )
-        .catch((error: AxiosError) => {
-          setError(error.toJSON());
+      readSignal(Number(id))
+        .then(response => {
+          setSignal(response);
         })
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .then((response: any) => {
-          setSignal(response.data[0]);
+        .catch(error => {
+          setError(error.toJSON());
         });
     }
   }, [id, isAuthenticated, accessToken]);

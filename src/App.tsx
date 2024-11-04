@@ -1,17 +1,17 @@
 import { AuthenticationResult } from '@azure/msal-browser';
 import { useIsAuthenticated, useMsal } from '@azure/msal-react';
 import { Modal, Select, Switch } from 'antd';
-import axios, { AxiosError, AxiosResponse } from 'axios';
 import { useEffect, useReducer, useMemo, useState } from 'react';
 import { Footer } from './Components/FooterEl';
 import { SignUpButton } from './Components/SignUpButton';
-import { API_ACCESS_TOKEN, CHOICES, CLIENT_ID } from './Constants';
+import { CHOICES, CLIENT_ID } from './Constants';
 import Context from './Context/Context';
 import Reducer from './Context/Reducer';
 import MainBody from './MainBody';
 import {
   CardsToPrintDataType,
   ChoicesDataType,
+  CurrentUserResponse,
   SignalFiltersDataType,
   TrendFiltersDataType,
 } from './Types';
@@ -19,7 +19,8 @@ import {
 import './App.css';
 import { Header } from './Components/HeaderEl';
 import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
-import { signOutClickHandler } from './Utils/SignOutClickHandler';
+import { signOutClickHandler } from './Utils/AuthStatusHandler';
+import { getChoices, readCurrentUser } from './api';
 
 function App() {
   const isAuthenticated = useIsAuthenticated();
@@ -35,7 +36,7 @@ function App() {
     undefined,
   );
   const [accLabs, setAccLabs] = useState(false);
-  const [expiresOn, setExpiresOn] = useState<Date | undefined>(undefined);
+
   const initialState = {
     userName: undefined,
     name: undefined,
@@ -127,7 +128,7 @@ function App() {
       payload: d,
     });
   };
-  const updateRole = (d?: 'Admin' | 'Curator' | 'User') => {
+  const updateRole = (d?: 'Admin' | 'Curator' | 'User' | 'Visitor') => {
     dispatch({
       type: 'UPDATE_ROLE',
       payload: d,
@@ -200,21 +201,7 @@ function App() {
     });
   };
   const { accounts, instance } = useMsal();
-  useEffect(() => {
-    axios
-      .get(`https://signals-and-trends-api.azurewebsites.net/v1/choices/list`, {
-        headers: {
-          access_token: API_ACCESS_TOKEN,
-        },
-      })
-      .then((response: AxiosResponse) => {
-        updateChoices(response.data);
-      })
-      .catch(err => {
-        // eslint-disable-next-line no-console
-        console.warn(err);
-      });
-  }, []);
+
   useEffect(() => {
     if (isAuthenticated) {
       const accessTokenRequest = {
@@ -226,55 +213,48 @@ function App() {
           .acquireTokenSilent(accessTokenRequest)
           .then((accessTokenResponse: AuthenticationResult) => {
             setLoginError(false);
+            localStorage.setItem('token', accessTokenResponse.accessToken);
+            if (accessTokenResponse.expiresOn) {
+              localStorage.setItem(
+                'tokenExp',
+                accessTokenResponse.expiresOn.toISOString(),
+              );
+            }
+
             updateAccessToken(accessTokenResponse.accessToken);
             setAccessTokenTemp(accessTokenResponse.accessToken);
-            setExpiresOn(accessTokenResponse.expiresOn as Date);
             updateExpiresOn(accessTokenResponse.expiresOn as Date);
-            axios
-              .get(
-                'https://signals-and-trends-api.azurewebsites.net/v1/users/me',
-                {
-                  headers: {
-                    access_token: accessTokenResponse.accessToken,
-                  },
-                },
-              )
-              .then((res: AxiosResponse) => {
-                updateUserName(res.data.email);
-                updateName(res.data.name);
-                updateUnit(res.data.unit);
-                updateRole(res.data.role);
-                setUserRoleTemp(res.data.role);
-                updateUserID(res.data.id);
-                updateIsAcceleratorLab(res.data.acclab !== null);
+          })
+          .then(() => {
+            getChoices()
+              .then(data => {
+                updateChoices(data);
+              })
+              .catch(err => {
+                // eslint-disable-next-line no-console
+                console.warn(err);
+              });
+
+            readCurrentUser()
+              .then((data: CurrentUserResponse) => {
+                updateUserName(data.email);
+                updateName(data.name);
+                updateUnit(data.unit);
+                updateRole(data.role);
+                setUserRoleTemp(data.role);
+                updateUserID(data.id);
+                updateIsAcceleratorLab(data.acclab !== null);
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if (!res.data.unit) {
+                if (!data.unit) {
                   setOpenModal(true);
                 }
               })
-              .catch((err: AxiosError) => {
+              .catch(err => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((err.response?.data as any).detail === 'User not found.') {
                   setOpenModal(true);
                 }
               });
-            setInterval(async () => {
-              const now = new Date().getTime() / 1000;
-              if (expiresOn && expiresOn.getTime() / 1000 < now) {
-                try {
-                  const refreshedAccessToken =
-                    await instance.acquireTokenSilent({
-                      ...accessTokenRequest,
-                      forceRefresh: true,
-                    });
-                  updateAccessToken(refreshedAccessToken.accessToken);
-                  setExpiresOn(refreshedAccessToken.expiresOn as Date);
-                  updateExpiresOn(refreshedAccessToken.expiresOn as Date);
-                } catch (error) {
-                  // eslint-disable-next-line no-console
-                }
-              }
-            }, 60000);
           })
           .catch(_error => {
             setLoginError(true);
@@ -284,6 +264,23 @@ function App() {
       }
     }
   }, [isAuthenticated, instance]);
+
+  useEffect(() => {
+    const checkTokenExpiration = () => {
+      const accessTokenExp = localStorage.getItem('tokenExp');
+      if (accessTokenExp && Number(accessTokenExp) < Date.now() / 1000) {
+        dispatch({ type: 'LOGOUT' });
+        signOutClickHandler();
+      }
+    };
+
+    checkTokenExpiration();
+
+    const interval = setInterval(checkTokenExpiration, 60000);
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated, instance]);
+
   const contextValue = useMemo(
     () => ({
       ...state,
@@ -402,7 +399,6 @@ function App() {
             unit={selectedUnit}
             setOpenModal={setOpenModal}
             accLabs={accLabs}
-            accessTokenTemp={accessTokenTemp}
             userRoleTemp={userRoleTemp}
           />
         ) : (

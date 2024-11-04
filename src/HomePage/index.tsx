@@ -1,5 +1,4 @@
 /* eslint-disable no-underscore-dangle */
-import axios, { AxiosResponse } from 'axios';
 import sortBy from 'lodash.sortby';
 import { useContext, useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
@@ -8,11 +7,11 @@ import Background from '../assets/UNDP-hero-image.jpg';
 import SSBannerImage from '../assets/ssBannerImage.jpg';
 import FODBannerImage from '../assets/fodBannerImage.jpg';
 import ThirdBannerImage from '../assets/ThirdBannerImage.png';
-import { API_ACCESS_TOKEN } from '../Constants';
 import { SignalDataType, TrendDataType } from '../Types';
 import { TrendCard } from '../Components/TrendCard';
 import { TrendsVis } from './TrendsVis';
 import Context from '../Context/Context';
+import { searchSignals, searchTrends } from '../api';
 
 const HeroImageEl = styled.div`
   background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
@@ -107,50 +106,32 @@ export function HomePage() {
   const [trendListing, setTrendList] = useState<undefined | TrendDataType[]>(
     undefined,
   );
-  const { choices, accessToken } = useContext(Context);
+  const { choices } = useContext(Context);
   useEffect(() => {
-    axios
-      .get(
-        `https://signals-and-trends-api.azurewebsites.net/v1/signals/list?page=1&per_page=5&statuses=Approved`,
-        {
-          headers: {
-            access_token: accessToken || API_ACCESS_TOKEN,
-          },
-        },
-      )
-      .then((response: AxiosResponse) => {
+    searchSignals({ page: 1, per_page: 5, statuses: ['Approved'] })
+      .then(response => {
         if (response) {
           setSignalList(
-            sortBy(response.data.data, d => Date.parse(d.created_at)).reverse(),
+            sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
           );
         }
       })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .catch((err: any) => {
+      .catch(err => {
         if (err.response?.data.detail === 'No signal matches the parameters.') {
           setSignalList([]);
         }
       });
   }, []);
   useEffect(() => {
-    axios
-      .get(
-        `https://signals-and-trends-api.azurewebsites.net/v1/trends/list?page=1&per_page=5&statuses=Approved`,
-        {
-          headers: {
-            access_token: accessToken || API_ACCESS_TOKEN,
-          },
-        },
-      )
-      .then((response: AxiosResponse) => {
+    searchTrends({ page: 1, per_page: 5, statuses: ['Approved'] })
+      .then(response => {
         if (response) {
           setTrendList(
-            sortBy(response.data.data, d => Date.parse(d.created_at)).reverse(),
+            sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
           );
         }
       })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .catch((err: any) => {
+      .catch(err => {
         if (err.response?.data.detail === 'No trend matches the parameters.') {
           setTrendList([]);
         }

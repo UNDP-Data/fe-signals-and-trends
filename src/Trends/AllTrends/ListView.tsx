@@ -115,7 +115,7 @@ export function ListView() {
                       ? 'var(--black)'
                       : UNDPColorModule.categoricalColors.colors[
                           8 -
-                            (choices?.horizons.findIndex(
+                            (choices?.horizon.findIndex(
                               el => el === d.time_horizon,
                             ) as number)
                         ]

@@ -122,7 +122,7 @@ export function ListView() {
                       !choices
                         ? 'var(--black)'
                         : UNDPColorModule.categoricalColors.colors[
-                            choices?.steepv.findIndex(
+                            choices?.steep.findIndex(
                               el => el === d.steep_primary,
                             )
                           ]
@@ -138,7 +138,7 @@ export function ListView() {
                           !choices
                             ? 'var(--black)'
                             : UNDPColorModule.categoricalColors.colors[
-                                choices?.steepv.findIndex(c => c === el)
+                                choices?.steep.findIndex(c => c === el)
                               ]
                         }
                         text={el.split(' – ')[0]}
@@ -159,7 +159,7 @@ export function ListView() {
                     circleColor={
                       choices
                         ? SSCOLOR[
-                            choices.signatures.findIndex(
+                            choices.signature.findIndex(
                               el => el === d.signature_primary,
                             )
                           ].textColor
@@ -178,7 +178,7 @@ export function ListView() {
                         !choices
                           ? 'var(--black)'
                           : SSCOLOR[
-                              choices.signatures.findIndex(sig => sig === el)
+                              choices.signature.findIndex(sig => sig === el)
                             ].textColor
                       }
                     />

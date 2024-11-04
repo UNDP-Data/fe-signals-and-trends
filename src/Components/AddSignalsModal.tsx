@@ -8,13 +8,12 @@ import {
   Select,
   Tabs,
 } from 'antd';
-import axios, { AxiosResponse } from 'axios';
 import sortBy from 'lodash.sortby';
 import { useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { API_ACCESS_TOKEN } from '../Constants';
 import { SignalDataType, SignalFiltersDataType } from '../Types';
 import Context from '../Context/Context';
+import { searchSignals } from '../api';
 
 interface Props {
   setSignalModal: (_d: boolean) => void;
@@ -37,7 +36,7 @@ const RadioOutline = styled.div`
 
 export function AddSignalsModal(props: Props) {
   const { setSignalModal, trendsSignal, setTrendsSignal } = props;
-  const { accessToken, choices } = useContext(Context);
+  const { choices } = useContext(Context);
   const [activeTab, setActiveTab] = useState('1');
   const [paginationValue, setPaginationValue] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -70,17 +69,15 @@ export function AddSignalsModal(props: Props) {
     if (ids?.length > 0 && ids[0] !== '') {
       setLoading(true);
       setError(undefined);
-      const signalIds = ids.toString().replaceAll(',', '&ids=');
-      axios
-        .get(
-          `https://signals-and-trends-api.azurewebsites.net/v1/signals/fetch?ids=${signalIds}`,
-          {
-            headers: {
-              access_token: accessToken || API_ACCESS_TOKEN,
-            },
-          },
-        )
-        .then((response: AxiosResponse) => {
+      const signalIds = ids
+        .map(id => Number(id))
+        .filter(id => !Number.isNaN(id));
+
+      searchSignals({
+        ids: signalIds,
+        statuses: ['Approved', 'Archived', 'Draft', 'New'],
+      })
+        .then(response => {
           setSignalList(
             sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
           );
@@ -130,65 +127,70 @@ export function AddSignalsModal(props: Props) {
     setLoading(true);
     setError(undefined);
     setSignalList([]);
-    const statusQueryParameter = '&statuses=Approved';
+    const statusQueryParameter: ('Draft' | 'New' | 'Approved' | 'Archived')[] =
+      Array.isArray(filters.status) && filters.status.length > 0
+        ? filters.status.filter(
+            (status): status is 'Draft' | 'New' | 'Approved' | 'Archived' =>
+              ['Draft', 'New', 'Approved', 'Archived'].includes(status),
+          ) // Type guard to ensure the filtered statuses are of the correct type
+        : ['Approved'];
+
     const steepPrimaryQueryParameter =
       filters.steep_primary === 'All Primary STEEP+V'
-        ? ''
-        : `&steep_primary=${filters.steep_primary}`;
+        ? undefined
+        : filters.steep_primary;
+
     const steepSecondaryQueryParameter =
       filters.steep_secondary === 'All Secondary STEEP+V'
-        ? ''
-        : `&steep_secondary=${filters.steep_secondary}`;
+        ? undefined
+        : [filters.steep_secondary];
+
     const ss1QueryParameter =
       filters.signature_primary === 'All Primary Signature Solutions/Enabler'
-        ? ''
-        : `&signature_primary=${filters.signature_primary.replaceAll(
-            ' ',
-            '%20',
-          )}`;
+        ? undefined
+        : filters.signature_primary;
+
     const ss2QueryParameter =
       filters.signature_secondary ===
       'All Secondary Signature Solutions/Enabler'
-        ? ''
-        : `&signature_secondary=${filters.signature_secondary.replaceAll(
-            ' ',
-            '%20',
-          )}`;
+        ? undefined
+        : [filters.signature_secondary];
+
     const sdgQueryParameter =
-      filters.sdg === 'All SDGs'
-        ? ''
-        : `&sdgs=${filters.sdg.replaceAll(' ', '%20')}`;
+      filters.sdg === 'All SDGs' ? undefined : [filters.sdg];
+
     const locationQueryParameter =
-      filters.location === 'All Locations'
-        ? ''
-        : `&location=${filters.location}`;
+      filters.location === 'All Locations' ? undefined : filters.location;
+
     const scoreQueryParameter =
-      filters.score === 'All Scores'
-        ? ''
-        : `&score=${filters.score.replaceAll(' ', '%20')}`;
+      filters.score === 'All Scores' ? undefined : filters.score;
+
     const createdForQueryParameter =
-      filters.created_for === 'All Options'
-        ? ''
-        : `&created_for=${filters.created_for.replaceAll(' ', '%20')}`;
-    const searchQueryParameter = filters.search
-      ? `&query=${filters.search}`
-      : '';
+      filters.created_for === 'All Options' ? undefined : filters.created_for;
+
+    const searchQueryParameter = filters.search || undefined;
+
     const unitQueryParameter =
-      filters.unit_region === 'All Units'
-        ? ''
-        : `&unit_region=${filters.unit_region.replaceAll(' ', '%20')}`;
-    axios
-      .get(
-        `https://signals-and-trends-api.azurewebsites.net/v1/signals/list?page=${paginationValue}&per_page=${pageSize}${steepPrimaryQueryParameter}${steepSecondaryQueryParameter}${sdgQueryParameter}${ss1QueryParameter}${ss2QueryParameter}${createdForQueryParameter}${statusQueryParameter}${unitQueryParameter}${locationQueryParameter}${scoreQueryParameter}${searchQueryParameter}`,
-        {
-          headers: {
-            access_token: accessToken || API_ACCESS_TOKEN,
-          },
-        },
-      )
-      .then((response: AxiosResponse) => {
+      filters.unit_region === 'All Units' ? undefined : filters.unit_region;
+
+    searchSignals({
+      page: paginationValue,
+      per_page: pageSize,
+      steep_primary: steepPrimaryQueryParameter,
+      steep_secondary: steepSecondaryQueryParameter,
+      sdgs: sdgQueryParameter,
+      created_for: createdForQueryParameter,
+      unit: unitQueryParameter,
+      location: locationQueryParameter,
+      score: scoreQueryParameter,
+      query: searchQueryParameter,
+      statuses: statusQueryParameter,
+      signature_primary: ss1QueryParameter,
+      signature_secondary: ss2QueryParameter,
+    })
+      .then(response => {
         setSignalList(
-          sortBy(response.data.data, d => Date.parse(d.created_at)).reverse(),
+          sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
         );
         setLoading(false);
       })
@@ -212,67 +214,72 @@ export function AddSignalsModal(props: Props) {
     setSignalList([]);
     setError(undefined);
     setLoading(true);
-    const statusQueryParameter = '&statuses=Approved';
+    const statusQueryParameter: ('Draft' | 'New' | 'Approved' | 'Archived')[] =
+      Array.isArray(filters.status) && filters.status.length > 0
+        ? filters.status.filter(
+            (status): status is 'Draft' | 'New' | 'Approved' | 'Archived' =>
+              ['Draft', 'New', 'Approved', 'Archived'].includes(status),
+          )
+        : ['Approved'];
+
     const steepPrimaryQueryParameter =
       filters.steep_primary === 'All Primary STEEP+V'
-        ? ''
-        : `&steep_primary=${filters.steep_primary}`;
+        ? undefined
+        : filters.steep_primary;
+
     const steepSecondaryQueryParameter =
       filters.steep_secondary === 'All Secondary STEEP+V'
-        ? ''
-        : `&steep_secondary=${filters.steep_secondary}`;
+        ? undefined
+        : [filters.steep_secondary];
+
     const ss1QueryParameter =
       filters.signature_primary === 'All Primary Signature Solutions/Enabler'
-        ? ''
-        : `&signature_primary=${filters.signature_primary.replaceAll(
-            ' ',
-            '%20',
-          )}`;
+        ? undefined
+        : filters.signature_primary;
+
     const ss2QueryParameter =
       filters.signature_secondary ===
       'All Secondary Signature Solutions/Enabler'
-        ? ''
-        : `&signature_secondary=${filters.signature_secondary.replaceAll(
-            ' ',
-            '%20',
-          )}`;
+        ? undefined
+        : [filters.signature_secondary];
+
     const sdgQueryParameter =
-      filters.sdg === 'All SDGs'
-        ? ''
-        : `&sdgs=${filters.sdg.replaceAll(' ', '%20')}`;
+      filters.sdg === 'All SDGs' ? undefined : [filters.sdg];
+
     const locationQueryParameter =
-      filters.location === 'All Locations'
-        ? ''
-        : `&location=${filters.location}`;
+      filters.location === 'All Locations' ? undefined : filters.location;
+
     const scoreQueryParameter =
-      filters.score === 'All Scores'
-        ? ''
-        : `&score=${filters.score.replaceAll(' ', '%20')}`;
+      filters.score === 'All Scores' ? undefined : filters.score;
+
     const createdForQueryParameter =
-      filters.created_for === 'All Options'
-        ? ''
-        : `&created_for=${filters.created_for.replaceAll(' ', '%20')}`;
-    const searchQueryParameter = filters.search
-      ? `&query=${filters.search}`
-      : '';
+      filters.created_for === 'All Options' ? undefined : filters.created_for;
+
+    const searchQueryParameter = filters.search || undefined;
+
     const unitQueryParameter =
-      filters.unit_region === 'All Units'
-        ? ''
-        : `&unit=${filters.unit_region.replaceAll(' ', '%20')}`;
-    axios
-      .get(
-        `https://signals-and-trends-api.azurewebsites.net/v1/signals/list?page=1&per_page=${pageSize}&${steepPrimaryQueryParameter}${steepSecondaryQueryParameter}${sdgQueryParameter}${ss1QueryParameter}${ss2QueryParameter}${createdForQueryParameter}${statusQueryParameter}${unitQueryParameter}${locationQueryParameter}${scoreQueryParameter}${searchQueryParameter}`,
-        {
-          headers: {
-            access_token: accessToken || API_ACCESS_TOKEN,
-          },
-        },
-      )
-      .then((response: AxiosResponse) => {
+      filters.unit_region === 'All Units' ? undefined : filters.unit_region;
+
+    searchSignals({
+      page: paginationValue,
+      per_page: pageSize,
+      steep_primary: steepPrimaryQueryParameter,
+      steep_secondary: steepSecondaryQueryParameter,
+      sdgs: sdgQueryParameter,
+      created_for: createdForQueryParameter,
+      unit: unitQueryParameter,
+      location: locationQueryParameter,
+      score: scoreQueryParameter,
+      query: searchQueryParameter,
+      statuses: statusQueryParameter,
+      signature_primary: ss1QueryParameter,
+      signature_secondary: ss2QueryParameter,
+    })
+      .then(response => {
         setSignalList(
-          sortBy(response.data.data, d => Date.parse(d.created_at)).reverse(),
+          sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
         );
-        setTotalNoOfPages(response.data.total_pages);
+        setTotalNoOfPages(response.total_pages);
         setPaginationValue(1);
         setLoading(false);
       })
@@ -360,7 +367,7 @@ export function AddSignalsModal(props: Props) {
                     >
                       All Primary STEEP+V
                     </Select.Option>
-                    {choices?.steepv.map(d => (
+                    {choices?.steep.map(d => (
                       <Select.Option className='undp-select-option' key={d}>
                         {d}
                       </Select.Option>
@@ -392,7 +399,7 @@ export function AddSignalsModal(props: Props) {
                     >
                       All Secondary STEEP+V
                     </Select.Option>
-                    {choices?.steepv.map(d => (
+                    {choices?.steep.map(d => (
                       <Select.Option className='undp-select-option' key={d}>
                         {d}
                       </Select.Option>
@@ -424,7 +431,7 @@ export function AddSignalsModal(props: Props) {
                     >
                       All Primary Signature Solutions/Enabler
                     </Select.Option>
-                    {choices?.signatures.map(d => (
+                    {choices?.signature.map(d => (
                       <Select.Option className='undp-select-option' key={d}>
                         {d}
                       </Select.Option>
@@ -456,7 +463,7 @@ export function AddSignalsModal(props: Props) {
                     >
                       All Secondary Signature Solutions/Enabler
                     </Select.Option>
-                    {choices?.signatures.map(d => (
+                    {choices?.signature.map(d => (
                       <Select.Option className='undp-select-option' key={d}>
                         {d}
                       </Select.Option>
@@ -486,7 +493,7 @@ export function AddSignalsModal(props: Props) {
                     >
                       All SDGs
                     </Select.Option>
-                    {choices?.sdgs.map(d => (
+                    {choices?.goal.map(d => (
                       <Select.Option className='undp-select-option' key={d}>
                         {d}
                       </Select.Option>
@@ -516,7 +523,7 @@ export function AddSignalsModal(props: Props) {
                     >
                       All Scores
                     </Select.Option>
-                    {choices?.scores.map(d => (
+                    {choices?.score.map(d => (
                       <Select.Option className='undp-select-option' key={d}>
                         {d}
                       </Select.Option>
@@ -546,7 +553,7 @@ export function AddSignalsModal(props: Props) {
                     >
                       All Locations
                     </Select.Option>
-                    {choices?.locations.map(d => (
+                    {choices?.location.map(d => (
                       <Select.Option className='undp-select-option' key={d}>
                         {d}
                       </Select.Option>
@@ -577,14 +584,14 @@ export function AddSignalsModal(props: Props) {
                       All Units
                     </Select.Option>
                     <Select.OptGroup label='Parent units'>
-                      {choices?.unit_regions.map(d => (
+                      {choices?.unit_region.map(d => (
                         <Select.Option className='undp-select-option' key={d}>
                           {d}
                         </Select.Option>
                       ))}
                     </Select.OptGroup>
                     <Select.OptGroup label='Units'>
-                      {choices?.unit_names.map(d => (
+                      {choices?.unit_name.map(d => (
                         <Select.Option className='undp-select-option' key={d}>
                           {d}
                         </Select.Option>

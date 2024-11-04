@@ -5,7 +5,6 @@ import {
 import { useContext, useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { Modal, notification } from 'antd';
-import axios, { AxiosResponse } from 'axios';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { AddNewSignalEl, AddNewTrendEl } from './AddNew';
 import { AdminPanel } from './AdminPanel';
@@ -18,12 +17,12 @@ import { ArchivedSignalsListing, SignalsListing } from './Signals';
 import { TrendDetail } from './Trends/TrendDetail';
 import { ArchivedTrendsListing, TrendsListing } from './Trends';
 import { MyDrafts } from './MyDrafts';
-import { API_ACCESS_TOKEN } from './Constants';
 import { SignalDataType, TrendDataType } from './Types';
 import { PDFDocument } from './PDFGenerator';
 import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
-import { signOutClickHandler } from './Utils/SignOutClickHandler';
+import { signOutClickHandler } from './Utils/AuthStatusHandler';
 import { Header } from './Components/HeaderEl';
+import { searchSignals, searchTrends } from './api';
 
 function MainBody() {
   const {
@@ -32,7 +31,6 @@ function MainBody() {
     notificationText,
     updateNotificationText,
     cardsToPrint,
-    accessToken,
     updateCardsToPrint,
   } = useContext(Context);
   const [openModal, setOpenModal] = useState(false);
@@ -76,19 +74,14 @@ function MainBody() {
     if (cardsToPrint.filter(d => d.type === 'signal').length > 0) {
       const signalIds = cardsToPrint
         .filter(d => d.type === 'signal')
-        .map(d => d.id)
-        .toString()
-        .replaceAll(',', '&ids=');
-      axios
-        .get(
-          `https://signals-and-trends-api.azurewebsites.net/v1/signals/fetch?ids=${signalIds}`,
-          {
-            headers: {
-              access_token: accessToken || API_ACCESS_TOKEN,
-            },
-          },
-        )
-        .then((res: AxiosResponse) => {
+        .map(d => Number(d.id))
+        .filter(id => !Number.isNaN(id));
+      searchSignals({
+        ids: signalIds,
+        statuses: ['Approved', 'Archived', 'Draft', 'New'],
+        per_page: signalIds.length,
+      })
+        .then(res => {
           const sList: string[] = [];
           res.data.forEach((d: SignalDataType) => {
             const connectedTrends = d.connected_trends?.filter(
@@ -99,17 +92,13 @@ function MainBody() {
             });
           });
           if (sList.length > 0) {
-            const connectedTrends = sList.toString().replaceAll(',', '&ids=');
-            axios
-              .get(
-                `https://signals-and-trends-api.azurewebsites.net/v1/trends/fetch?ids=${connectedTrends}`,
-                {
-                  headers: {
-                    access_token: accessToken || API_ACCESS_TOKEN,
-                  },
-                },
-              )
-              .then((trendRes: AxiosResponse) => {
+            const connectedTrends = sList.map(id => Number(id));
+            searchTrends({
+              ids: connectedTrends,
+              statuses: ['Approved', 'Archived', 'Draft', 'New'],
+              per_page: connectedTrends.length,
+            })
+              .then(trendRes => {
                 setConnectedTrendsForSignalsForPrinting(trendRes.data);
                 setSignalsForPrinting(res.data);
               })
@@ -131,19 +120,14 @@ function MainBody() {
     if (cardsToPrint.filter(d => d.type === 'trend').length > 0) {
       const signalIds = cardsToPrint
         .filter(d => d.type === 'trend')
-        .map(d => d.id)
-        .toString()
-        .replaceAll(',', '&ids=');
-      axios
-        .get(
-          `https://signals-and-trends-api.azurewebsites.net/v1/trends/fetch?ids=${signalIds}`,
-          {
-            headers: {
-              access_token: accessToken || API_ACCESS_TOKEN,
-            },
-          },
-        )
-        .then((res: AxiosResponse) => {
+        .map(d => Number(d.id))
+        .filter(id => !Number.isNaN(id));
+      searchTrends({
+        ids: signalIds,
+        statuses: ['Approved', 'Archived', 'Draft', 'New'],
+        per_page: signalIds.length,
+      })
+        .then(res => {
           const sList: string[] = [];
           res.data.forEach((d: TrendDataType) => {
             const connectedSignals = d.connected_signals?.filter(
@@ -154,17 +138,15 @@ function MainBody() {
             });
           });
           if (sList.length > 0) {
-            const connectedSignals = sList.toString().replaceAll(',', '&ids=');
-            axios
-              .get(
-                `https://signals-and-trends-api.azurewebsites.net/v1/signals/fetch?ids=${connectedSignals}`,
-                {
-                  headers: {
-                    access_token: accessToken || API_ACCESS_TOKEN,
-                  },
-                },
-              )
-              .then((trendRes: AxiosResponse) => {
+            const connectedSignals = sList
+              .map(id => Number(id))
+              .filter(id => !Number.isNaN(id));
+            searchSignals({
+              ids: connectedSignals,
+              statuses: ['Approved', 'Archived', 'Draft', 'New'],
+              per_page: connectedSignals.length,
+            })
+              .then(trendRes => {
                 setConnectedSignalsForTrendsForPrinting(trendRes.data);
                 setTrendsForPrinting(res.data);
               })
@@ -329,12 +311,14 @@ function MainBody() {
                           {d.mode === 'card' ? 'Card View' : 'Detail View'}
                         </p>
                       </div>
-                      <h6 className='undp-typography'>{s.headline}</h6>
+                      <h6 className='undp-typography'>
+                        {s?.headline || 'loading...'}
+                      </h6>
                       <p
                         className='undp-typography margin-bottom-07 small-font'
                         style={{ textAlign: 'left' }}
                       >
-                        {s.description}
+                        {s?.description || 'loading...'}
                       </p>
                       <button
                         type='button'
@@ -389,12 +373,14 @@ function MainBody() {
                         {d.mode === 'card' ? 'Card View' : 'Detail View'}
                       </p>
                     </div>
-                    <h6 className='undp-typography'>{s.headline}</h6>
+                    <h6 className='undp-typography'>
+                      {s?.headline || 'loading...'}
+                    </h6>
                     <p
                       className='undp-typography margin-bottom-07 small-font'
                       style={{ textAlign: 'left' }}
                     >
-                      {s.description}
+                      {s?.description || 'loading...'}
                     </p>
                     <button
                       type='button'
