@@ -73,7 +73,10 @@ export function AddSignalsModal(props: Props) {
         .map(id => Number(id))
         .filter(id => !Number.isNaN(id));
 
-      searchSignals({ ids: signalIds })
+      searchSignals({
+        ids: signalIds,
+        statuses: ['Approved', 'Archived', 'Draft', 'New'],
+      })
         .then(response => {
           setSignalList(
             sortBy(response.data, d => Date.parse(d.created_at)).reverse(),

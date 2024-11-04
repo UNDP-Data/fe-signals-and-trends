@@ -70,7 +70,10 @@ export function AddTrendsModal(props: Props) {
       const trendsIds = ids
         .map(id => Number(id))
         .filter(id => !Number.isNaN(id));
-      searchTrends({ ids: trendsIds })
+      searchTrends({
+        ids: trendsIds,
+        statuses: ['Approved', 'Archived', 'Draft', 'New'],
+      })
         .then(response => {
           setTrendsList(
             sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
