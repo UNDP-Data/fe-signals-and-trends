@@ -203,7 +203,7 @@ export function SignalEntryFormEl(props: Props) {
       .catch(err => {
         setButtonDisabled(false);
         setSubmittingError(
-          `Error code ${err.response?.status}: ${err.response?.data}. ${
+          `${err}. ${
             err.response?.status === 500 ? 'Please try again in some time' : ''
           }`,
         );
@@ -224,7 +224,7 @@ export function SignalEntryFormEl(props: Props) {
         })
         .catch(err => {
           setSubmittingError(
-            `Error code ${err.response?.status}: ${err.response?.data}. ${
+            `${err}. ${
               err.response?.status === 500
                 ? 'Please try again in some time'
                 : ''
@@ -989,7 +989,8 @@ export function SignalEntryFormEl(props: Props) {
                       relevance: signalData?.relevance || '',
                       location: signalData?.location || '',
                       created_by: signalData?.created_by || '',
-                      score: signalData?.score || '',
+                      created_for: signalData.created_for,
+                      score: signalData.score,
                       connected_trends: selectedTrendsList,
                       status: 'New',
                       keywords: [keyword1, keyword2, keyword3].filter(
@@ -1006,9 +1007,7 @@ export function SignalEntryFormEl(props: Props) {
                       .catch(err => {
                         setButtonDisabled(false);
                         setSubmittingError(
-                          `Error code ${err.response?.status}: ${
-                            err.response?.data
-                          }. ${
+                          `${err}. ${
                             err.response?.status === 500
                               ? 'Please try again in some time'
                               : ''
@@ -1032,17 +1031,18 @@ export function SignalEntryFormEl(props: Props) {
                       id: signalData.id,
                       headline: signalData?.headline || '',
                       description: signalData?.description || '',
-                      attachment: signalData?.attachment || '',
+                      attachment: signalData?.attachment,
                       steep_primary: signalData?.steep_primary || '',
+                      steep_secondary: signalData?.steep_secondary,
                       signature_primary: signalData?.signature_primary || '',
-                      signature_secondary:
-                        signalData?.signature_secondary || [],
+                      signature_secondary: signalData?.signature_secondary,
                       sdgs: signalData?.sdgs || [],
                       url: signalData?.url || '',
                       relevance: signalData?.relevance || '',
                       location: signalData?.location || '',
-                      score: signalData?.score || '',
+                      score: signalData.score,
                       created_by: signalData?.created_by || '',
+                      created_for: signalData.created_for,
                       connected_trends: selectedTrendsList,
                       keywords: [keyword1, keyword2, keyword3].filter(
                         (d): d is string => d !== null && d !== undefined,
@@ -1059,9 +1059,7 @@ export function SignalEntryFormEl(props: Props) {
                       .catch(err => {
                         setButtonDisabled(false);
                         setSubmittingError(
-                          `Error code ${err.response?.status}: ${
-                            err.response?.data
-                          }. ${
+                          `${err}. ${
                             err.response?.status === 500
                               ? 'Please try again in some time'
                               : ''
@@ -1128,7 +1126,7 @@ export function SignalEntryFormEl(props: Props) {
                     status: signalData?.status || '',
                     created_by: signalData.created_by || '',
                     created_for: signalData?.created_for || '',
-                    score: signalData?.score || '',
+                    score: signalData.score,
                     created_unit: signalData?.created_unit || '',
                     connected_trends: selectedTrendsList,
                     keywords: [keyword1, keyword2, keyword3].filter(
@@ -1143,9 +1141,7 @@ export function SignalEntryFormEl(props: Props) {
                     .catch(err => {
                       setButtonDisabled(false);
                       setSubmittingError(
-                        `Error code ${err.response?.status}: ${
-                          err.response?.data
-                        }. ${
+                        `${err}. ${
                           err.response?.status === 500
                             ? 'Please try again in some time'
                             : ''
@@ -1192,7 +1188,7 @@ export function SignalEntryFormEl(props: Props) {
                   relevance: signalData?.relevance || '',
                   created_for: signalData?.created_for || '',
                   location: signalData?.location || '',
-                  score: signalData?.score || '',
+                  score: signalData.score,
                   connected_trends: selectedTrendsList,
                   status: 'New',
                   keywords: [keyword1, keyword2, keyword3].filter(
@@ -1209,9 +1205,7 @@ export function SignalEntryFormEl(props: Props) {
                   .catch(err => {
                     setButtonDisabled(false);
                     setSubmittingError(
-                      `Error code ${err.response?.status}: ${
-                        err.response?.data
-                      }. ${
+                      `${err}. ${
                         err.response?.status === 500
                           ? 'Please try again in some time'
                           : ''
@@ -1241,7 +1235,7 @@ export function SignalEntryFormEl(props: Props) {
                   url: signalData?.url || '',
                   relevance: signalData?.relevance || '',
                   created_for: signalData?.created_for || '',
-                  score: signalData?.score || '',
+                  score: signalData.score,
                   location: signalData?.location || '',
                   connected_trends: selectedTrendsList,
                   status: 'Draft',
@@ -1259,9 +1253,7 @@ export function SignalEntryFormEl(props: Props) {
                   .catch(err => {
                     setButtonDisabled(false);
                     setSubmittingError(
-                      `Error code ${err.response?.status}: ${
-                        err.response?.data
-                      }. ${
+                      `${err}. ${
                         err.response?.status === 500
                           ? 'Please try again in some time'
                           : ''

@@ -36,7 +36,7 @@ export function MyDrafts() {
           updateSignalList([]);
         } else {
           setError(
-            `Error code ${err.response?.status}: ${err.response?.data}. ${
+            `${err}. ${
               err.response?.status === 500
                 ? 'Please try again in some time'
                 : ''
@@ -66,7 +66,7 @@ export function MyDrafts() {
           updateSignalList([]);
         } else {
           setError(
-            `Error code ${err.response?.status}: ${err.response?.data}. ${
+            `${err}. ${
               err.response?.status === 500
                 ? 'Please try again in some time'
                 : ''

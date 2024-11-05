@@ -29,7 +29,7 @@ export function EditTrend() {
         })
         .catch(err => {
           setError(
-            `Error code ${err.response?.status}: ${
+            `${err}: ${
               err.response?.status === 404
                 ? 'No trend available with the selected ID'
                 : err.response?.data

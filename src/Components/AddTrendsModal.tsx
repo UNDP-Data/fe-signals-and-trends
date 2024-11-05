@@ -86,7 +86,7 @@ export function AddTrendsModal(props: Props) {
             setLoading(false);
           } else if (err.response?.status === 500) {
             setError(
-              `Error code ${err.response?.status}: ${err.response?.data}. ${
+              `${err}. ${
                 err.response?.status === 500
                   ? 'Please try again in some time'
                   : ''
@@ -95,7 +95,7 @@ export function AddTrendsModal(props: Props) {
             setLoading(false);
           } else if (err.response?.status === 422) {
             setError(
-              `Error code ${err.response?.status}: ${
+              `${err}. ${
                 err.response?.status === 422
                   ? 'Please check if the input to this field is correct, IDs are numerical and must be separated by commas'
                   : ''
@@ -180,7 +180,7 @@ export function AddTrendsModal(props: Props) {
           setLoading(false);
         } else {
           setError(
-            `Error code ${err.response?.status}: ${err.response?.data}. ${
+            `${err}. ${
               err.response?.status === 500
                 ? 'Please try again in some time'
                 : ''
@@ -210,7 +210,7 @@ export function AddTrendsModal(props: Props) {
           setLoading(false);
         } else {
           setError(
-            `Error code ${err.response?.status}: ${err.response?.data}. ${
+            `${err}. ${
               err.response?.status === 500
                 ? 'Please try again in some time'
                 : ''
