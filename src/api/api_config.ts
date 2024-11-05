@@ -38,6 +38,7 @@ axiosInstance.interceptors.request.use(
           throw new Error('Failed to refresh access token');
         }
       } catch (error) {
+        localStorage.clear();
         await signOutClickHandler();
         throw error;
       }
