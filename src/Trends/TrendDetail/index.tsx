@@ -63,7 +63,7 @@ export function TrendDetail() {
           })
           .catch(err => {
             setError(
-              `Error code ${err.response?.status}: ${
+              `${err}: ${
                 err.response?.status === 404
                   ? 'No trend available with the selected IDs'
                   : err.response?.data
@@ -357,9 +357,7 @@ export function TrendDetail() {
                                 .catch(err => {
                                   setButtonDisabled(false);
                                   setSubmittingError(
-                                    `Error code ${err.response?.status}: ${
-                                      err.response?.data
-                                    }. ${
+                                    `${err}. ${
                                       err.response?.status === 500
                                         ? 'Please try again in some time'
                                         : ''
