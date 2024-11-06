@@ -13,7 +13,7 @@ import { useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { TrendDataType, TrendFiltersDataType } from '../Types';
 import Context from '../Context/Context';
-import { searchTrends } from '../api';
+import { searchTrends } from '../API';
 
 interface Props {
   setTrendModal: (_d: boolean) => void;
@@ -72,7 +72,7 @@ export function AddTrendsModal(props: Props) {
         .filter(id => !Number.isNaN(id));
       searchTrends({
         ids: trendsIds,
-        statuses: ['Approved', 'Archived', 'Draft', 'New'],
+        statuses: ['Approved'],
       })
         .then(response => {
           setTrendsList(

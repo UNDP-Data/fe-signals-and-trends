@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { isAxiosError } from 'axios';
-import { axiosInstance } from './api_config';
+import { axiosInstance } from './apiConfig';
 
 export function getChoices() {
   return axiosInstance

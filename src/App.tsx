@@ -9,9 +9,10 @@ import Context from './Context/Context';
 import Reducer from './Context/Reducer';
 import MainBody from './MainBody';
 import {
+  AllowedRolesDataType,
   CardsToPrintDataType,
   ChoicesDataType,
-  CurrentUserResponse,
+  CurrentUserResponseDataType,
   SignalFiltersDataType,
   TrendFiltersDataType,
 } from './Types';
@@ -20,7 +21,8 @@ import './App.css';
 import { Header } from './Components/HeaderEl';
 import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
 import { signOutClickHandler } from './Utils/AuthStatusHandler';
-import { getChoices, readCurrentUser } from './api';
+import { getChoices, readCurrentUser } from './API';
+import { setLocalStorage } from './Utils/UpdateLocalStrage';
 
 function App() {
   const isAuthenticated = useIsAuthenticated();
@@ -29,9 +31,6 @@ function App() {
     undefined,
   );
   const [loginError, setLoginError] = useState(false);
-  const [accessTokenTemp, setAccessTokenTemp] = useState<string | undefined>(
-    undefined,
-  );
   const [userRoleTemp, setUserRoleTemp] = useState<string | undefined>(
     undefined,
   );
@@ -42,8 +41,6 @@ function App() {
     name: undefined,
     unit: undefined,
     role: undefined,
-    accessToken: undefined,
-    expiresOn: undefined,
     notificationText: undefined,
     choices: undefined,
     isAcceleratorLab: undefined,
@@ -128,7 +125,7 @@ function App() {
       payload: d,
     });
   };
-  const updateRole = (d?: 'Admin' | 'Curator' | 'User' | 'Visitor') => {
+  const updateRole = (d?: AllowedRolesDataType) => {
     dispatch({
       type: 'UPDATE_ROLE',
       payload: d,
@@ -208,22 +205,19 @@ function App() {
         scopes: [`${CLIENT_ID}/.default`],
         account: accounts[0],
       };
+      setLocalStorage('account', JSON.stringify(accounts[0]));
       try {
         instance
           .acquireTokenSilent(accessTokenRequest)
           .then((accessTokenResponse: AuthenticationResult) => {
             setLoginError(false);
-            localStorage.setItem('token', accessTokenResponse.accessToken);
+            setLocalStorage('token', accessTokenResponse.accessToken);
             if (accessTokenResponse.expiresOn) {
-              localStorage.setItem(
+              setLocalStorage(
                 'tokenExp',
                 accessTokenResponse.expiresOn.toISOString(),
               );
             }
-
-            updateAccessToken(accessTokenResponse.accessToken);
-            setAccessTokenTemp(accessTokenResponse.accessToken);
-            updateExpiresOn(accessTokenResponse.expiresOn as Date);
           })
           .then(() => {
             getChoices()
@@ -236,7 +230,7 @@ function App() {
               });
 
             readCurrentUser()
-              .then((data: CurrentUserResponse) => {
+              .then((data: CurrentUserResponseDataType) => {
                 updateUserName(data.email);
                 updateName(data.name);
                 updateUnit(data.unit);
@@ -262,25 +256,10 @@ function App() {
       } catch (error) {
         setLoginError(true);
       }
+    } else {
+      setLoginError(true);
     }
   }, [isAuthenticated, instance]);
-
-  useEffect(() => {
-    const checkTokenExpiration = () => {
-      const accessTokenExp = localStorage.getItem('tokenExp');
-      if (accessTokenExp && Number(accessTokenExp) < Date.now() / 1000) {
-        dispatch({ type: 'LOGOUT' });
-        signOutClickHandler();
-      }
-    };
-
-    checkTokenExpiration();
-
-    const interval = setInterval(checkTokenExpiration, 60000);
-
-    return () => clearInterval(interval);
-  }, [isAuthenticated, instance]);
-
   const contextValue = useMemo(
     () => ({
       ...state,
@@ -394,7 +373,7 @@ function App() {
           print view will include all signal information, with the exception of
           your name, email address, and CO/Unit.
         </p>
-        {selectedUnit && accessTokenTemp && userRoleTemp ? (
+        {selectedUnit && userRoleTemp ? (
           <SignUpButton
             unit={selectedUnit}
             setOpenModal={setOpenModal}

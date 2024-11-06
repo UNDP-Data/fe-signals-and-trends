@@ -8,13 +8,13 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { SignalEntryFormEl } from '../../Components/SignalEntryFormEl';
 import { SignInButton } from '../../Components/SignInButton';
 import Context from '../../Context/Context';
-import { SignalDataType, StatusList } from '../../Types';
-import { readSignal } from '../../api';
+import { SignalDataType, StatusDataType } from '../../Types';
+import { readSignal } from '../../API';
 
 export function EditSignal() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { role, accessToken } = useContext(Context);
+  const { role } = useContext(Context);
   const [signal, setSignal] = useState<SignalDataType | undefined>(undefined);
   const isAuthenticated = useIsAuthenticated();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,7 +29,7 @@ export function EditSignal() {
           setError(error.toJSON());
         });
     }
-  }, [id, isAuthenticated, accessToken]);
+  }, [id, isAuthenticated]);
   return (
     <div
       className='undp-container flex-wrap margin-bottom-09'
@@ -76,7 +76,9 @@ export function EditSignal() {
               ) : signal ? (
                 <SignalEntryFormEl
                   updateSignal={signal}
-                  draft={(signal.status as StatusList | undefined) === 'Draft'}
+                  draft={
+                    (signal.status as StatusDataType | undefined) === 'Draft'
+                  }
                 />
               ) : null}
             </>

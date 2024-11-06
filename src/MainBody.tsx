@@ -22,7 +22,7 @@ import { PDFDocument } from './PDFGenerator';
 import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
 import { signOutClickHandler } from './Utils/AuthStatusHandler';
 import { Header } from './Components/HeaderEl';
-import { searchSignals, searchTrends } from './api';
+import { searchSignals, searchTrends } from './API';
 
 function MainBody() {
   const {
@@ -78,7 +78,7 @@ function MainBody() {
         .filter(id => !Number.isNaN(id));
       searchSignals({
         ids: signalIds,
-        statuses: ['Approved', 'Archived', 'Draft', 'New'],
+        statuses: ['Approved', 'Archived', 'New'],
         per_page: signalIds.length,
       })
         .then(res => {
@@ -95,7 +95,7 @@ function MainBody() {
             const connectedTrends = sList.map(id => Number(id));
             searchTrends({
               ids: connectedTrends,
-              statuses: ['Approved', 'Archived', 'Draft', 'New'],
+              statuses: ['Approved'],
               per_page: connectedTrends.length,
             })
               .then(trendRes => {
@@ -124,7 +124,7 @@ function MainBody() {
         .filter(id => !Number.isNaN(id));
       searchTrends({
         ids: signalIds,
-        statuses: ['Approved', 'Archived', 'Draft', 'New'],
+        statuses: ['Approved', 'Archived', 'New'],
         per_page: signalIds.length,
       })
         .then(res => {
@@ -143,7 +143,7 @@ function MainBody() {
               .filter(id => !Number.isNaN(id));
             searchSignals({
               ids: connectedSignals,
-              statuses: ['Approved', 'Archived', 'Draft', 'New'],
+              statuses: ['Approved'],
               per_page: connectedSignals.length,
             })
               .then(trendRes => {

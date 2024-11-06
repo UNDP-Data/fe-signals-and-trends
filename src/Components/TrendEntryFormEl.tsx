@@ -7,8 +7,8 @@ import {
   TrendDataType,
   SignalDataType,
   NewTrendDataType,
-  CreateTrendParams,
-  UpdateTrendParams,
+  CreateTrendParamsDataType,
+  UpdateTrendParamsDataType,
 } from '../Types';
 import { AddSignalsModal } from './AddSignalsModal';
 import Context from '../Context/Context';
@@ -17,7 +17,7 @@ import {
   updateTrend as updateTrendApi,
   deleteTrend,
   searchSignals,
-} from '../api';
+} from '../API';
 
 interface Props {
   updateTrend?: TrendDataType;
@@ -158,7 +158,7 @@ export function TrendEntryFormEl(props: Props) {
       searchSignals({
         ids: signalIds,
         per_page: signalIds.length,
-        statuses: ['Approved', 'Archived', 'Draft', 'New'],
+        statuses: ['Approved', 'New'],
       }).then(res => {
         setConnectedSignals(res.data);
       });
@@ -188,7 +188,7 @@ export function TrendEntryFormEl(props: Props) {
     }
   };
 
-  const buildCreateTrendParams = (): CreateTrendParams => {
+  const buildCreateTrendParamsDataType = (): CreateTrendParamsDataType => {
     return {
       description: trendData.description || '',
       headline: trendData.headline || '',
@@ -211,8 +211,8 @@ export function TrendEntryFormEl(props: Props) {
     };
   };
 
-  const buildUpdateTrendParams = (): UpdateTrendParams => {
-    const params: UpdateTrendParams = {
+  const buildUpdateTrendParamsDataType = (): UpdateTrendParamsDataType => {
+    const params: UpdateTrendParamsDataType = {
       id: trendData.id || 0,
       description: trendData.description || '',
       headline: trendData.headline || '',
@@ -714,66 +714,33 @@ export function TrendEntryFormEl(props: Props) {
       ) : null}
       <div className='flex-div flex-vert-align-center margin-top-09'>
         {!updateTrend ? ( // new trend
-          <div className='flex-div flex-vert-align-center'>
-            <button
-              className={`${
-                isTrendInvalid(trendData) || buttonDisabled ? 'disabled ' : ''
-              }undp-button button-secondary button-arrow`}
-              type='button'
-              disabled={isTrendInvalid(trendData) || buttonDisabled}
-              onClick={() => {
-                setButtonDisabled(true);
-                setSubmittingError(undefined);
-                const currentParams = buildCreateTrendParams();
-                createTrend(currentParams)
-                  .then(() => {
-                    setButtonDisabled(false);
-                    navigate('/trends');
-                    updateNotificationText(
-                      'Successfully submitted the trend for review',
-                    );
-                  })
-                  .catch(err => {
-                    setButtonDisabled(false);
-                    setSubmittingError(
-                      `${err}. ${
-                        err.response?.status === 500
-                          ? 'Please try again in some time'
-                          : ''
-                      }`,
-                    );
-                  });
-              }}
-            >
-              Submit Trend
-            </button>
-            {buttonDisabled ? <div className='undp-loader' /> : null}
+          <div className='margin-top-00'>
             {submittingError ? (
               <p
-                className='margin-top-00 margin-bottom-00'
+                className='margin-bottom-05'
                 style={{ color: 'var(--dark-red)' }}
               >
-                Error submitting trend please try again
+                {submittingError}
               </p>
             ) : null}
-          </div>
-        ) : (
-          <div className='flex-div flex-vert-align-center'>
-            <button
-              className={`${
-                isTrendInvalid(trendData) || buttonDisabled ? 'disabled ' : ''
-              }undp-button button-secondary button-arrow`}
-              type='button'
-              disabled={isTrendInvalid(trendData) || buttonDisabled}
-              onClick={() => {
-                setButtonDisabled(true);
-                setSubmittingError(undefined);
-                if (trendData.id)
-                  updateTrendApi(trendData.id, buildUpdateTrendParams())
+            <div className='flex-div flex-vert-align-center'>
+              <button
+                className={`${
+                  isTrendInvalid(trendData) || buttonDisabled ? 'disabled ' : ''
+                }undp-button button-secondary button-arrow`}
+                type='button'
+                disabled={isTrendInvalid(trendData) || buttonDisabled}
+                onClick={() => {
+                  setButtonDisabled(true);
+                  setSubmittingError(undefined);
+                  const currentParams = buildCreateTrendParamsDataType();
+                  createTrend(currentParams)
                     .then(() => {
                       setButtonDisabled(false);
-                      navigate(`/trends/${updateTrend.id}`);
-                      updateNotificationText('Successfully updated the trend');
+                      navigate('/trends');
+                      updateNotificationText(
+                        'Successfully submitted the trend for review',
+                      );
                     })
                     .catch(err => {
                       setButtonDisabled(false);
@@ -785,40 +752,82 @@ export function TrendEntryFormEl(props: Props) {
                         }`,
                       );
                     });
-              }}
-            >
-              Update Trend
-            </button>
-            {buttonDisabled ? <div className='undp-loader' /> : null}
+                }}
+              >
+                Submit Trend
+              </button>
+              {buttonDisabled ? <div className='undp-loader' /> : null}
+            </div>
+          </div>
+        ) : (
+          <div className='margin-top-00'>
             {submittingError ? (
               <p
-                className='margin-top-00 margin-bottom-00'
+                className='margin-bottom-05'
                 style={{ color: 'var(--dark-red)' }}
               >
                 {submittingError}
               </p>
             ) : null}
-            {updateTrend.status === 'Archived' ? (
-              <Popconfirm
-                title='Delete Trend'
-                description='Are you sure to delete this trend?'
-                onConfirm={() =>
-                  confirmDelete(updateTrend.id, '../../../archived-trends')
-                }
-                onCancel={() => {
-                  updateNotificationText('Delete canceled');
+            <div className='flex-div flex-vert-align-center'>
+              <button
+                className={`${
+                  isTrendInvalid(trendData) || buttonDisabled ? 'disabled ' : ''
+                }undp-button button-secondary button-arrow`}
+                type='button'
+                disabled={isTrendInvalid(trendData) || buttonDisabled}
+                onClick={() => {
+                  setButtonDisabled(true);
+                  setSubmittingError(undefined);
+                  if (trendData.id)
+                    updateTrendApi(
+                      trendData.id,
+                      buildUpdateTrendParamsDataType(),
+                    )
+                      .then(() => {
+                        setButtonDisabled(false);
+                        navigate(`/trends/${updateTrend.id}`);
+                        updateNotificationText(
+                          'Successfully updated the trend',
+                        );
+                      })
+                      .catch(err => {
+                        setButtonDisabled(false);
+                        setSubmittingError(
+                          `${err}. ${
+                            err.response?.status === 500
+                              ? 'Please try again in some time'
+                              : ''
+                          }`,
+                        );
+                      });
                 }}
-                okText='Yes'
-                cancelText='No'
               >
-                <button
-                  className='undp-button button-secondary button-arrow'
-                  type='button'
+                Update Trend
+              </button>
+              {buttonDisabled ? <div className='undp-loader' /> : null}
+              {updateTrend.status === 'Archived' ? (
+                <Popconfirm
+                  title='Delete Trend'
+                  description='Are you sure to delete this trend?'
+                  onConfirm={() =>
+                    confirmDelete(updateTrend.id, '../../../archived-trends')
+                  }
+                  onCancel={() => {
+                    updateNotificationText('Delete canceled');
+                  }}
+                  okText='Yes'
+                  cancelText='No'
                 >
-                  Delete Archived Trend
-                </button>
-              </Popconfirm>
-            ) : null}
+                  <button
+                    className='undp-button button-secondary button-arrow'
+                    type='button'
+                  >
+                    Delete Archived Trend
+                  </button>
+                </Popconfirm>
+              ) : null}
+            </div>
           </div>
         )}
       </div>

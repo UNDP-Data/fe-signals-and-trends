@@ -1,6 +1,6 @@
 import { useContext } from 'react';
 import Context from '../Context/Context';
-import { updateUser } from '../api';
+import { updateUser } from '../API';
 
 interface Props {
   unit: string;

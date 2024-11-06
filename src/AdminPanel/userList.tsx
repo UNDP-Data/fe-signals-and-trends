@@ -2,8 +2,8 @@ import { Modal, Radio } from 'antd';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { UserDataType } from '../Types';
-import { updateUser } from '../api';
+import { AllowedRolesDataType, UserDataType } from '../Types';
+import { updateUser } from '../API';
 
 interface Props {
   userList: UserDataType[];
@@ -102,7 +102,7 @@ export function UserListEl(props: Props) {
               if (selectedUser)
                 updateUser(selectedUser?.id, {
                   ...selectedUser,
-                  role: role as 'Admin' | 'Curator' | 'User' | 'Visitor',
+                  role: role as AllowedRolesDataType,
                 }).then(() => {
                   setRole(undefined);
                   setSelectedUser(undefined);

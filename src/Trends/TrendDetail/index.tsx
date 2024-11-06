@@ -16,7 +16,7 @@ import Context from '../../Context/Context';
 import { ChipEl } from '../../Components/ChipEl';
 import { ImpactCircleEl } from '../../Components/ImpactRatingEl';
 import { getSDGIcon } from '../../Utils/GetSDGIcons';
-import { deleteTrend, readTrend, searchSignals } from '../../api';
+import { deleteTrend, readTrend, searchSignals } from '../../API';
 
 interface HeroImageProps {
   bgImage?: string;

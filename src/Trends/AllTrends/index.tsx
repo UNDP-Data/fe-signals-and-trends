@@ -4,7 +4,7 @@ import sortBy from 'lodash.sortby';
 import { CardList } from './GridView';
 import { ListView } from './ListView';
 import Context from '../../Context/Context';
-import { exportTrends, searchTrends } from '../../api';
+import { exportTrends, searchTrends } from '../../API';
 
 interface Props {
   view: 'cardView' | 'listView';
@@ -49,8 +49,8 @@ export function AllTrends(props: Props) {
         ? ['Archived']
         : trendFilters.status === 'All Status'
         ? role === 'Admin' || role === 'Curator'
-          ? ['Approved', 'New', 'Archived']
-          : ['Approved', 'New', 'Archived']
+          ? ['Approved', 'New']
+          : ['Approved']
         : [trendFilters.status],
     };
 

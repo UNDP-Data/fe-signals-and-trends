@@ -11,7 +11,7 @@ import { SignalDataType, TrendDataType } from '../Types';
 import { TrendCard } from '../Components/TrendCard';
 import { TrendsVis } from './TrendsVis';
 import Context from '../Context/Context';
-import { searchSignals, searchTrends } from '../api';
+import { searchSignals, searchTrends } from '../API';
 
 const HeroImageEl = styled.div`
   background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),

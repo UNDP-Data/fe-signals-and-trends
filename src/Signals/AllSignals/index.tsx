@@ -4,7 +4,7 @@ import sortBy from 'lodash.sortby';
 import { CardList } from './GridView';
 import { ListView } from './ListView';
 import Context from '../../Context/Context';
-import { exportSignals, searchSignals } from '../../api';
+import { exportSignals, searchSignals } from '../../API';
 
 interface Props {
   view: 'cardView' | 'listView';
@@ -19,7 +19,6 @@ export function AllSignals(props: Props) {
   const [totalCount, setTotalCount] = useState<number | undefined>(undefined);
   const {
     role,
-    accessToken,
     signalFilters,
     signalsSortBy,
     signalList,
@@ -44,8 +43,8 @@ export function AllSignals(props: Props) {
         ? ['Archived']
         : signalFilters.status === 'All Status'
         ? role === 'Curator' || role === 'Admin'
-          ? ['New', 'Approved', 'Archived']
-          : ['Approved', 'New', 'Archived']
+          ? ['New', 'Approved']
+          : ['Approved', 'New']
         : [signalFilters.status],
     };
 
@@ -150,7 +149,7 @@ export function AllSignals(props: Props) {
           );
         }
       });
-  }, [role, signalFilters, accessToken, pageSize, signalsSortBy]);
+  }, [role, signalFilters, pageSize, signalsSortBy]);
   const onShowSizeChange: PaginationProps['onShowSizeChange'] = (
     _current,
     size,

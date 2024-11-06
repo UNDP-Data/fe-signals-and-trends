@@ -1,16 +1,87 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { isAxiosError } from 'axios';
-import { axiosInstance } from './api_config';
-import {
-  BaseSignalsParams,
-  CreateSignalParams,
-  ReadMySignalsParams,
-  SignalsSearchResponse,
-  SignalDataType,
-  UpdateSignalParams,
-} from '../Types';
+import { axiosInstance } from './apiConfig';
+import { SignalDataType, StatusDataType } from '../Types';
 
-export function searchSignals(params: BaseSignalsParams = {}) {
+interface BaseSignalsParamsDataType {
+  page?: number;
+  per_page?: number;
+  order_by?: string;
+  direction?: 'desc' | 'asc';
+  ids?: number[];
+  statuses?: StatusDataType[];
+  created_by?: string;
+  created_for?: string;
+  steep_primary?: string;
+  steep_secondary?: string[];
+  signature_primary?: string;
+  signature_secondary?: string[];
+  sdgs?: string[];
+  query?: string;
+  location?: string;
+  bureau?: string;
+  score?: string;
+  unit?: string;
+}
+
+interface SignalsSearchResponseDataType {
+  current_page: number;
+  per_page: number;
+  total_pages: number;
+  total_count: number;
+  data: SignalDataType[];
+}
+
+export interface ReadMySignalsParamsDataType {
+  status: StatusDataType;
+}
+
+export interface CreateSignalParamsDataType {
+  headline: string | null;
+  description: string | null;
+  attachment?: string | null;
+  steep_primary: string | null;
+  steep_secondary?: string[] | null;
+  signature_primary: string | null;
+  signature_secondary?: string[] | null;
+  sdgs: string[] | null;
+  created_unit: string | null;
+  url: string | null;
+  relevance: string | null;
+  keywords: string[] | null;
+  location: string | null;
+  score?: string | null;
+  created_for?: string | null;
+  status: string | null;
+  connected_trends: number[] | null;
+}
+
+interface UpdateSignalParamsDataType {
+  id: number;
+  attachment?: string | null;
+  description: string | null;
+  headline: string | null;
+  keywords: string[] | null;
+  location?: string | null;
+  relevance?: string | null;
+  sdgs: string[] | null;
+  signature_primary?: string | null;
+  signature_secondary?: string[] | null;
+  steep?: string | null;
+  url?: string | null;
+  connected_trends?: number[] | null;
+  status?: string | null;
+  modified_by?: string | null;
+  steep_primary: string | null;
+  steep_secondary?: string[] | null;
+  assigned_to?: string | null;
+  created_for?: string | null;
+  created_by: string | null;
+  created_unit?: string | null;
+  score?: string | null;
+}
+
+export function searchSignals(params: BaseSignalsParamsDataType = {}) {
   const {
     page = 1,
     per_page = 10,
@@ -56,7 +127,9 @@ export function searchSignals(params: BaseSignalsParams = {}) {
   if (unit) queryParams.unit = unit;
 
   return axiosInstance
-    .get<SignalsSearchResponse>('/signals/search', { params: queryParams })
+    .get<SignalsSearchResponseDataType>('/signals/search', {
+      params: queryParams,
+    })
     .then(response => response.data)
     .catch(error => {
       if (isAxiosError(error)) {
@@ -71,7 +144,7 @@ export function searchSignals(params: BaseSignalsParams = {}) {
     });
 }
 
-export function exportSignals(params: BaseSignalsParams = {}) {
+export function exportSignals(params: BaseSignalsParamsDataType = {}) {
   const {
     page = 1,
     per_page = 10,
@@ -175,7 +248,7 @@ export function readSignal(uid: number) {
     });
 }
 
-export function readMySignals(params: ReadMySignalsParams) {
+export function readMySignals(params: ReadMySignalsParamsDataType) {
   const { status } = params;
 
   const queryParams: Record<string, unknown> = {
@@ -198,7 +271,7 @@ export function readMySignals(params: ReadMySignalsParams) {
     });
 }
 
-export function createSignal(params: CreateSignalParams) {
+export function createSignal(params: CreateSignalParamsDataType) {
   return axiosInstance
     .post<SignalDataType>('/signals', params)
     .then(response => response.data)
@@ -215,7 +288,7 @@ export function createSignal(params: CreateSignalParams) {
     });
 }
 
-export function updateSignal(uid: number, params: UpdateSignalParams) {
+export function updateSignal(uid: number, params: UpdateSignalParamsDataType) {
   return axiosInstance
     .put<SignalDataType>(`/signals/${uid}`, params)
     .then(response => response.data)

@@ -11,10 +11,6 @@ export default (state: any, action: any) => {
       return { ...state, role: action.payload };
     case 'UPDATE_USER_ID':
       return { ...state, userID: action.payload };
-    case 'UPDATE_ACCESS_TOKEN':
-      return { ...state, accessToken: action.payload };
-    case 'UPDATE_EXPIRES_ON':
-      return { ...state, expiresOn: action.payload };
     case 'UPDATE_NOTIFICATION_TEXT':
       return { ...state, notificationText: action.payload };
     case 'UPDATE_CHOICES':

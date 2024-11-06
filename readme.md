@@ -63,20 +63,14 @@ npm install
 
 To start the project locally, you can run `npm run dev` in the project folder in terminal or command prompt. This will run the app in development mode. Open [http://localhost:5173/](http://localhost:5173/) to view it in the browser. The page will reload if you make edits. You will also see any lint errors in the console.
 
-To deploy locally successfully you will need to make some changes to the `Constants.tsx`: 
-
-- `export const WEB_ADDRESS = 'https://signals.data.undp.org/';` to `export const WEB_ADDRESS = './';`
-- `export const API_ACCESS_TOKEN = process.env.INPUT_ACCESS_TOKEN_FOR_API';` to `export const API_ACCESS_TOKEN = import.meta.env.VITE_ACCESS_CODE`
-- `export const REDIRECT_URL = process.env.INPUT_REDIRECT_URI_FOR_MSAL;` to `export const REDIRECT_URL = import.meta.env.VITE_REDIRECT_URL;`
-
-These changes are only required for local deployment. For production, you will need to keep the value same.
-
-Also you will need a `.env.local` file in the root folder. the `env` file would require the following variable and values
+You will need a `.env.local` file in the root folder. the `env` file would require the following variable and values
 
 ```
 VITE_API_LINK=https://signals-and-trends-api.azurewebsites.net/v1/
 VITE_ACCESS_CODE={{contact the team for API secret}}
-VITE_REDIRECT_URL=http://localhost:5173/
+VITE_AUTHORITY=https://login.microsoftonline.com/{{contact the team for the complete URL}}
+VITE_CLIENT_ID={{contact the team forClient ID}}
+VITE_API_BASEURL=https://ftss-api-dev.azurewebsites.net/
 ```
 
 ### Tooling Setup

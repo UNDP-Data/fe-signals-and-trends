@@ -1,15 +1,41 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { isAxiosError } from 'axios';
-import { axiosInstance } from './api_config';
+import { axiosInstance } from './apiConfig';
 import {
-  BaseTrendsParams,
-  CreateTrendParams,
+  CreateTrendParamsDataType,
   TrendDataType,
-  TrendSearchResponse,
-  UpdateTrendParams,
+  UpdateTrendParamsDataType,
 } from '../Types';
 
-export function searchTrends(params: BaseTrendsParams = {}) {
+interface BaseTrendsParamsDataType {
+  page?: number;
+  per_page?: number;
+  order_by?: string;
+  direction?: 'asc' | 'desc';
+  statuses?: string[];
+  ids?: number[];
+  created_by?: string;
+  created_for?: string;
+  steep_primary?: string;
+  steep_secondary?: string[];
+  signature_primary?: string;
+  signature_secondary?: string[];
+  sdgs?: string[];
+  query?: string;
+  assigned_to?: string;
+  time_horizon?: string;
+  impact_rating?: string;
+}
+
+interface TrendSearchResponseDataType {
+  per_page: number;
+  current_page: number;
+  total_pages: number;
+  total_count: number;
+  data: TrendDataType[];
+}
+
+export function searchTrends(params: BaseTrendsParamsDataType = {}) {
   const {
     page = 1,
     per_page = 10,
@@ -53,7 +79,7 @@ export function searchTrends(params: BaseTrendsParams = {}) {
   if (impact_rating) queryParams.impact_rating = impact_rating;
 
   return axiosInstance
-    .get<TrendSearchResponse>('/trends/search', { params: queryParams })
+    .get<TrendSearchResponseDataType>('/trends/search', { params: queryParams })
     .then(response => response.data)
     .catch(error => {
       if (isAxiosError(error)) {
@@ -85,7 +111,7 @@ export function readTrend(uid: number) {
     });
 }
 
-export function exportTrends(params: BaseTrendsParams = {}) {
+export function exportTrends(params: BaseTrendsParamsDataType = {}) {
   const {
     page = 1,
     per_page = 10,
@@ -147,7 +173,7 @@ export function exportTrends(params: BaseTrendsParams = {}) {
     });
 }
 
-export function createTrend(params: CreateTrendParams) {
+export function createTrend(params: CreateTrendParamsDataType) {
   return axiosInstance
     .post<TrendDataType>('/trends', params)
     .then(response => response.data)
@@ -164,7 +190,7 @@ export function createTrend(params: CreateTrendParams) {
     });
 }
 
-export function updateTrend(uid: number, params: UpdateTrendParams) {
+export function updateTrend(uid: number, params: UpdateTrendParamsDataType) {
   return axiosInstance
     .put<TrendDataType>(`/trends/${uid}`, params)
     .then(response => response.data)

@@ -3,7 +3,7 @@ import { Dropdown, Input, MenuProps, Modal, Select, Switch } from 'antd';
 import { useContext, useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import Context from '../Context/Context';
-import { updateUser } from '../api';
+import { updateUser } from '../API';
 
 interface Props {
   signOutClickHandler: () => void;

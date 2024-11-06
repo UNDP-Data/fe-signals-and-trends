@@ -13,7 +13,7 @@ import { useNavigate } from 'react-router-dom';
 import UNDPColorModule from 'undp-viz-colors';
 import Context from '../../Context/Context';
 import { TrendDataType } from '../../Types';
-import { searchTrends } from '../../api';
+import { searchTrends } from '../../API';
 
 interface Props {
   svgWidth: number;

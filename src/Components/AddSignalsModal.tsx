@@ -11,9 +11,13 @@ import {
 import sortBy from 'lodash.sortby';
 import { useContext, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { SignalDataType, SignalFiltersDataType } from '../Types';
+import {
+  SignalDataType,
+  SignalFiltersDataType,
+  StatusDataType,
+} from '../Types';
 import Context from '../Context/Context';
-import { searchSignals } from '../api';
+import { searchSignals } from '../API';
 
 interface Props {
   setSignalModal: (_d: boolean) => void;
@@ -75,7 +79,7 @@ export function AddSignalsModal(props: Props) {
 
       searchSignals({
         ids: signalIds,
-        statuses: ['Approved', 'Archived', 'Draft', 'New'],
+        statuses: ['Approved', 'New'],
       })
         .then(response => {
           setSignalList(
@@ -127,13 +131,7 @@ export function AddSignalsModal(props: Props) {
     setLoading(true);
     setError(undefined);
     setSignalList([]);
-    const statusQueryParameter: ('Draft' | 'New' | 'Approved' | 'Archived')[] =
-      Array.isArray(filters.status) && filters.status.length > 0
-        ? filters.status.filter(
-            (status): status is 'Draft' | 'New' | 'Approved' | 'Archived' =>
-              ['Draft', 'New', 'Approved', 'Archived'].includes(status),
-          ) // Type guard to ensure the filtered statuses are of the correct type
-        : ['Approved'];
+    const statusQueryParameter: StatusDataType[] = ['Approved'];
 
     const steepPrimaryQueryParameter =
       filters.steep_primary === 'All Primary STEEP+V'
@@ -214,13 +212,7 @@ export function AddSignalsModal(props: Props) {
     setSignalList([]);
     setError(undefined);
     setLoading(true);
-    const statusQueryParameter: ('Draft' | 'New' | 'Approved' | 'Archived')[] =
-      Array.isArray(filters.status) && filters.status.length > 0
-        ? filters.status.filter(
-            (status): status is 'Draft' | 'New' | 'Approved' | 'Archived' =>
-              ['Draft', 'New', 'Approved', 'Archived'].includes(status),
-          )
-        : ['Approved'];
+    const statusQueryParameter: StatusDataType[] = ['Approved'];
 
     const steepPrimaryQueryParameter =
       filters.steep_primary === 'All Primary STEEP+V'
