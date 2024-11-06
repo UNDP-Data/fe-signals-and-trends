@@ -13,7 +13,7 @@ import {
   deleteSignal,
   // generateSignal,
   searchTrends,
-} from '../api';
+} from '../API';
 
 interface Props {
   updateSignal?: SignalDataType;
@@ -215,7 +215,7 @@ export function SignalEntryFormEl(props: Props) {
       searchTrends({
         ids: selectedTrendsList,
         per_page: selectedTrendsList.length,
-        statuses: ['Approved', 'Archived', 'Draft', 'New'],
+        statuses: ['Approved', 'New'],
       })
         .then(response => {
           setTrendsList(
@@ -325,6 +325,27 @@ export function SignalEntryFormEl(props: Props) {
       </p>
       <div className='margin-bottom-07'>
         <div className='margin-bottom-07'>
+          <p className='undp-typography margin-bottom-01'>Signal Title*</p>
+          <Input
+            className='undp-input'
+            placeholder='Enter signal title (max 100 characters)'
+            value={signalData.headline}
+            maxLength={100}
+            onChange={d => {
+              updateSignalData({
+                ...signalData,
+                headline: d.target.value,
+              });
+            }}
+          />
+          <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
+            Useful titles are clear, concise and can stand alone as a simple
+            description of the signal.{' '}
+            {signalData.headline ? 100 - signalData.headline.length : 100}{' '}
+            characters left
+          </p>
+        </div>
+        <div className='margin-bottom-00'>
           <p className='undp-typography margin-bottom-01'>Signal Source*</p>
           <div className='flex-div margin-bottom-00'>
             <div style={{ flexGrow: 1 }}>
@@ -457,25 +478,6 @@ export function SignalEntryFormEl(props: Props) {
           </button>
             */}
         </div>
-        <p className='undp-typography margin-bottom-01'>Signal Title*</p>
-        <Input
-          className='undp-input'
-          placeholder='Enter signal title (max 100 characters)'
-          value={signalData.headline}
-          maxLength={100}
-          onChange={d => {
-            updateSignalData({
-              ...signalData,
-              headline: d.target.value,
-            });
-          }}
-        />
-        <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
-          Useful titles are clear, concise and can stand alone as a simple
-          description of the signal.{' '}
-          {signalData.headline ? 100 - signalData.headline.length : 100}{' '}
-          characters left
-        </p>
       </div>
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Signal Description*</p>
@@ -955,9 +957,224 @@ export function SignalEntryFormEl(props: Props) {
           </Select>
         </div>
       ) : null}
-      <div className='flex-div flex-vert-align-center margin-top-09'>
-        {updateSignal ? (
-          updateSignal.status === 'Draft' ? (
+      <div className='margin-top-09'>
+        {submittingError ? (
+          <p className='margin-bottom-05' style={{ color: 'var(--dark-red)' }}>
+            {submittingError}
+          </p>
+        ) : null}
+        <div className='flex-div flex-vert-align-center margin-top-00'>
+          {updateSignal ? (
+            updateSignal.status === 'Draft' ? (
+              <div className='flex-div'>
+                <button
+                  className={`${
+                    isSignalInvalid(signalData, [
+                      keyword1,
+                      keyword2,
+                      keyword3,
+                    ]) || buttonDisabled
+                      ? 'disabled'
+                      : ''
+                  } undp-button button-secondary button-arrow`}
+                  type='button'
+                  disabled={
+                    isSignalInvalid(signalData, [
+                      keyword1,
+                      keyword2,
+                      keyword3,
+                    ]) || buttonDisabled
+                  }
+                  onClick={() => {
+                    // submit signal
+                    setButtonDisabled(true);
+                    setSubmittingError(undefined);
+                    if (signalData.id)
+                      updateSignalApi(updateSignal.id, {
+                        // ...signalData,
+                        id: signalData.id,
+                        headline: signalData.headline || '',
+                        description: signalData.description || '',
+                        attachment: signalData.attachment || '',
+                        steep_primary: signalData.steep_primary || '',
+                        signature_primary: signalData.signature_primary || '',
+                        signature_secondary:
+                          signalData.signature_secondary || [],
+                        sdgs: signalData.sdgs || [],
+                        url: signalData.url || '',
+                        relevance: signalData.relevance || '',
+                        location: signalData.location || '',
+                        created_by: signalData.created_by || '',
+                        created_for: signalData.created_for,
+                        score: signalData.score,
+                        connected_trends: selectedTrendsList,
+                        status: 'New',
+                        keywords: [keyword1, keyword2, keyword3].filter(
+                          (d): d is string => d !== null && d !== undefined,
+                        ),
+                      })
+                        .then(() => {
+                          setButtonDisabled(false);
+                          navigate('/signals');
+                          updateNotificationText(
+                            'Successfully submitted the signal for review',
+                          );
+                        })
+                        .catch(err => {
+                          setButtonDisabled(false);
+                          setSubmittingError(
+                            `${err}. ${
+                              err.response?.status === 500
+                                ? 'Please try again in some time'
+                                : ''
+                            }`,
+                          );
+                        });
+                  }}
+                >
+                  Submit Signal
+                </button>
+                <button
+                  className='undp-button button-secondary button-arrow'
+                  type='button'
+                  onClick={() => {
+                    // save as draft
+                    setButtonDisabled(true);
+                    setSubmittingError(undefined);
+                    if (signalData.id)
+                      updateSignalApi(updateSignal.id, {
+                        // ...signalData,
+                        id: signalData.id,
+                        headline: signalData.headline || null,
+                        description: signalData.description || null,
+                        attachment: signalData.attachment || null,
+                        steep_primary: signalData.steep_primary || null,
+                        steep_secondary: signalData.steep_secondary || null,
+                        signature_primary: signalData.signature_primary || null,
+                        signature_secondary:
+                          signalData.signature_secondary || null,
+                        sdgs: signalData.sdgs || null,
+                        url: signalData.url || null,
+                        relevance: signalData.relevance || null,
+                        location: signalData.location || null,
+                        score: signalData.score || null,
+                        created_by: signalData.created_by || null,
+                        created_for: signalData.created_for || null,
+                        connected_trends: selectedTrendsList || null,
+                        keywords: [keyword1, keyword2, keyword3].filter(
+                          (d): d is string => d !== null && d !== undefined,
+                        ),
+                        status: 'Draft',
+                      })
+                        .then(() => {
+                          setButtonDisabled(false);
+                          navigate('/my-drafts');
+                          updateNotificationText(
+                            'Successfully saved the signal to draft',
+                          );
+                        })
+                        .catch(err => {
+                          setButtonDisabled(false);
+                          setSubmittingError(
+                            `${err}. ${
+                              err.response?.status === 500
+                                ? 'Please try again in some time'
+                                : ''
+                            }`,
+                          );
+                        });
+                  }}
+                >
+                  Save Signal as Draft
+                </button>
+                <Popconfirm
+                  title='Delete Signal'
+                  description='Are you sure to delete this signal?'
+                  onConfirm={() => confirmDelete(updateSignal.id, '/my-drafts')}
+                  onCancel={() => {
+                    updateNotificationText('Delete canceled');
+                  }}
+                  okText='Yes'
+                  cancelText='No'
+                >
+                  <button
+                    className='undp-button button-secondary button-arrow'
+                    type='button'
+                  >
+                    Delete Draft Signal
+                  </button>
+                </Popconfirm>
+              </div>
+            ) : (
+              <button
+                className={`${
+                  isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
+                  buttonDisabled
+                    ? 'disabled'
+                    : ''
+                } undp-button button-secondary button-arrow`}
+                type='button'
+                disabled={
+                  isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
+                  buttonDisabled
+                }
+                title={
+                  isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
+                  buttonDisabled
+                    ? 'All fields are required to update a signal. Descriptions should be > 30 letters'
+                    : 'Click to update a signal'
+                }
+                onClick={() => {
+                  // update signal
+                  setButtonDisabled(true);
+                  setSubmittingError(undefined);
+                  if (signalData.id)
+                    updateSignalApi(updateSignal.id, {
+                      // ...signalData,
+                      id: signalData.id,
+                      headline: signalData.headline || '',
+                      description: signalData.description || '',
+                      attachment: signalData.attachment || undefined,
+                      steep_primary: signalData.steep_primary || '',
+                      signature_primary: signalData.signature_primary || '',
+                      signature_secondary: signalData.signature_secondary || [],
+                      sdgs: signalData.sdgs || [],
+                      url: signalData.url || '',
+                      relevance: signalData.relevance || '',
+                      location: signalData.location || '',
+                      status: signalData.status || '',
+                      created_by: signalData.created_by || '',
+                      created_for: signalData.created_for || '',
+                      score: signalData.score,
+                      created_unit: signalData.created_unit || '',
+                      connected_trends: selectedTrendsList,
+                      keywords: [keyword1, keyword2, keyword3].filter(
+                        (d): d is string => d !== null && d !== undefined,
+                      ),
+                    })
+                      .then(() => {
+                        setButtonDisabled(false);
+                        navigate(`/signals/${updateSignal.id}`);
+                        updateNotificationText(
+                          'Successfully updated the signal',
+                        );
+                      })
+                      .catch(err => {
+                        setButtonDisabled(false);
+                        setSubmittingError(
+                          `${err}. ${
+                            err.response?.status === 500
+                              ? 'Please try again in some time'
+                              : ''
+                          }`,
+                        );
+                      });
+                }}
+              >
+                Update Signal
+              </button>
+            )
+          ) : (
             <div className='flex-div'>
               <button
                 className={`${
@@ -969,174 +1186,42 @@ export function SignalEntryFormEl(props: Props) {
                   isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
                   buttonDisabled
                 }
+                title={
+                  isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
+                  buttonDisabled
+                    ? 'All fields are required to submit a signal. Descriptions should be > 30 letters'
+                    : 'Click to submit a signal'
+                }
                 onClick={() => {
-                  // submit signal
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
-                  if (signalData.id)
-                    updateSignalApi(updateSignal.id, {
-                      // ...signalData,
-                      id: signalData.id,
-                      headline: signalData?.headline || '',
-                      description: signalData?.description || '',
-                      attachment: signalData?.attachment || '',
-                      steep_primary: signalData?.steep_primary || '',
-                      signature_primary: signalData?.signature_primary || '',
-                      signature_secondary:
-                        signalData?.signature_secondary || [],
-                      sdgs: signalData?.sdgs || [],
-                      url: signalData?.url || '',
-                      relevance: signalData?.relevance || '',
-                      location: signalData?.location || '',
-                      created_by: signalData?.created_by || '',
-                      created_for: signalData.created_for,
-                      score: signalData.score,
-                      connected_trends: selectedTrendsList,
-                      status: 'New',
-                      keywords: [keyword1, keyword2, keyword3].filter(
-                        (d): d is string => d !== null && d !== undefined,
-                      ),
-                    })
-                      .then(() => {
-                        setButtonDisabled(false);
-                        navigate('/signals');
-                        updateNotificationText(
-                          'Successfully submitted the signal for review',
-                        );
-                      })
-                      .catch(err => {
-                        setButtonDisabled(false);
-                        setSubmittingError(
-                          `${err}. ${
-                            err.response?.status === 500
-                              ? 'Please try again in some time'
-                              : ''
-                          }`,
-                        );
-                      });
-                }}
-              >
-                Submit Signal
-              </button>
-              <button
-                className='undp-button button-secondary button-arrow'
-                type='button'
-                onClick={() => {
-                  // save as draft
-                  setButtonDisabled(true);
-                  setSubmittingError(undefined);
-                  if (signalData.id)
-                    updateSignalApi(updateSignal.id, {
-                      // ...signalData,
-                      id: signalData.id,
-                      headline: signalData?.headline || '',
-                      description: signalData?.description || '',
-                      attachment: signalData?.attachment,
-                      steep_primary: signalData?.steep_primary || '',
-                      steep_secondary: signalData?.steep_secondary,
-                      signature_primary: signalData?.signature_primary || '',
-                      signature_secondary: signalData?.signature_secondary,
-                      sdgs: signalData?.sdgs || [],
-                      url: signalData?.url || '',
-                      relevance: signalData?.relevance || '',
-                      location: signalData?.location || '',
-                      score: signalData.score,
-                      created_by: signalData?.created_by || '',
-                      created_for: signalData.created_for,
-                      connected_trends: selectedTrendsList,
-                      keywords: [keyword1, keyword2, keyword3].filter(
-                        (d): d is string => d !== null && d !== undefined,
-                      ),
-                      status: 'Draft',
-                    })
-                      .then(() => {
-                        setButtonDisabled(false);
-                        navigate('/my-drafts');
-                        updateNotificationText(
-                          'Successfully saved the signal to draft',
-                        );
-                      })
-                      .catch(err => {
-                        setButtonDisabled(false);
-                        setSubmittingError(
-                          `${err}. ${
-                            err.response?.status === 500
-                              ? 'Please try again in some time'
-                              : ''
-                          }`,
-                        );
-                      });
-                }}
-              >
-                Save Signal as Draft
-              </button>
-              <Popconfirm
-                title='Delete Signal'
-                description='Are you sure to delete this signal?'
-                onConfirm={() => confirmDelete(updateSignal.id, '/my-drafts')}
-                onCancel={() => {
-                  updateNotificationText('Delete canceled');
-                }}
-                okText='Yes'
-                cancelText='No'
-              >
-                <button
-                  className='undp-button button-secondary button-arrow'
-                  type='button'
-                >
-                  Delete Draft Signal
-                </button>
-              </Popconfirm>
-            </div>
-          ) : (
-            <button
-              className={`${
-                isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                buttonDisabled
-              }undp-button button-secondary button-arrow`}
-              type='button'
-              disabled={
-                isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                buttonDisabled
-              }
-              title={
-                isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                buttonDisabled
-                  ? 'All fields are required to update a signal. Descriptions should be > 30 letters'
-                  : 'Click to update a signal'
-              }
-              onClick={() => {
-                // update signal
-                setButtonDisabled(true);
-                setSubmittingError(undefined);
-                if (signalData.id)
-                  updateSignalApi(updateSignal.id, {
-                    // ...signalData,
-                    id: signalData.id,
-                    headline: signalData?.headline || '',
-                    description: signalData?.description || '',
-                    attachment: signalData?.attachment || undefined,
-                    steep_primary: signalData?.steep_primary || '',
-                    signature_primary: signalData?.signature_primary || '',
-                    signature_secondary: signalData?.signature_secondary || [],
-                    sdgs: signalData?.sdgs || [],
-                    url: signalData?.url || '',
-                    relevance: signalData?.relevance || '',
-                    location: signalData?.location || '',
-                    status: signalData?.status || '',
-                    created_by: signalData.created_by || '',
-                    created_for: signalData?.created_for || '',
+                  createSignal({
+                    headline: signalData.headline || '',
+                    description: signalData.description || '',
+                    attachment: signalData.attachment || '',
+                    steep_primary: signalData.steep_primary || '',
+                    steep_secondary: signalData.steep_secondary || undefined,
+                    signature_primary: signalData.signature_primary || '',
+                    signature_secondary: signalData.signature_secondary || [],
+                    sdgs: signalData.sdgs || [],
+                    created_unit: signalData.created_unit || '',
+                    url: signalData.url || '',
+                    relevance: signalData.relevance || '',
+                    created_for: signalData.created_for || '',
+                    location: signalData.location || '',
                     score: signalData.score,
-                    created_unit: signalData?.created_unit || '',
                     connected_trends: selectedTrendsList,
+                    status: 'New',
                     keywords: [keyword1, keyword2, keyword3].filter(
                       (d): d is string => d !== null && d !== undefined,
                     ),
                   })
                     .then(() => {
                       setButtonDisabled(false);
-                      navigate(`/signals/${updateSignal.id}`);
-                      updateNotificationText('Successfully updated the signal');
+                      navigate('/signals');
+                      updateNotificationText(
+                        'Successfully submitted the signal for review',
+                      );
                     })
                     .catch(err => {
                       setButtonDisabled(false);
@@ -1148,156 +1233,85 @@ export function SignalEntryFormEl(props: Props) {
                         }`,
                       );
                     });
-              }}
-            >
-              Update Signal
-            </button>
-          )
-        ) : (
-          <div className='flex-div'>
-            <button
-              className={`${
-                isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                buttonDisabled
-              }undp-button button-secondary button-arrow`}
-              type='button'
-              disabled={
-                isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                buttonDisabled
-              }
-              title={
-                isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                buttonDisabled
-                  ? 'All fields are required to submit a signal. Descriptions should be > 30 letters'
-                  : 'Click to submit a signal'
-              }
-              onClick={() => {
-                setButtonDisabled(true);
-                setSubmittingError(undefined);
-                createSignal({
-                  headline: signalData?.headline || '',
-                  description: signalData?.description || '',
-                  attachment: signalData?.attachment || '',
-                  steep_primary: signalData?.steep_primary || '',
-                  steep_secondary: signalData?.steep_secondary || undefined,
-                  signature_primary: signalData?.signature_primary || '',
-                  signature_secondary: signalData?.signature_secondary || [],
-                  sdgs: signalData?.sdgs || [],
-                  created_unit: signalData.created_unit || '',
-                  url: signalData?.url || '',
-                  relevance: signalData?.relevance || '',
-                  created_for: signalData?.created_for || '',
-                  location: signalData?.location || '',
-                  score: signalData.score,
-                  connected_trends: selectedTrendsList,
-                  status: 'New',
-                  keywords: [keyword1, keyword2, keyword3].filter(
-                    (d): d is string => d !== null && d !== undefined,
-                  ),
-                })
-                  .then(() => {
-                    setButtonDisabled(false);
-                    navigate('/signals');
-                    updateNotificationText(
-                      'Successfully submitted the signal for review',
-                    );
+                }}
+              >
+                Submit Signal
+              </button>
+              <button
+                className='undp-button button-secondary button-arrow'
+                type='button'
+                onClick={() => {
+                  setButtonDisabled(true);
+                  setSubmittingError(undefined);
+                  createSignal({
+                    headline: signalData.headline || null,
+                    description: signalData.description || null,
+                    attachment: signalData.attachment || null,
+                    steep_primary: signalData.steep_primary || null,
+                    steep_secondary: signalData.steep_secondary || null,
+                    signature_primary: signalData.signature_primary || null,
+                    signature_secondary: signalData.signature_secondary || null,
+                    sdgs: signalData.sdgs || null,
+                    created_unit: signalData.created_unit || null,
+                    url: signalData.url || null,
+                    relevance: signalData.relevance || null,
+                    created_for: signalData.created_for || null,
+                    score: signalData.score || null,
+                    location: signalData.location || null,
+                    connected_trends: selectedTrendsList,
+                    status: 'Draft',
+                    keywords: [keyword1, keyword2, keyword3].filter(
+                      (d): d is string => d !== null && d !== undefined,
+                    ),
                   })
-                  .catch(err => {
-                    setButtonDisabled(false);
-                    setSubmittingError(
-                      `${err}. ${
-                        err.response?.status === 500
-                          ? 'Please try again in some time'
-                          : ''
-                      }`,
-                    );
-                  });
+                    .then(() => {
+                      setButtonDisabled(false);
+                      navigate('/my-drafts');
+                      updateNotificationText(
+                        'Successfully saved the signal to draft',
+                      );
+                    })
+                    .catch(err => {
+                      setButtonDisabled(false);
+                      setSubmittingError(
+                        `${err}. ${
+                          err.response?.status === 500
+                            ? 'Please try again in some time'
+                            : ''
+                        }`,
+                      );
+                    });
+                }}
+              >
+                Save Signal as Draft
+              </button>
+            </div>
+          )}
+          {updateSignal &&
+          updateSignal.status === 'Archived' &&
+          (role === 'Curator' || role === 'Admin') ? (
+            <Popconfirm
+              title='Delete Signal'
+              description='Are you sure to delete this signal?'
+              onConfirm={() =>
+                confirmDelete(updateSignal.id, '../../../archived-signals')
+              }
+              onCancel={() => {
+                updateNotificationText('Delete canceled');
               }}
+              okText='Yes'
+              cancelText='No'
             >
-              Submit Signal
-            </button>
-            <button
-              className='undp-button button-secondary button-arrow'
-              type='button'
-              onClick={() => {
-                setButtonDisabled(true);
-                setSubmittingError(undefined);
-                createSignal({
-                  headline: signalData?.headline || '',
-                  description: signalData?.description || '',
-                  attachment: signalData?.attachment || '',
-                  steep_primary: signalData?.steep_primary || '',
-                  steep_secondary: signalData.steep_secondary || undefined,
-                  signature_primary: signalData?.signature_primary || '',
-                  signature_secondary: signalData?.signature_secondary || [],
-                  sdgs: signalData?.sdgs || [],
-                  created_unit: signalData.created_unit || '',
-                  url: signalData?.url || '',
-                  relevance: signalData?.relevance || '',
-                  created_for: signalData?.created_for || '',
-                  score: signalData.score,
-                  location: signalData?.location || '',
-                  connected_trends: selectedTrendsList,
-                  status: 'Draft',
-                  keywords: [keyword1, keyword2, keyword3].filter(
-                    (d): d is string => d !== null && d !== undefined,
-                  ),
-                })
-                  .then(() => {
-                    setButtonDisabled(false);
-                    navigate('/my-drafts');
-                    updateNotificationText(
-                      'Successfully saved the signal to draft',
-                    );
-                  })
-                  .catch(err => {
-                    setButtonDisabled(false);
-                    setSubmittingError(
-                      `${err}. ${
-                        err.response?.status === 500
-                          ? 'Please try again in some time'
-                          : ''
-                      }`,
-                    );
-                  });
-              }}
-            >
-              Save Signal as Draft
-            </button>
-          </div>
-        )}
-        {updateSignal &&
-        updateSignal.status === 'Archived' &&
-        (role === 'Curator' || role === 'Admin') ? (
-          <Popconfirm
-            title='Delete Signal'
-            description='Are you sure to delete this signal?'
-            onConfirm={() =>
-              confirmDelete(updateSignal.id, '../../../archived-signals')
-            }
-            onCancel={() => {
-              updateNotificationText('Delete canceled');
-            }}
-            okText='Yes'
-            cancelText='No'
-          >
-            <button
-              className='undp-button button-secondary button-arrow'
-              type='button'
-            >
-              Delete Archived Signal
-            </button>
-          </Popconfirm>
-        ) : null}
-        {buttonDisabled ? <div className='undp-loader' /> : null}
-        {submittingError ? (
-          <p
-            className='margin-top-00 margin-bottom-00'
-            style={{ color: 'var(--dark-red)' }}
-          >
-            {submittingError}
-          </p>
-        ) : null}
+              <button
+                className='undp-button button-secondary button-arrow'
+                type='button'
+              >
+                Delete Archived Signal
+              </button>
+            </Popconfirm>
+          ) : null}
+          {buttonDisabled ? <div className='undp-loader' /> : null}
+        </div>
       </div>
       {trendModal ? (
         <AddTrendsModal

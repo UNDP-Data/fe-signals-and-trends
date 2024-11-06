@@ -8,7 +8,7 @@ import {
 import Background from '../assets/UNDP-hero-image.jpg';
 import { AllSignals } from './AllSignals';
 import Context from '../Context/Context';
-import { SignalFiltersDataType, StatusList } from '../Types';
+import { SignalFiltersDataType, StatusDataType } from '../Types';
 import { SignInButton } from '../Components/SignInButton';
 import { SIGNAL_ORDER_BY_OPTIONS } from '../Constants';
 
@@ -612,7 +612,7 @@ export function SignalsListing() {
                   onChange={values => {
                     setTempFilters({
                       ...tempFilters,
-                      status: (values as StatusList) || 'All Status',
+                      status: (values as StatusDataType) || 'All Status',
                     });
                   }}
                   clearIcon={<div className='clearIcon' />}

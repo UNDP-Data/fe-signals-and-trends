@@ -8,11 +8,10 @@ import {
 import { SignInButton } from '../Components/SignInButton';
 import Context from '../Context/Context';
 import { CardList } from '../Signals/AllSignals/GridView';
-import { searchSignals } from '../api';
+import { searchSignals } from '../API';
 
 export function MyDrafts() {
-  const { accessToken, userName, signalList, updateSignalList } =
-    useContext(Context);
+  const { userName, signalList, updateSignalList } = useContext(Context);
   const [paginationValue, setPaginationValue] = useState(1);
   const [error, setError] = useState<undefined | string>(undefined);
   const [pageSize, setPageSize] = useState(20);
@@ -74,7 +73,7 @@ export function MyDrafts() {
           );
         }
       });
-  }, [accessToken, userName, pageSize]);
+  }, [userName, pageSize]);
   const onShowSizeChange: PaginationProps['onShowSizeChange'] = (
     _current,
     size,

@@ -211,81 +211,83 @@ export function SignalCard(props: Props) {
                 className='undp-button button-tertiary button-arrow'
                 type='button'
               >
-                Read More
+                {isDraft ? 'Edit Draft' : 'Read More'}
               </button>
             </NavLink>
-            <button
-              className={`undp-button button-tertiary button-arrow${
-                cardsToPrint.findIndex(
-                  el =>
-                    el.id === `${data.id}` &&
-                    el.mode === 'card' &&
-                    el.type === 'signal',
-                ) !== -1
-                  ? 'disabled'
-                  : ''
-              }`}
-              disabled={
-                cardsToPrint.findIndex(
-                  el =>
-                    el.id === `${data.id}` &&
-                    el.mode === 'card' &&
-                    el.type === 'signal',
-                ) !== -1
-              }
-              style={{
-                opacity:
+            {isDraft ? null : (
+              <button
+                className={`undp-button button-tertiary button-arrow${
                   cardsToPrint.findIndex(
                     el =>
                       el.id === `${data.id}` &&
                       el.mode === 'card' &&
                       el.type === 'signal',
                   ) !== -1
-                    ? 0.4
-                    : 1,
-                cursor:
+                    ? 'disabled'
+                    : ''
+                }`}
+                disabled={
                   cardsToPrint.findIndex(
                     el =>
                       el.id === `${data.id}` &&
                       el.mode === 'card' &&
                       el.type === 'signal',
                   ) !== -1
-                    ? 'not-allowed'
-                    : 'pointer',
-                flexGrow: 1,
-                marginBottom: '-1rem',
-                paddingBottom: 0,
-              }}
-              type='button'
-              onClick={e => {
-                e.stopPropagation();
-                if (
-                  cardsToPrint.findIndex(
-                    el =>
-                      el.id === `${data.id}` &&
-                      el.mode === 'card' &&
-                      el.type === 'signal',
-                  ) === -1
-                ) {
-                  const cardToPrintTemp = [...cardsToPrint];
-                  cardToPrintTemp.push({
-                    type: 'signal',
-                    mode: 'card',
-                    id: `${data.id}`,
-                  });
-                  updateCardsToPrint(cardToPrintTemp);
                 }
-              }}
-            >
-              {cardsToPrint.findIndex(
-                el =>
-                  el.id === `${data.id}` &&
-                  el.mode === 'card' &&
-                  el.type === 'signal',
-              ) === -1
-                ? 'Download'
-                : 'Added to PDF'}
-            </button>
+                style={{
+                  opacity:
+                    cardsToPrint.findIndex(
+                      el =>
+                        el.id === `${data.id}` &&
+                        el.mode === 'card' &&
+                        el.type === 'signal',
+                    ) !== -1
+                      ? 0.4
+                      : 1,
+                  cursor:
+                    cardsToPrint.findIndex(
+                      el =>
+                        el.id === `${data.id}` &&
+                        el.mode === 'card' &&
+                        el.type === 'signal',
+                    ) !== -1
+                      ? 'not-allowed'
+                      : 'pointer',
+                  flexGrow: 1,
+                  marginBottom: '-1rem',
+                  paddingBottom: 0,
+                }}
+                type='button'
+                onClick={e => {
+                  e.stopPropagation();
+                  if (
+                    cardsToPrint.findIndex(
+                      el =>
+                        el.id === `${data.id}` &&
+                        el.mode === 'card' &&
+                        el.type === 'signal',
+                    ) === -1
+                  ) {
+                    const cardToPrintTemp = [...cardsToPrint];
+                    cardToPrintTemp.push({
+                      type: 'signal',
+                      mode: 'card',
+                      id: `${data.id}`,
+                    });
+                    updateCardsToPrint(cardToPrintTemp);
+                  }
+                }}
+              >
+                {cardsToPrint.findIndex(
+                  el =>
+                    el.id === `${data.id}` &&
+                    el.mode === 'card' &&
+                    el.type === 'signal',
+                ) === -1
+                  ? 'Download'
+                  : 'Added to PDF'}
+              </button>
+            )}
           </div>
         </div>
       </CardEl>

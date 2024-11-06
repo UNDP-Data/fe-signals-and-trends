@@ -9,7 +9,7 @@ import { SignInButton } from '../../Components/SignInButton';
 import { TrendEntryFormEl } from '../../Components/TrendEntryFormEl';
 import Context from '../../Context/Context';
 import { TrendDataType } from '../../Types';
-import { readTrend } from '../../api';
+import { readTrend } from '../../API';
 
 export function EditTrend() {
   const navigate = useNavigate();

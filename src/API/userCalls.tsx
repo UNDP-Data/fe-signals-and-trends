@@ -1,19 +1,62 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { isAxiosError } from 'axios';
-import { axiosInstance } from './api_config';
+import { axiosInstance } from './apiConfig';
 import {
-  CurrentUserResponse,
-  ReadUserParams,
-  SearchUsersParams,
-  UpdateUserParams,
-  UpdateUserResponse,
-  UserDataTypeResponse,
-  UserSearchResponse,
+  AllowedRolesDataType,
+  CurrentUserResponseDataType,
+  UserDataType,
 } from '../Types';
+
+interface UpdateUserResponseDataType {
+  acclab: boolean;
+  email: string;
+  name: string;
+  role: string;
+  unit: string;
+}
+
+export interface UpdateUserParamsDataType {
+  acclab?: boolean;
+  email?: string;
+  name?: string;
+  role?: AllowedRolesDataType;
+  id?: number;
+  unit?: string;
+}
+
+export interface UserDataTypeResponseDataType {
+  acclab: boolean;
+  email: string;
+  id: number;
+  name: string;
+  role: string;
+  unit: string;
+}
+
+export interface ReadUserParamsDataType {
+  uid: number;
+}
+
+export interface UserSearchResponseDataType {
+  per_page: number;
+  current_page: number;
+  total_pages: number;
+  total_count: number;
+  data: UserDataType[];
+}
+
+export interface SearchUsersParamsDataType {
+  page?: number;
+  per_page?: number;
+  order_by?: string;
+  direction?: 'desc' | 'asc';
+  roles?: AllowedRolesDataType[];
+  query?: string;
+}
 
 export function readCurrentUser() {
   return axiosInstance
-    .get<CurrentUserResponse>('/users/me')
+    .get<CurrentUserResponseDataType>('/users/me')
     .then(response => response.data)
     .catch(error => {
       if (isAxiosError(error)) {
@@ -28,7 +71,7 @@ export function readCurrentUser() {
     });
 }
 
-export function searchUsers(params: SearchUsersParams = {}) {
+export function searchUsers(params: SearchUsersParamsDataType = {}) {
   const {
     page = 1,
     per_page = 10,
@@ -49,7 +92,7 @@ export function searchUsers(params: SearchUsersParams = {}) {
   if (query) queryParams.query = query;
 
   return axiosInstance
-    .get<UserSearchResponse>('/users/search', { params: queryParams })
+    .get<UserSearchResponseDataType>('/users/search', { params: queryParams })
     .then(response => response.data)
     .catch(error => {
       if (isAxiosError(error)) {
@@ -64,11 +107,11 @@ export function searchUsers(params: SearchUsersParams = {}) {
     });
 }
 
-export function readUser(params: ReadUserParams) {
+export function readUser(params: ReadUserParamsDataType) {
   const { uid } = params;
 
   return axiosInstance
-    .get<UserDataTypeResponse>(`/users/${uid}`)
+    .get<UserDataTypeResponseDataType>(`/users/${uid}`)
     .then(response => response.data)
     .catch(error => {
       if (isAxiosError(error)) {
@@ -83,9 +126,9 @@ export function readUser(params: ReadUserParams) {
     });
 }
 
-export function updateUser(uid: number, params: UpdateUserParams) {
+export function updateUser(uid: number, params: UpdateUserParamsDataType) {
   return axiosInstance
-    .put<UpdateUserResponse>(`/users/${uid}`, params)
+    .put<UpdateUserResponseDataType>(`/users/${uid}`, params)
     .then(response => response.data)
     .catch(error => {
       if (isAxiosError(error)) {

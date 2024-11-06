@@ -15,7 +15,7 @@ import { SignInButton } from '../../Components/SignInButton';
 import Context from '../../Context/Context';
 import { ChipEl } from '../../Components/ChipEl';
 import { getSDGIcon } from '../../Utils/GetSDGIcons';
-import { deleteSignal, readSignal, searchTrends } from '../../api';
+import { deleteSignal, readSignal, searchTrends } from '../../API';
 
 interface HeroImageProps {
   bgImage?: string;
@@ -48,7 +48,6 @@ export function SignalDetail() {
   const { id } = useParams();
   const {
     role,
-    accessToken,
     updateNotificationText,
     choices,
     updateCardsToPrint,
@@ -74,7 +73,7 @@ export function SignalDetail() {
         setConnectedTrends([]);
       }
     });
-  }, [id, accessToken]);
+  }, [id]);
   return (
     <div>
       {data ? (

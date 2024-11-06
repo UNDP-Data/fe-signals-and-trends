@@ -7,13 +7,13 @@ import {
 import { Input, Pagination, Select } from 'antd';
 import { SignInButton } from '../Components/SignInButton';
 import Context from '../Context/Context';
-import { AllowedRoles, UserDataType } from '../Types';
+import { AllowedRolesDataType, UserDataType } from '../Types';
 import { UserListEl } from './userList';
-import { searchUsers } from '../api';
+import { searchUsers } from '../API';
 
 export function AdminPanel() {
   const navigate = useNavigate();
-  const { role, accessToken } = useContext(Context);
+  const { role } = useContext(Context);
   const [userList, setUserList] = useState<UserDataType[] | undefined>(
     undefined,
   );
@@ -27,11 +27,11 @@ export function AdminPanel() {
   const [totalCount, setTotalCount] = useState(0);
 
   const getRoleQueryParameter = (
-    currentRole: 'All Roles' | AllowedRoles,
-  ): AllowedRoles[] => {
+    currentRole: 'All Roles' | AllowedRolesDataType,
+  ): AllowedRolesDataType[] => {
     return currentRole === 'All Roles'
       ? ['User', 'Curator', 'Admin']
-      : [currentRole as AllowedRoles];
+      : [currentRole as AllowedRolesDataType];
   };
 
   useEffect(() => {
@@ -67,7 +67,7 @@ export function AdminPanel() {
           }
         });
     }
-  }, [role, accessToken, filterRole, filter]);
+  }, [role, filterRole, filter]);
 
   useEffect(() => {
     if (role === 'Admin') {
