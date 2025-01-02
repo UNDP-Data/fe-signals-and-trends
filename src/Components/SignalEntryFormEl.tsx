@@ -1,12 +1,16 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { Input, Select, Popconfirm } from 'antd';
+import '../styles.css';
 import sortBy from 'lodash.sortby';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { useContext, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { NewSignalDataType, SignalDataType, TrendDataType } from '../Types';
 import { AddTrendsModal } from './AddTrendsModal';
 import Context from '../Context/Context';
+// import { pexelCall } from '../API/pexelCall';
+
 import {
   createSignal,
   updateSignal as updateSignalApi,
@@ -235,7 +239,15 @@ export function SignalEntryFormEl(props: Props) {
       setTrendsList([]);
     }
   }, [selectedTrendsList]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+  const [query, setQuery] = useState<string>('');
+  useEffect(() => {
+    if (!query) {
+      setQuery(signalData.headline || '');
+    }
+  }, [signalData.attachment]);
+
+  const [pexelImages, setPexelImages] = useState<any[]>([]);
   const fileInputRef = useRef<any>(null);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -256,6 +268,26 @@ export function SignalEntryFormEl(props: Props) {
       setSelectedFileName(event.target.files[0].name);
     }
   };
+  const getPexelImages = async () => {
+    try {
+      const response = await axios.get('/api/v1/search', {
+        params: { query, per_page: 4 },
+        headers: {
+          Authorization: `${process.env.REACT_APP_PEXEL_API_KEY}`,
+        },
+      });
+      setPexelImages(response.data.photos);
+    } catch (err) {
+      if (err instanceof Error) {
+        throw new Error(err.message);
+      } else {
+        throw new Error('An unexpected error occurred');
+      }
+    }
+  };
+  // const handleUserSelectedImage = (selectedImage : string) => {
+  //   update
+  // }
   /*
   const fillUsingAI = async () => {
     setTosError(false);
@@ -336,6 +368,7 @@ export function SignalEntryFormEl(props: Props) {
                 ...signalData,
                 headline: d.target.value,
               });
+              setQuery(d.target.value);
             }}
           />
           <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
@@ -671,6 +704,61 @@ export function SignalEntryFormEl(props: Props) {
           images that are non-copyright or license-free/Creative Commons. File
           must be maximum 1 MBs. Compress larger images, if applicable.
         </p>
+      </div>
+      <div>
+        <button
+          type='button'
+          className='undp-button button-tertiary flex'
+          onClick={() => getPexelImages()}
+          style={{
+            backgroundColor: 'var(--gray-300)',
+            padding: 'var(--spacing-05)',
+            alignSelf: 'flex-end',
+          }}
+        >
+          Generate Image
+        </button>
+        <div
+          className='margin-top-09 margin-bottom-07'
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'stretch',
+          }}
+        >
+          {pexelImages.map((image, index) => (
+            <button
+              key={index}
+              type='button'
+              onClick={() => {
+                updateSignalData({
+                  ...signalData,
+                  attachment: image.src.medium,
+                });
+              }}
+              style={{
+                border: 'none',
+                background: 'none',
+                padding: 0,
+                cursor: 'pointer',
+              }}
+            >
+              <img
+                key={index}
+                className='hover-scale-shadow'
+                src={image.src.medium}
+                alt='No preview available'
+                height='200px'
+                style={{
+                  objectFit: 'cover',
+                  paddingLeft: '1rem',
+                  paddingRight: '1rem',
+                  transition: 'box-shadow 0.3s ease-in-out',
+                }}
+              />
+            </button>
+          ))}
+        </div>
       </div>
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Keywords*</p>
@@ -1030,6 +1118,7 @@ export function SignalEntryFormEl(props: Props) {
                             }`,
                           );
                         });
+                    console.log('Saving signal', signalData.attachment);
                   }}
                 >
                   Submit Signal
@@ -1039,6 +1128,7 @@ export function SignalEntryFormEl(props: Props) {
                   type='button'
                   onClick={() => {
                     // save as draft
+                    console.log('Saving as a draft', signalData.attachment);
                     setButtonDisabled(true);
                     setSubmittingError(undefined);
                     if (signalData.id)
@@ -1241,6 +1331,7 @@ export function SignalEntryFormEl(props: Props) {
                 className='undp-button button-secondary button-arrow'
                 type='button'
                 onClick={() => {
+                  console.log('Saving as a draft', signalData.attachment);
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
                   createSignal({

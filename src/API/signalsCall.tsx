@@ -81,6 +81,10 @@ interface UpdateSignalParamsDataType {
   score?: string | null;
 }
 
+interface makeSignalFavoriteDataType {
+  status: string | null;
+}
+
 export function searchSignals(params: BaseSignalsParamsDataType = {}) {
   const {
     page = 1,
@@ -288,6 +292,25 @@ export function createSignal(params: CreateSignalParamsDataType) {
     });
 }
 
+export function makeSignalFavorite(
+  uid: number,
+  params: makeSignalFavoriteDataType,
+) {
+  return axiosInstance
+    .post<makeSignalFavoriteDataType>(`/favourites/${uid}`, params)
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to make the signal a favorite. ${
+            error.response?.data?.message || error.message
+          }`,
+        );
+      } else {
+        throw new Error(`An unknown error occurred. ${error.message}`);
+      }
+    });
+}
 export function updateSignal(uid: number, params: UpdateSignalParamsDataType) {
   return axiosInstance
     .put<SignalDataType>(`/signals/${uid}`, params)

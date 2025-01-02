@@ -1,6 +1,7 @@
 import { AuthenticatedTemplate } from '@azure/msal-react';
 import { Dropdown, Input, MenuProps, Modal, Select, Switch } from 'antd';
 import { useContext, useEffect, useState } from 'react';
+// import { NavLink, useNavigate } from 'react-router-dom';
 import { NavLink } from 'react-router-dom';
 import Context from '../Context/Context';
 import { updateUser } from '../API';
@@ -32,6 +33,7 @@ export function SignOutButton(props: Props) {
   const [submittingError, setSubmittingError] = useState<undefined | string>(
     undefined,
   );
+  // const navigate = useNavigate();
   useEffect(() => {
     setNameOfUser(name);
     setSelectedUnit(unit);
@@ -100,6 +102,22 @@ export function SignOutButton(props: Props) {
           {
             key: '4',
             label: (
+              <NavLink
+                to='/my-favorites'
+                style={{
+                  fontFamily: 'var(--fontFamily)',
+                  fontSize: '1.25rem',
+                  textTransform: 'none',
+                  padding: '0.75rem',
+                }}
+              >
+                My Favorites
+              </NavLink>
+            ),
+          },
+          {
+            key: '5',
+            label: (
               <button
                 style={{
                   fontFamily: 'var(--fontFamily)',
@@ -162,6 +180,22 @@ export function SignOutButton(props: Props) {
           {
             key: '3',
             label: (
+              <NavLink
+                to='/my-favorites'
+                style={{
+                  fontFamily: 'var(--fontFamily)',
+                  fontSize: '1.25rem',
+                  textTransform: 'none',
+                  padding: '0.75rem',
+                }}
+              >
+                My Favorites
+              </NavLink>
+            ),
+          },
+          {
+            key: '4',
+            label: (
               <button
                 style={{
                   fontFamily: 'var(--fontFamily)',
@@ -195,6 +229,9 @@ export function SignOutButton(props: Props) {
             </div>
           ) : null}
           <div>
+            <div>
+              <NavLink to='/my-favorites'>My Favorites</NavLink>
+            </div>
             <button
               type='button'
               onClick={() => {

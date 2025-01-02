@@ -23,6 +23,7 @@ import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
 import { signOutClickHandler } from './Utils/AuthStatusHandler';
 import { Header } from './Components/HeaderEl';
 import { searchSignals, searchTrends } from './API';
+import { MyFavorites } from './MyFavorites';
 
 function MainBody() {
   const {
@@ -199,6 +200,7 @@ function MainBody() {
               <Route path='/add-new-trend' element={<AddNewTrendEl />} />
               <Route path='/admin-panel' element={<AdminPanel />} />
               <Route path='/my-drafts' element={<MyDrafts />} />
+              <Route path='/my-favorites' element={<MyFavorites />} />
             </Routes>
           </>
         ) : (

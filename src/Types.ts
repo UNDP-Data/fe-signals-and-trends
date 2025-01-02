@@ -1,4 +1,10 @@
-export type StatusDataType = 'New' | 'Approved' | 'Archived' | 'Draft';
+export type StatusDataType =
+  | 'New'
+  | 'Approved'
+  | 'Archived'
+  | 'Draft'
+  | 'Created'
+  | 'Deleted';
 
 export interface SignalDataType {
   id: number;

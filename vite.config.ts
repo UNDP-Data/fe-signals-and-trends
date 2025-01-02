@@ -23,6 +23,13 @@ export default defineConfig(({ command, mode }) => {
       },
     },
     server: {
+      proxy: {
+        '/api': {
+          target: 'https://api.pexels.com',
+          changeOrigin: true,
+          rewrite: path => path.replace(/^\/api/, ''),
+        },
+      },
       cors: {
         origin: '*',
         methods: ['GET'],
