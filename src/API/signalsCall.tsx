@@ -1,7 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { isAxiosError } from 'axios';
 import { axiosInstance } from './apiConfig';
-import { SignalDataType, StatusDataType } from '../Types';
+import {
+  AutoTaggingNewsDataType,
+  SignalDataType,
+  StatusDataType,
+} from '../Types';
 
 interface BaseSignalsParamsDataType {
   page?: number;
@@ -311,6 +315,33 @@ export function makeSignalFavorite(
       }
     });
 }
+
+export function getfavoriteSignals() {
+  return axiosInstance
+    .get<SignalDataType[]>('/favourites')
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error('Unable to fetch favorites');
+      } else {
+        throw new Error(`An unknown error occurred. ${error.message}`);
+      }
+    });
+}
+
+export function autoTaggingFetchNewsAPI() {
+  return axiosInstance
+    .get<AutoTaggingNewsDataType[]>('/signals/autocomplete')
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error('Unable to fetch news article');
+      } else {
+        throw new Error(`An unknown error occured. ${error.message}`);
+      }
+    });
+}
+
 export function updateSignal(uid: number, params: UpdateSignalParamsDataType) {
   return axiosInstance
     .put<SignalDataType>(`/signals/${uid}`, params)

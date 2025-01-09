@@ -278,3 +278,15 @@ export interface CurrentUserResponseDataType {
   role: AllowedRolesDataType;
   unit: string;
 }
+
+export interface AutoTaggingNewsDataType {
+  headline: string;
+  url: string;
+  description: string;
+  relevance: number | null;
+  keywords: string[];
+  location: string;
+  created_unit: string | null;
+  score: { sentiment: number };
+  connected_trends: string[] | null;
+}

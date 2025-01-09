@@ -11,6 +11,7 @@ import Context from '../Context/Context';
 
 import '../styles.css';
 import { ChipEl } from './ChipEl';
+import { getfavoriteSignals } from '../API';
 
 interface Props {
   data: SignalDataType;
@@ -77,6 +78,8 @@ export function SignalCard(props: Props) {
     useContext(Context);
   const [isFilled, setIsFilled] = useState<boolean>(false);
   const myFavBtnClick = () => {
+    const signals = getfavoriteSignals();
+    console.log(signals);
     setIsFilled(!isFilled);
   };
   return (

@@ -247,6 +247,7 @@ export function SignalEntryFormEl(props: Props) {
     }
   }, [signalData.attachment]);
 
+  const [imageUrl, setImageUrl] = useState<string>('');
   const [pexelImages, setPexelImages] = useState<any[]>([]);
   const fileInputRef = useRef<any>(null);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
@@ -268,6 +269,11 @@ export function SignalEntryFormEl(props: Props) {
       setSelectedFileName(event.target.files[0].name);
     }
   };
+  async function urlToFile(url: string, filename: string, mimeType: string) {
+    const response = await fetch(url);
+    const buffer = await response.arrayBuffer();
+    return new File([buffer], filename, { type: mimeType });
+  }
   const getPexelImages = async () => {
     try {
       const response = await axios.get('/api/v1/search', {
@@ -654,7 +660,7 @@ export function SignalEntryFormEl(props: Props) {
         <p className='undp-typography margin-bottom-01'>Cover Image</p>
         {signalData.attachment ? (
           <div className='flex-div padding-bottom-05'>
-            <UploadedImgEl bgImage={signalData.attachment} />
+            <UploadedImgEl bgImage={imageUrl} />
             <button
               type='button'
               className='undp-button button-tertiary flex'
@@ -730,11 +736,19 @@ export function SignalEntryFormEl(props: Props) {
             <button
               key={index}
               type='button'
-              onClick={() => {
+              onClick={async () => {
+                const file = await urlToFile(
+                  image.src.medium,
+                  `${query} pexel-image.jpg`,
+                  'image/jpeg',
+                );
+                setSelectedFileName(file.name);
+                setImageUrl(image.src.medium);
                 updateSignalData({
                   ...signalData,
                   attachment: image.src.medium,
                 });
+                handleFileSelect({ target: { files: [file] } });
               }}
               style={{
                 border: 'none',
@@ -1118,7 +1132,6 @@ export function SignalEntryFormEl(props: Props) {
                             }`,
                           );
                         });
-                    console.log('Saving signal', signalData.attachment);
                   }}
                 >
                   Submit Signal
@@ -1128,7 +1141,6 @@ export function SignalEntryFormEl(props: Props) {
                   type='button'
                   onClick={() => {
                     // save as draft
-                    console.log('Saving as a draft', signalData.attachment);
                     setButtonDisabled(true);
                     setSubmittingError(undefined);
                     if (signalData.id)

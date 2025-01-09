@@ -22,7 +22,7 @@ export function MyFavorites() {
     searchSignals({
       page: paginationValue,
       per_page: pageSize,
-      statuses: ['Created'],
+      statuses: ['Draft'],
       created_by: userName,
     })
       .then(response => {
@@ -50,7 +50,7 @@ export function MyFavorites() {
     searchSignals({
       page: 1,
       per_page: pageSize,
-      statuses: ['Created'],
+      statuses: ['Draft'],
       created_by: userName,
     })
       .then(response => {
