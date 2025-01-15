@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Modal } from 'antd';
 import { NavLink } from 'react-router-dom';
 import UNDPColorModule from 'undp-viz-colors';
 import { useContext, useState } from 'react';
@@ -12,6 +13,7 @@ import Context from '../Context/Context';
 import '../styles.css';
 import { ChipEl } from './ChipEl';
 import { getfavoriteSignals } from '../API';
+import { Collaborator } from './Collaborator';
 
 interface Props {
   data: SignalDataType;
@@ -72,16 +74,27 @@ const LinkP = styled.p`
   }
 `;
 
-export function SignalCard(props: Props) {
+export function ProjectsCard(props: Props) {
   const { data, isDraft } = props;
   const { role, choices, updateCardsToPrint, cardsToPrint } =
     useContext(Context);
   const [isFilled, setIsFilled] = useState<boolean>(false);
+  //   Need to remove this?
   const myFavBtnClick = () => {
     const signals = getfavoriteSignals();
     console.log(signals);
     setIsFilled(!isFilled);
     console.log(data);
+  };
+  const [openModal, setOpenModal] = useState(false);
+  //   const [collaborators, setCollaborators] = useState<string[]>(['Alpha', 'Beta', 'Charlie']);
+  const [collaborators] = useState<string[]>(['Alpha', 'Beta', 'Charlie']);
+  const addCollaborator = () => {
+    setOpenModal(true);
+    // const newCollaboratorInitial = prompt('Enter new collaborator initial:');
+    // if (newCollaboratorInitial) {
+    //   setCollaborators([...collaborators, newCollaboratorInitial]);
+    // }
   };
   return (
     <div className='signal-card'>
@@ -217,6 +230,37 @@ export function SignalCard(props: Props) {
                   </div>
                 ) : null,
               )}
+            </div>
+            <p className='small-font undp-typography bold margin-bottom-03 margin-top-03'>
+              Collaborators
+            </p>
+            <div className='collaborator-card'>
+              {collaborators.map((name, index) => (
+                <Collaborator key={index} name={name} />
+              ))}
+              <div
+                className='collaborator-circle add-collaborator'
+                role='button'
+                tabIndex={0}
+                onClick={addCollaborator}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    addCollaborator();
+                  }
+                }}
+                title='Add Collaborator'
+              >
+                +
+              </div>
+              <Modal
+                className='undp-modal'
+                open={openModal}
+                onCancel={() => {
+                  setOpenModal(false);
+                }}
+              >
+                <h5 className='undp-typography'>Add Collaborators</h5>
+              </Modal>
             </div>
           </div>
         </div>

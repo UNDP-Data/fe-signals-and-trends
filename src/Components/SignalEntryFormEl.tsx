@@ -1141,6 +1141,7 @@ export function SignalEntryFormEl(props: Props) {
                   type='button'
                   onClick={() => {
                     // save as draft
+                    console.log(signalData.attachment);
                     setButtonDisabled(true);
                     setSubmittingError(undefined);
                     if (signalData.id)

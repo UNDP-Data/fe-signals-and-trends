@@ -118,6 +118,22 @@ export function SignOutButton(props: Props) {
           {
             key: '5',
             label: (
+              <NavLink
+                to='/my-projects'
+                style={{
+                  fontFamily: 'var(--fontFamily)',
+                  fontSize: '1.25rem',
+                  textTransform: 'none',
+                  padding: '0.75rem',
+                }}
+              >
+                Projects
+              </NavLink>
+            ),
+          },
+          {
+            key: '6',
+            label: (
               <button
                 style={{
                   fontFamily: 'var(--fontFamily)',
@@ -196,6 +212,22 @@ export function SignOutButton(props: Props) {
           {
             key: '4',
             label: (
+              <NavLink
+                to='/my-projects'
+                style={{
+                  fontFamily: 'var(--fontFamily)',
+                  fontSize: '1.25rem',
+                  textTransform: 'none',
+                  padding: '0.75rem',
+                }}
+              >
+                Projects
+              </NavLink>
+            ),
+          },
+          {
+            key: '5',
+            label: (
               <button
                 style={{
                   fontFamily: 'var(--fontFamily)',
@@ -231,6 +263,9 @@ export function SignOutButton(props: Props) {
           <div>
             <div>
               <NavLink to='/my-favorites'>My Favorites</NavLink>
+            </div>
+            <div>
+              <NavLink to='/my-projects'>Projects</NavLink>
             </div>
             <button
               type='button'

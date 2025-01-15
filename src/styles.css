@@ -38,7 +38,7 @@
   display: flex;
 }
 
-/* Generate images for adding signal covers */
+/* Generate images to add as signal covers */
 .hover-scale-shadow { 
   transition: transform 1s ease-in-out, 
   box-shadow 1s ease-in-out; } 
@@ -133,4 +133,28 @@
   @media (max-width: 600px) {
     display: none;
   }
+}
+.collaborator-card { 
+  display: flex; 
+  gap: -40px; /* Adjust the gap to create overlap */ 
+  align-items: center; 
+} 
+.collaborator-circle { 
+  width: 30px; 
+  height: 30px; 
+  border-radius: 50%; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  background-color: #ccc; 
+  font-size: 15px; 
+  font-weight: bold; 
+  cursor: pointer; 
+  position: relative;
+  z-index: 1;
+} 
+.add-collaborator { 
+  background-color: #007bff; 
+  color: #fff; 
+  z-index: 0; 
 }
