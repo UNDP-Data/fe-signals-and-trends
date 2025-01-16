@@ -81,6 +81,9 @@ export function SignalDetail() {
     console.log('User ID : ', userID);
     readSignal(Number(id)).then(response => {
       setData(response);
+      if (response?.favorite) {
+        setIsFilled(true);
+      }
       if (response?.connected_trends?.length) {
         const trendsIds = response.connected_trends
           .map(d => Number(d))

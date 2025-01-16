@@ -29,6 +29,7 @@ export interface SignalDataType {
   score?: string;
   connected_trends: number[];
   created_for?: string;
+  favorite?: boolean;
 }
 
 export interface NewSignalDataType {

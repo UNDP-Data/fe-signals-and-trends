@@ -1,79 +1,50 @@
-import { useContext, useEffect, useState } from 'react';
-import { Pagination, PaginationProps } from 'antd';
-import sortBy from 'lodash.sortby';
 import {
   AuthenticatedTemplate,
   UnauthenticatedTemplate,
 } from '@azure/msal-react';
+import { Pagination, PaginationProps } from 'antd';
+import sortBy from 'lodash.sortby';
+import { useContext, useEffect, useState } from 'react';
+import { getfavoriteSignals } from '../API';
 import { SignInButton } from '../Components/SignInButton';
 import Context from '../Context/Context';
-import { searchSignals } from '../API';
 import { FavoriteCardList } from '../Signals/AllSignals/FavoriteGridView';
 
 export function MyFavorites() {
-  const { userName, signalList, updateSignalList } = useContext(Context);
+  const { signalList, updateSignalList } = useContext(Context);
   const [paginationValue, setPaginationValue] = useState(1);
   const [error, setError] = useState<undefined | string>(undefined);
   const [pageSize, setPageSize] = useState(20);
   const [totalNoOfPages, setTotalNoOfPages] = useState(0);
+
   useEffect(() => {
     setError(undefined);
     updateSignalList(undefined);
-    searchSignals({
-      page: paginationValue,
-      per_page: pageSize,
-      statuses: ['Draft'],
-      created_by: userName,
-    })
+
+    getfavoriteSignals()
       .then(response => {
-        updateSignalList(
-          sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
-        );
+        if (response && response.length > 0) {
+          const sortedData = sortBy(response, d => Date.parse(d.created_at)).reverse();
+          updateSignalList(sortedData);
+          setTotalNoOfPages(Math.ceil(sortedData.length / pageSize));
+        } else {
+          updateSignalList([]);
+        }
       })
       .catch(err => {
         if (err.response?.status === 404) {
           updateSignalList([]);
         } else {
           setError(
-            `${err}. ${
-              err.response?.status === 500
-                ? 'Please try again in some time'
-                : ''
+            `${err}. ${err.response?.status === 500
+              ? 'Please try again in some time'
+              : ''
             }`,
           );
         }
       });
-  }, [paginationValue]);
-  useEffect(() => {
-    setError(undefined);
-    updateSignalList(undefined);
-    searchSignals({
-      page: 1,
-      per_page: pageSize,
-      statuses: ['Draft'],
-      created_by: userName,
-    })
-      .then(response => {
-        updateSignalList(
-          sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
-        );
-        setPaginationValue(1);
-        setTotalNoOfPages(response.total_pages);
-      })
-      .catch(err => {
-        if (err.response?.status === 404) {
-          updateSignalList([]);
-        } else {
-          setError(
-            `${err}. ${
-              err.response?.status === 500
-                ? 'Please try again in some time'
-                : ''
-            }`,
-          );
-        }
-      });
-  }, [userName, pageSize]);
+  }, [pageSize]);
+
   const onShowSizeChange: PaginationProps['onShowSizeChange'] = (
     _current,
     size,
@@ -104,7 +75,7 @@ export function MyFavorites() {
                     border: '1px solid var(--gray-400)',
                   }}
                 >
-                  Opps... You have no favorite signals
+                  You haven&apos;t added any favorite signals yet.
                 </h5>
               )}
             </div>

@@ -8,7 +8,7 @@ export function FavoriteCardList() {
     return (
       <>
         {signalList.map((d, i) => (
-          <SignalCard data={d} key={i} isDraft={d.status === 'Draft'} />
+          <SignalCard data={d} key={`${d.id}-${i}`} isDraft={d.status === 'Draft'} />
         ))}
       </>
     );
