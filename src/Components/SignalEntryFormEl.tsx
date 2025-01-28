@@ -18,6 +18,7 @@ import {
   // generateSignal,
   searchTrends,
 } from '../API';
+import { extractKeywords } from '../Utils/ExtractKeyWords';
 
 interface Props {
   updateSignal?: SignalDataType;
@@ -251,6 +252,7 @@ export function SignalEntryFormEl(props: Props) {
   const [pexelImages, setPexelImages] = useState<any[]>([]);
   const fileInputRef = useRef<any>(null);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
+  const [pageNo, setPageNo] = useState<number>(1);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleFileSelect = (event: any) => {
     if (event.target.files) {
@@ -276,12 +278,14 @@ export function SignalEntryFormEl(props: Props) {
   }
   const getPexelImages = async () => {
     try {
+      const refinedQuery = extractKeywords(query);
       const response = await axios.get('/api/v1/search', {
-        params: { query, per_page: 4 },
+        params: { query: refinedQuery, per_page: 12, page: pageNo },
         headers: {
           Authorization: `${process.env.REACT_APP_PEXEL_API_KEY}`,
         },
       });
+      console.log(response.data);
       setPexelImages(response.data.photos);
     } catch (err) {
       if (err instanceof Error) {
@@ -291,6 +295,14 @@ export function SignalEntryFormEl(props: Props) {
       }
     }
   };
+  const refreshPexelImages = async () => {
+    setPageNo(pageNo + 1);
+    console.log(pageNo);
+    getPexelImages();
+  };
+  useEffect(() => {
+    getPexelImages();
+  }, [pageNo]);
   // const handleUserSelectedImage = (selectedImage : string) => {
   //   update
   // }
@@ -724,14 +736,7 @@ export function SignalEntryFormEl(props: Props) {
         >
           Generate Image
         </button>
-        <div
-          className='margin-top-09 margin-bottom-07'
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'stretch',
-          }}
-        >
+        <div className='margin-top-09 margin-bottom-09 generate-img-div'>
           {pexelImages.map((image, index) => (
             <button
               key={index}
@@ -753,7 +758,7 @@ export function SignalEntryFormEl(props: Props) {
               style={{
                 border: 'none',
                 background: 'none',
-                padding: 0,
+                padding: 10,
                 cursor: 'pointer',
               }}
             >
@@ -765,14 +770,24 @@ export function SignalEntryFormEl(props: Props) {
                 height='200px'
                 style={{
                   objectFit: 'cover',
-                  paddingLeft: '1rem',
-                  paddingRight: '1rem',
-                  transition: 'box-shadow 0.3s ease-in-out',
+                  transition: 'box-shadow 0.4s ease-in-out',
                 }}
               />
             </button>
           ))}
         </div>
+        <button
+          type='button'
+          className='undp-button button-tertiary flex margin-bottom-05'
+          onClick={refreshPexelImages}
+          style={{
+            backgroundColor: 'var(--gray-300)',
+            padding: 'var(--spacing-05)',
+            alignSelf: 'flex-end',
+          }}
+        >
+          Refresh
+        </button>
       </div>
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Keywords*</p>

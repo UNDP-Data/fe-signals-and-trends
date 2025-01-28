@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { Modal } from 'antd';
 import { NavLink } from 'react-router-dom';
 import UNDPColorModule from 'undp-viz-colors';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
@@ -12,7 +12,7 @@ import Context from '../Context/Context';
 
 import '../styles.css';
 import { ChipEl } from './ChipEl';
-import { getfavoriteSignals } from '../API';
+import { getfavoriteSignals, searchUsers } from '../API';
 import { Collaborator } from './Collaborator';
 
 interface Props {
@@ -86,6 +86,24 @@ export function ProjectsCard(props: Props) {
     setIsFilled(!isFilled);
     console.log(data);
   };
+  //   const [users, setUsers] = useState<UserSearchResponseDataType[]>([]);
+  //   const [loading, setLoading] = useState(false);
+  //   const [error, setError] = useState<string | null>(null);
+  const fetchUsers = async () => {
+    const userData = await searchUsers();
+    console.log(userData);
+    // setLoading(true);
+    // setError(null);
+    // try {
+    //   const userData = await searchUsers();
+    //   //   setUsers(userData);
+    //   console.log(userData);
+    // } catch (err) {
+    //   setError('Failed to fetch users. Please try again later.');
+    // } finally {
+    //   setLoading(false);
+    // }
+  };
   const [openModal, setOpenModal] = useState(false);
   //   const [collaborators, setCollaborators] = useState<string[]>(['Alpha', 'Beta', 'Charlie']);
   const [collaborators] = useState<string[]>(['Alpha', 'Beta', 'Charlie']);
@@ -96,6 +114,11 @@ export function ProjectsCard(props: Props) {
     //   setCollaborators([...collaborators, newCollaboratorInitial]);
     // }
   };
+  useEffect(() => {
+    if (openModal) {
+      fetchUsers();
+    }
+  }, [openModal]);
   return (
     <div className='signal-card'>
       <CardEl>
@@ -252,14 +275,9 @@ export function ProjectsCard(props: Props) {
               >
                 +
               </div>
-              <Modal
-                className='undp-modal'
-                open={openModal}
-                onCancel={() => {
-                  setOpenModal(false);
-                }}
-              >
-                <h5 className='undp-typography'>Add Collaborators</h5>
+              <Modal open={openModal} onCancel={() => setOpenModal(false)}>
+                {' '}
+                <h2>Add Collaborator</h2>{' '}
               </Modal>
             </div>
           </div>
