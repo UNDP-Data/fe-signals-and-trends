@@ -61,6 +61,34 @@
     width: calc(50% - 0.5rem);
   }
 }
+.generate-img-div{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+ 
+}
+@media(max-width: 888px){
+  .generate-img-div{
+    display: grid;
+    grid-template-columns: repeat(2, 2fr);
+    gap: 1rem;
+  }
+  .generate-img-div img {
+    width: 75%; 
+    height: 100px;
+  }
+}
+@media(max-width: 500px){
+  .generate-img-div{
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+  }
+  .generate-img-div img {
+    width: 75%; 
+    height: 75%;
+  }
+}
 @media(min-width: 320px){
   .trend-card{
     width: 100%;
@@ -158,3 +186,4 @@
   color: #fff; 
   z-index: 0; 
 }
+

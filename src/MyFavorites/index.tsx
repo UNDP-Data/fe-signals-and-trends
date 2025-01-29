@@ -8,6 +8,7 @@ import { useContext, useEffect, useState } from 'react';
 import { getfavoriteSignals } from '../API';
 import { SignInButton } from '../Components/SignInButton';
 import Context from '../Context/Context';
+import { getfavoriteSignals, searchSignals } from '../API';
 import { FavoriteCardList } from '../Signals/AllSignals/FavoriteGridView';
 
 export function MyFavorites() {
@@ -20,7 +21,6 @@ export function MyFavorites() {
   useEffect(() => {
     setError(undefined);
     updateSignalList(undefined);
-
     getfavoriteSignals()
       .then(response => {
         if (response && response.length > 0) {
