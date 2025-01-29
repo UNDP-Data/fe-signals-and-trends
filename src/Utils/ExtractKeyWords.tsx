@@ -2,10 +2,9 @@ import nlp from 'compromise';
 
 export const extractKeywords = (phrase: string): string => {
   const doc = nlp(phrase);
-  const keywords = [
-    ...doc.nouns().out('array'), // Extract nouns
-    ...doc.verbs().out('array'), // Extract verbs
-  ];
+  const keywords = [...doc.nouns().out('array'), ...doc.verbs().out('array')];
+  console.log(keywords);
 
-  return [...new Set(keywords)].join(' ');
+  return keywords.length > 0 ? [...new Set(keywords)].join(' ') : phrase.trim();
+  // return [...new Set(keywords)].join(' ');
 };

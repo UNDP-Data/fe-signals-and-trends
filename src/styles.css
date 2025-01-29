@@ -40,8 +40,8 @@
 
 /* Generate images to add as signal covers */
 .hover-scale-shadow { 
-  transition: transform 1s ease-in-out, 
-  box-shadow 1s ease-in-out; } 
+  transition: transform 2s ease-in-out, 
+  box-shadow .5s ease-in-out; } 
 
 .hover-scale-shadow:hover { 
   transform: scale(1.1); 

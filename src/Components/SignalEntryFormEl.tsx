@@ -297,8 +297,6 @@ export function SignalEntryFormEl(props: Props) {
   };
   const refreshPexelImages = async () => {
     setPageNo(pageNo + 1);
-    console.log(pageNo);
-    getPexelImages();
   };
   useEffect(() => {
     getPexelImages();
@@ -387,6 +385,7 @@ export function SignalEntryFormEl(props: Props) {
                 headline: d.target.value,
               });
               setQuery(d.target.value);
+              setPageNo(1);
             }}
           />
           <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
@@ -724,70 +723,100 @@ export function SignalEntryFormEl(props: Props) {
         </p>
       </div>
       <div>
-        <button
-          type='button'
-          className='undp-button button-tertiary flex'
-          onClick={() => getPexelImages()}
-          style={{
-            backgroundColor: 'var(--gray-300)',
-            padding: 'var(--spacing-05)',
-            alignSelf: 'flex-end',
-          }}
-        >
-          Generate Image
-        </button>
-        <div className='margin-top-09 margin-bottom-09 generate-img-div'>
-          {pexelImages.map((image, index) => (
+        {signalData.headline ? (
+          <>
             <button
-              key={index}
               type='button'
-              onClick={async () => {
-                const file = await urlToFile(
-                  image.src.medium,
-                  `${query} pexel-image.jpg`,
-                  'image/jpeg',
-                );
-                setSelectedFileName(file.name);
-                setImageUrl(image.src.medium);
-                updateSignalData({
-                  ...signalData,
-                  attachment: image.src.medium,
-                });
-                handleFileSelect({ target: { files: [file] } });
-              }}
+              className='undp-button button-tertiary flex'
+              onClick={() => getPexelImages()}
               style={{
-                border: 'none',
-                background: 'none',
-                padding: 10,
-                cursor: 'pointer',
+                backgroundColor: 'var(--gray-300)',
+                padding: 'var(--spacing-05)',
+                alignSelf: 'flex-end',
               }}
             >
-              <img
-                key={index}
-                className='hover-scale-shadow'
-                src={image.src.medium}
-                alt='No preview available'
-                height='200px'
-                style={{
-                  objectFit: 'cover',
-                  transition: 'box-shadow 0.4s ease-in-out',
-                }}
-              />
+              Generate Image
             </button>
-          ))}
-        </div>
-        <button
-          type='button'
-          className='undp-button button-tertiary flex margin-bottom-05'
-          onClick={refreshPexelImages}
-          style={{
-            backgroundColor: 'var(--gray-300)',
-            padding: 'var(--spacing-05)',
-            alignSelf: 'flex-end',
-          }}
-        >
-          Refresh
-        </button>
+            <div className='margin-top-09 margin-bottom-09 generate-img-div'>
+              {pexelImages && pexelImages.length > 0 ? (
+                pexelImages.map((image, index) => (
+                  <button
+                    key={index}
+                    type='button'
+                    onClick={async () => {
+                      const file = await urlToFile(
+                        image.src.medium,
+                        `${query} pexel-image.jpg`,
+                        'image/jpeg',
+                      );
+                      setSelectedFileName(file.name);
+                      setImageUrl(image.src.medium);
+                      updateSignalData({
+                        ...signalData,
+                        attachment: image.src.medium,
+                      });
+                      handleFileSelect({ target: { files: [file] } });
+                    }}
+                    style={{
+                      border: 'none',
+                      background: 'none',
+                      padding: 2,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <img
+                      key={index}
+                      className='hover-scale-shadow'
+                      src={image.src.medium}
+                      alt='No preview available'
+                      height='200px'
+                      width='200px'
+                      style={{
+                        objectFit: 'cover',
+                        transition: 'box-shadow 0.4s ease-in-out',
+                      }}
+                    />
+                  </button>
+                ))
+              ) : pexelImages.length === 0 && pageNo !== 1 ? (
+                <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                  <p>
+                    No related images found. Please change the Signal Title for
+                    a better image generation.
+                  </p>
+                </div>
+              ) : null}
+            </div>
+            <button
+              type='button'
+              className='undp-button button-tertiary flex margin-bottom-05'
+              onClick={refreshPexelImages}
+              style={{
+                backgroundColor: 'var(--gray-300)',
+                padding: 'var(--spacing-05)',
+                alignSelf: 'flex-end',
+              }}
+            >
+              Refresh
+            </button>
+          </>
+        ) : (
+          <button
+            type='button'
+            className='undp-button button-tertiary flex margin-bottom-05'
+            onClick={() => getPexelImages()}
+            style={{
+              backgroundColor: 'var(--gray-200)',
+              color: 'var(--gray-500)',
+              padding: 'var(--spacing-05)',
+              alignSelf: 'flex-end',
+              cursor: 'not-allowed',
+              opacity: '0.6',
+            }}
+          >
+            Generate Image
+          </button>
+        )}
       </div>
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Keywords*</p>
