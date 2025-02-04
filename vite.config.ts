@@ -3,13 +3,14 @@ import react from '@vitejs/plugin-react';
 /* eslint-disable no-unused-vars */
 /* eslint-disable import/no-extraneous-dependencies */
 import { defineConfig, loadEnv } from 'vite';
+import eslint from 'vite-plugin-eslint';
 
 export default defineConfig(({ command, mode }) => {
-  const externalEnvs = loadEnv(mode, process.cwd(), '');
+  const env = loadEnv(mode, process.cwd(), '');
   return {
     plugins: [react()],
     define: {
-      'process.env': externalEnvs,
+      'process.env': env,
     },
     build: {
       outDir: 'build',
@@ -22,6 +23,7 @@ export default defineConfig(({ command, mode }) => {
       },
     },
     server: {
+      port: Number.parseInt(env.VITE_PORT || '5173', 10),
       cors: {
         origin: '*',
         methods: ['GET'],
