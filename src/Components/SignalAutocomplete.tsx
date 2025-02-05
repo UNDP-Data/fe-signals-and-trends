@@ -38,6 +38,7 @@ export function SignalAutocomplete({
 		SignalSuggestion[]
 	>([]);
 	const [isLoading, setIsLoading] = useState(false);
+	const [inputValueHeadline, setInputValueHeadline] = useState(value || '');
 	const cancelTokenRef = useRef<CancelTokenSource | null>(null);
 
 	// Cleanup function to cancel pending requests
@@ -67,6 +68,7 @@ export function SignalAutocomplete({
 						cancelTokenRef.current.token,
 					);
 					setAutocompleteSuggestions(suggestions);
+					console.log(autocompleteSuggestions);
 				} catch (error) {
 					if (!axios.isCancel(error)) {
 						console.error("Error fetching suggestions:", error);
@@ -100,7 +102,7 @@ export function SignalAutocomplete({
 		<Select<string, CustomOptionType>
 			className="undp-select"
 			showSearch
-			value={value}
+			value={inputValueHeadline}
 			placeholder="Enter signal title (max 100 characters)"
 			defaultActiveFirstOption={false}
 			showArrow={false}
@@ -114,7 +116,7 @@ export function SignalAutocomplete({
 					<div
 						style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}
 					>
-						{suggestion.image && (
+						{/* {suggestion.image && (
 							<img
 								src={suggestion.image}
 								alt=""
@@ -125,7 +127,7 @@ export function SignalAutocomplete({
 									borderRadius: "4px",
 								}}
 							/>
-						)}
+						)} */}
 						<div>
 							<div className="suggestion-title">{suggestion.headline}</div>
 							<div className="suggestion-description">

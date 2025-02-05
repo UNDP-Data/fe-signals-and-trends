@@ -19,6 +19,7 @@ import {
   searchTrends,
 } from '../API';
 import { extractKeywords } from '../Utils/ExtractKeyWords';
+import { SignalAutocomplete, SignalSuggestion } from './SignalAutocomplete';
 
 interface Props {
   updateSignal?: SignalDataType;
@@ -246,7 +247,7 @@ export function SignalEntryFormEl(props: Props) {
     if (!query) {
       setQuery(signalData.headline || '');
     }
-  }, [signalData.attachment]);
+  }, [signalData.attachment, signalData.headline]);
 
   const [imageUrl, setImageUrl] = useState<string>('');
   const [pexelImages, setPexelImages] = useState<any[]>([]);
@@ -277,6 +278,7 @@ export function SignalEntryFormEl(props: Props) {
     return new File([buffer], filename, { type: mimeType });
   }
   const getPexelImages = async () => {
+    console.log(query);
     try {
       const refinedQuery = extractKeywords(query);
       const response = await axios.get('/api/v1/search', {
@@ -285,7 +287,9 @@ export function SignalEntryFormEl(props: Props) {
           Authorization: `${process.env.REACT_APP_PEXEL_API_KEY}`,
         },
       });
-      console.log(response.data);
+      if(response.data.photos.length === 0){
+        setPageNo(1);
+      }
       setPexelImages(response.data.photos);
     } catch (err) {
       if (err instanceof Error) {
@@ -301,6 +305,23 @@ export function SignalEntryFormEl(props: Props) {
   useEffect(() => {
     getPexelImages();
   }, [pageNo]);
+
+  // Signal Auto Complete
+  const handleSuggestionSelect = (suggestion: SignalSuggestion) => {
+    console.log('Selected Suggestion:', suggestion);
+    updateSignalData({
+      ...signalData,
+      headline: suggestion.headline,
+      url: suggestion.url,
+      description: suggestion.description,
+      keywords: suggestion.keywords,
+      location: suggestion.location,
+    });
+    setImageUrl(suggestion.image || 'Image not available');
+    setKeyword1(suggestion.keywords[0]);
+    setKeyword2(suggestion.keywords[1]);
+    setKeyword3(suggestion.keywords[2]);
+  };
   // const handleUserSelectedImage = (selectedImage : string) => {
   //   update
   // }
@@ -374,7 +395,8 @@ export function SignalEntryFormEl(props: Props) {
       <div className='margin-bottom-07'>
         <div className='margin-bottom-07'>
           <p className='undp-typography margin-bottom-01'>Signal Title*</p>
-          <Input
+          {signalData.headline ? 
+            (<Input
             className='undp-input'
             placeholder='Enter signal title (max 100 characters)'
             value={signalData.headline}
@@ -387,7 +409,15 @@ export function SignalEntryFormEl(props: Props) {
               setQuery(d.target.value);
               setPageNo(1);
             }}
-          />
+            />) 
+            : (<SignalAutocomplete
+            onChange={d => {
+              setQuery(d);
+              setPageNo(1);
+            }}
+            onSuggestionSelect={handleSuggestionSelect}
+            value={signalData.headline}
+          />)}
           <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
             Useful titles are clear, concise and can stand alone as a simple
             description of the signal.{' '}
@@ -827,7 +857,7 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword1(e.target.value);
             }}
-            value={keyword1 || undefined}
+            value={keyword1 || undefined || signalData.keywords[0] || ''}
           />
           <Input
             className='undp-input'
@@ -835,7 +865,7 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword2(e.target.value);
             }}
-            value={keyword2 || undefined}
+            value={keyword2 || undefined || signalData.keywords[1] || ''}
           />
           <Input
             className='undp-input'
@@ -843,7 +873,7 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword3(e.target.value);
             }}
-            value={keyword3 || undefined}
+            value={keyword3 || undefined || signalData.keywords[2] || ''}
           />
         </div>
         <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
@@ -1391,6 +1421,7 @@ export function SignalEntryFormEl(props: Props) {
                   console.log('Saving as a draft', signalData.attachment);
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
+                  // console.log(signalData);
                   createSignal({
                     headline: signalData.headline || null,
                     description: signalData.description || null,
