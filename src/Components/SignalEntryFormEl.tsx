@@ -251,9 +251,18 @@ export function SignalEntryFormEl(props: Props) {
 
   const [imageUrl, setImageUrl] = useState<string>('');
   const [pexelImages, setPexelImages] = useState<any[]>([]);
+  const [isVisible, setIsVisible] = useState(true);
   const fileInputRef = useRef<any>(null);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
   const [pageNo, setPageNo] = useState<number>(1);
+  
+  const toggleVisibility = () => {
+    setIsVisible(!isVisible);
+  }
+  // const targetDiv = document.getElementById('target-div');
+  // if (targetDiv) {
+  //   targetDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleFileSelect = (event: any) => {
     if (event.target.files) {
@@ -697,7 +706,7 @@ export function SignalEntryFormEl(props: Props) {
           ))}
         </Select>
       </div>
-      <div className='margin-bottom-07'>
+      <div className='margin-bottom-07' id="target-div">
         <p className='undp-typography margin-bottom-01'>Cover Image</p>
         {signalData.attachment ? (
           <div className='flex-div padding-bottom-05'>
@@ -755,68 +764,77 @@ export function SignalEntryFormEl(props: Props) {
       <div>
         {signalData.headline ? (
           <>
-            <button
-              type='button'
-              className='undp-button button-tertiary flex'
-              onClick={() => getPexelImages()}
-              style={{
-                backgroundColor: 'var(--gray-300)',
-                padding: 'var(--spacing-05)',
-                alignSelf: 'flex-end',
-              }}
-            >
-              Generate Image
-            </button>
-            <div className='margin-top-09 margin-bottom-09 generate-img-div'>
-              {pexelImages && pexelImages.length > 0 ? (
-                pexelImages.map((image, index) => (
-                  <button
-                    key={index}
-                    type='button'
-                    onClick={async () => {
-                      const file = await urlToFile(
-                        image.src.medium,
-                        `${query} pexel-image.jpg`,
-                        'image/jpeg',
-                      );
-                      setSelectedFileName(file.name);
-                      setImageUrl(image.src.medium);
-                      updateSignalData({
-                        ...signalData,
-                        attachment: image.src.medium,
-                      });
-                      handleFileSelect({ target: { files: [file] } });
-                    }}
-                    style={{
-                      border: 'none',
-                      background: 'none',
-                      padding: 2,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <img
-                      key={index}
-                      className='hover-scale-shadow'
-                      src={image.src.medium}
-                      alt='No preview available'
-                      height='200px'
-                      width='200px'
-                      style={{
-                        objectFit: 'cover',
-                        transition: 'box-shadow 0.4s ease-in-out',
-                      }}
-                    />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <button
+                type='button'
+                className='undp-button button-tertiary flex'
+                onClick={() => getPexelImages()}
+                style={{
+                  backgroundColor: 'var(--gray-300)',
+                  padding: 'var(--spacing-05)',
+                  alignSelf: 'flex-end',
+                }}
+              >
+                Generate Image
+              </button>
+              {pexelImages && 
+              (<div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button className='undp-button button-tertiary flex' onClick={toggleVisibility}>{isVisible ? '▲ Hide' : '▼ Show'}
                   </button>
-                ))
-              ) : pexelImages.length === 0 && pageNo !== 1 ? (
-                <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-                  <p>
-                    No related images found. Please change the Signal Title for
-                    a better image generation.
-                  </p>
-                </div>
-              ) : null}
+              </div>)}
             </div>
+              <div className='margin-top-09 margin-bottom-09 generate-img-div'>
+                {isVisible && pexelImages && pexelImages.length > 0 ? (
+                  pexelImages.map((image, index) => (
+                    <button
+                      key={index}
+                      type='button'
+                      onClick={async () => {
+                        const file = await urlToFile(
+                          image.src.medium,
+                          `${query} pexel-image.jpg`,
+                          'image/jpeg',
+                        );
+                        setSelectedFileName(file.name);
+                        setImageUrl(image.src.medium);
+                        updateSignalData({
+                          ...signalData,
+                          attachment: image.src.medium,
+                        });
+                        handleFileSelect({ target: { files: [file] } });
+                        setIsVisible(false);
+                      }}
+                      style={{
+                        border: 'none',
+                        background: 'none',
+                        padding: 2,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <img
+                        key={index}
+                        className='hover-scale-shadow'
+                        src={image.src.medium}
+                        alt='No preview available'
+                        height='200px'
+                        width='200px'
+                        style={{
+                          objectFit: 'cover',
+                          transition: 'box-shadow 0.4s ease-in-out',
+                        }}
+                      />
+                    </button>
+                  ))
+                ) : pexelImages.length === 0 && pageNo !== 1 ? (
+                  <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                    <p>
+                      No related images found. Please change the Signal Title for
+                      a better image generation.
+                    </p>
+                  </div>
+                ) : null}
+            </div>
+          {isVisible && (
             <button
               type='button'
               className='undp-button button-tertiary flex margin-bottom-05'
@@ -828,7 +846,7 @@ export function SignalEntryFormEl(props: Props) {
               }}
             >
               Refresh
-            </button>
+            </button>) }
           </>
         ) : (
           <button
