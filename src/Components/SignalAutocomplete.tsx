@@ -38,7 +38,6 @@ export function SignalAutocomplete({
 		SignalSuggestion[]
 	>([]);
 	const [isLoading, setIsLoading] = useState(false);
-	const [inputValueHeadline, setInputValueHeadline] = useState(value || '');
 	const cancelTokenRef = useRef<CancelTokenSource | null>(null);
 
 	// Cleanup function to cancel pending requests
@@ -102,7 +101,7 @@ export function SignalAutocomplete({
 		<Select<string, CustomOptionType>
 			className="undp-select"
 			showSearch
-			value={inputValueHeadline}
+			value={value}
 			placeholder="Enter signal title (max 100 characters)"
 			defaultActiveFirstOption={false}
 			showArrow={false}

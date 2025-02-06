@@ -141,7 +141,7 @@ export const autocomplete = async (
 	}
 
 	try {
-		const response = await searchNews(query, "en", 5, 0, cancelToken);
+		const response = await searchNews(query, "en", 10, 0, cancelToken);
 		return convertToSignals(response);
 	} catch (error) {
 		if (axios.isCancel(error)) {
