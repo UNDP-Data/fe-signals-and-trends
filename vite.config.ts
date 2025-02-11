@@ -8,7 +8,7 @@ import eslint from 'vite-plugin-eslint';
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
-    plugins: [react(), eslint()],
+    plugins: [react()],
     define: {
       'process.env': env,
     },
@@ -30,6 +30,11 @@ export default defineConfig(({ command, mode }) => {
         preflightContinue: false,
         optionsSuccessStatus: 204,
       },
+    },
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: ['./src/setupTests.ts'],
     },
   };
 });
