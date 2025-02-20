@@ -1,14 +1,13 @@
+import react from '@vitejs/plugin-react';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
 /* eslint-disable import/no-extraneous-dependencies */
 import { defineConfig, loadEnv } from 'vite';
-import react from '@vitejs/plugin-react';
-import eslint from 'vite-plugin-eslint';
 
 export default defineConfig(({ command, mode }) => {
   const externalEnvs = loadEnv(mode, process.cwd(), '');
   return {
-    plugins: [react(), eslint()],
+    plugins: [react()],
     define: {
       'process.env': externalEnvs,
     },
@@ -36,6 +35,11 @@ export default defineConfig(({ command, mode }) => {
         preflightContinue: false,
         optionsSuccessStatus: 204,
       },
+    },
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: ['./src/setupTests.ts'],
     },
   };
 });

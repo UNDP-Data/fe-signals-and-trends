@@ -1,16 +1,23 @@
 import { useContext } from 'react';
-import { SignalCard } from '../../Components/SignalCard';
+import { FavoriteCard } from '../../Components/FavoriteCard';
 import Context from '../../Context/Context';
 
 export function FavoriteCardList() {
   const { signalList } = useContext(Context);
-  if (signalList)
+
+  if (signalList) {
+    const favoriteSignals = signalList.filter(
+      signal => signal.favorite === true,
+    );
+
     return (
       <>
-        {signalList.map((d, i) => (
-          <SignalCard data={d} key={i} isDraft={d.status === 'Draft'} />
+        {favoriteSignals.map((d, i) => (
+          <FavoriteCard data={d} key={i} />
         ))}
       </>
     );
+  }
+
   return null;
 }

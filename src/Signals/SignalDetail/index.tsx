@@ -79,6 +79,7 @@ export function SignalDetail() {
     console.log('User Name : ', userName);
     console.log('Name : ', name);
     console.log('User ID : ', userID);
+    console.log('Signal ID : ', id);
     readSignal(Number(id)).then(response => {
       setData(response);
       if (response?.connected_trends?.length) {
@@ -568,8 +569,7 @@ export function SignalDetail() {
                         className='undp-typography'
                         style={{ color: 'var(--dark-red)' }}
                       >
-                        This article has been added to your favorites. You can
-                        now check them out in &apos;My Favorites&apos;
+                        This signal has been added to your favorites.
                       </h6>
                     </NavLink>
                   ) : (
@@ -577,8 +577,7 @@ export function SignalDetail() {
                       className='undp-typography'
                       style={{ color: 'var(--dark-red)' }}
                     >
-                      This article has been removed from &apos;My
-                      Favorites&apos;
+                      This article has been removed from favorites.
                     </h6>
                   )}
                 </Modal>

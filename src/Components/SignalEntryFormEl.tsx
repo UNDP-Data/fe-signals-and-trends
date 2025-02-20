@@ -18,6 +18,8 @@ import {
   // generateSignal,
   searchTrends,
 } from '../API';
+import { extractKeywords } from '../Utils/ExtractKeyWords';
+import { SignalAutocomplete, SignalSuggestion } from './SignalAutocomplete';
 
 interface Props {
   updateSignal?: SignalDataType;
@@ -245,12 +247,22 @@ export function SignalEntryFormEl(props: Props) {
     if (!query) {
       setQuery(signalData.headline || '');
     }
-  }, [signalData.attachment]);
+  }, [signalData.attachment, signalData.headline]);
 
   const [imageUrl, setImageUrl] = useState<string>('');
   const [pexelImages, setPexelImages] = useState<any[]>([]);
+  const [isVisible, setIsVisible] = useState(true);
   const fileInputRef = useRef<any>(null);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
+  const [pageNo, setPageNo] = useState<number>(1);
+  
+  const toggleVisibility = () => {
+    setIsVisible(!isVisible);
+  }
+  // const targetDiv = document.getElementById('target-div');
+  // if (targetDiv) {
+  //   targetDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  // }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleFileSelect = (event: any) => {
     if (event.target.files) {
@@ -275,13 +287,18 @@ export function SignalEntryFormEl(props: Props) {
     return new File([buffer], filename, { type: mimeType });
   }
   const getPexelImages = async () => {
+    console.log(query);
     try {
+      const refinedQuery = extractKeywords(query);
       const response = await axios.get('/api/v1/search', {
-        params: { query, per_page: 4 },
+        params: { query: refinedQuery, per_page: 12, page: pageNo },
         headers: {
           Authorization: `${process.env.REACT_APP_PEXEL_API_KEY}`,
         },
       });
+      if(response.data.photos.length === 0){
+        setPageNo(1);
+      }
       setPexelImages(response.data.photos);
     } catch (err) {
       if (err instanceof Error) {
@@ -290,6 +307,29 @@ export function SignalEntryFormEl(props: Props) {
         throw new Error('An unexpected error occurred');
       }
     }
+  };
+  const refreshPexelImages = async () => {
+    setPageNo(pageNo + 1);
+  };
+  useEffect(() => {
+    getPexelImages();
+  }, [pageNo]);
+
+  // Signal Auto Complete
+  const handleSuggestionSelect = (suggestion: SignalSuggestion) => {
+    console.log('Selected Suggestion:', suggestion);
+    updateSignalData({
+      ...signalData,
+      headline: suggestion.headline,
+      url: suggestion.url,
+      description: suggestion.description,
+      keywords: suggestion.keywords,
+      location: suggestion.location,
+    });
+    setImageUrl(suggestion.image || 'Image not available');
+    setKeyword1(suggestion.keywords[0]);
+    setKeyword2(suggestion.keywords[1]);
+    setKeyword3(suggestion.keywords[2]);
   };
   // const handleUserSelectedImage = (selectedImage : string) => {
   //   update
@@ -364,7 +404,8 @@ export function SignalEntryFormEl(props: Props) {
       <div className='margin-bottom-07'>
         <div className='margin-bottom-07'>
           <p className='undp-typography margin-bottom-01'>Signal Title*</p>
-          <Input
+          {signalData.headline ? 
+            (<Input
             className='undp-input'
             placeholder='Enter signal title (max 100 characters)'
             value={signalData.headline}
@@ -375,8 +416,17 @@ export function SignalEntryFormEl(props: Props) {
                 headline: d.target.value,
               });
               setQuery(d.target.value);
+              setPageNo(1);
             }}
-          />
+            />) 
+            : (<SignalAutocomplete
+            onChange={d => {
+              setQuery(d);
+              setPageNo(1);
+            }}
+            onSuggestionSelect={handleSuggestionSelect}
+            value={signalData.headline}
+          />)}
           <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
             Useful titles are clear, concise and can stand alone as a simple
             description of the signal.{' '}
@@ -656,7 +706,7 @@ export function SignalEntryFormEl(props: Props) {
           ))}
         </Select>
       </div>
-      <div className='margin-bottom-07'>
+      <div className='margin-bottom-07' id="target-div">
         <p className='undp-typography margin-bottom-01'>Cover Image</p>
         {signalData.attachment ? (
           <div className='flex-div padding-bottom-05'>
@@ -712,67 +762,109 @@ export function SignalEntryFormEl(props: Props) {
         </p>
       </div>
       <div>
-        <button
-          type='button'
-          className='undp-button button-tertiary flex'
-          onClick={() => getPexelImages()}
-          style={{
-            backgroundColor: 'var(--gray-300)',
-            padding: 'var(--spacing-05)',
-            alignSelf: 'flex-end',
-          }}
-        >
-          Generate Image
-        </button>
-        <div
-          className='margin-top-09 margin-bottom-07'
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'stretch',
-          }}
-        >
-          {pexelImages.map((image, index) => (
+        {signalData.headline ? (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <button
+                type='button'
+                className='undp-button button-tertiary flex'
+                onClick={() => getPexelImages()}
+                style={{
+                  backgroundColor: 'var(--gray-300)',
+                  padding: 'var(--spacing-05)',
+                  alignSelf: 'flex-end',
+                }}
+              >
+                Generate Image
+              </button>
+              {pexelImages && 
+              (<div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <button className='undp-button button-tertiary flex' onClick={toggleVisibility}>{isVisible ? '▲ Hide' : '▼ Show'}
+                  </button>
+              </div>)}
+            </div>
+              <div className='margin-top-09 margin-bottom-09 generate-img-div'>
+                {isVisible && pexelImages && pexelImages.length > 0 ? (
+                  pexelImages.map((image, index) => (
+                    <button
+                      key={index}
+                      type='button'
+                      onClick={async () => {
+                        const file = await urlToFile(
+                          image.src.medium,
+                          `${query} pexel-image.jpg`,
+                          'image/jpeg',
+                        );
+                        setSelectedFileName(file.name);
+                        setImageUrl(image.src.medium);
+                        updateSignalData({
+                          ...signalData,
+                          attachment: image.src.medium,
+                        });
+                        handleFileSelect({ target: { files: [file] } });
+                        setIsVisible(false);
+                      }}
+                      style={{
+                        border: 'none',
+                        background: 'none',
+                        padding: 2,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <img
+                        key={index}
+                        className='hover-scale-shadow'
+                        src={image.src.medium}
+                        alt='No preview available'
+                        height='200px'
+                        width='200px'
+                        style={{
+                          objectFit: 'cover',
+                          transition: 'box-shadow 0.4s ease-in-out',
+                        }}
+                      />
+                    </button>
+                  ))
+                ) : pexelImages.length === 0 && pageNo !== 1 ? (
+                  <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+                    <p>
+                      No related images found. Please change the Signal Title for
+                      a better image generation.
+                    </p>
+                  </div>
+                ) : null}
+            </div>
+          {isVisible && (
             <button
-              key={index}
               type='button'
-              onClick={async () => {
-                const file = await urlToFile(
-                  image.src.medium,
-                  `${query} pexel-image.jpg`,
-                  'image/jpeg',
-                );
-                setSelectedFileName(file.name);
-                setImageUrl(image.src.medium);
-                updateSignalData({
-                  ...signalData,
-                  attachment: image.src.medium,
-                });
-                handleFileSelect({ target: { files: [file] } });
-              }}
+              className='undp-button button-tertiary flex margin-bottom-05'
+              onClick={refreshPexelImages}
               style={{
-                border: 'none',
-                background: 'none',
-                padding: 0,
-                cursor: 'pointer',
+                backgroundColor: 'var(--gray-300)',
+                padding: 'var(--spacing-05)',
+                alignSelf: 'flex-end',
               }}
             >
-              <img
-                key={index}
-                className='hover-scale-shadow'
-                src={image.src.medium}
-                alt='No preview available'
-                height='200px'
-                style={{
-                  objectFit: 'cover',
-                  paddingLeft: '1rem',
-                  paddingRight: '1rem',
-                  transition: 'box-shadow 0.3s ease-in-out',
-                }}
-              />
-            </button>
-          ))}
-        </div>
+              Refresh
+            </button>) }
+          </>
+        ) : (
+          <button
+            type='button'
+            className='undp-button button-tertiary flex margin-bottom-05'
+            onClick={() => getPexelImages()}
+            style={{
+              backgroundColor: 'var(--gray-200)',
+              color: 'var(--gray-500)',
+              padding: 'var(--spacing-05)',
+              alignSelf: 'flex-end',
+              cursor: 'not-allowed',
+              opacity: '0.6',
+            }}
+          >
+            Generate Image
+          </button>
+        )}
       </div>
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Keywords*</p>
@@ -783,7 +875,7 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword1(e.target.value);
             }}
-            value={keyword1 || undefined}
+            value={keyword1 || undefined || signalData.keywords[0] || ''}
           />
           <Input
             className='undp-input'
@@ -791,7 +883,7 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword2(e.target.value);
             }}
-            value={keyword2 || undefined}
+            value={keyword2 || undefined || signalData.keywords[1] || ''}
           />
           <Input
             className='undp-input'
@@ -799,7 +891,7 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword3(e.target.value);
             }}
-            value={keyword3 || undefined}
+            value={keyword3 || undefined || signalData.keywords[2] || ''}
           />
         </div>
         <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
@@ -1347,6 +1439,7 @@ export function SignalEntryFormEl(props: Props) {
                   console.log('Saving as a draft', signalData.attachment);
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
+                  // console.log(signalData);
                   createSignal({
                     headline: signalData.headline || null,
                     description: signalData.description || null,

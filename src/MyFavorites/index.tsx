@@ -7,7 +7,7 @@ import {
 } from '@azure/msal-react';
 import { SignInButton } from '../Components/SignInButton';
 import Context from '../Context/Context';
-import { searchSignals } from '../API';
+import { getfavoriteSignals, searchSignals } from '../API';
 import { FavoriteCardList } from '../Signals/AllSignals/FavoriteGridView';
 
 export function MyFavorites() {
@@ -16,19 +16,14 @@ export function MyFavorites() {
   const [error, setError] = useState<undefined | string>(undefined);
   const [pageSize, setPageSize] = useState(20);
   const [totalNoOfPages, setTotalNoOfPages] = useState(0);
+
   useEffect(() => {
     setError(undefined);
     updateSignalList(undefined);
-    searchSignals({
-      page: paginationValue,
-      per_page: pageSize,
-      statuses: ['Draft'],
-      created_by: userName,
-    })
+    getfavoriteSignals()
       .then(response => {
-        updateSignalList(
-          sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
-        );
+        updateSignalList(response);
+        console.log(response);
       })
       .catch(err => {
         if (err.response?.status === 404) {
@@ -104,7 +99,7 @@ export function MyFavorites() {
                     border: '1px solid var(--gray-400)',
                   }}
                 >
-                  Opps... You have no favorite signals
+                  You haven&apos;t added any favorite signals yet.
                 </h5>
               )}
             </div>
