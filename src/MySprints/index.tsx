@@ -10,7 +10,7 @@ import Context from '../Context/Context';
 import { searchSignals } from '../API';
 import { ProjectsCardList } from '../Signals/AllSignals/ProjectsGridView';
 
-export function MyProjects() {
+export function MySprints() {
   const { userName, signalList, updateSignalList } = useContext(Context);
   const [paginationValue, setPaginationValue] = useState(1);
   const [error, setError] = useState<undefined | string>(undefined);
@@ -89,7 +89,7 @@ export function MyProjects() {
       <AuthenticatedTemplate>
         {signalList ? (
           <div>
-            <h3 className='undp-typography margin-top-05'>Projects</h3>
+            <h3 className='undp-typography margin-top-05'>My Sprints</h3>
             <div className='flex-div flex-wrap listing'>
               {signalList.length > 0 ? (
                 <ProjectsCardList />
@@ -104,7 +104,7 @@ export function MyProjects() {
                     border: '1px solid var(--gray-400)',
                   }}
                 >
-                  Opps... You have no projects
+                  Opps... You have no sprints
                 </h5>
               )}
             </div>

@@ -119,7 +119,7 @@ export function SignOutButton(props: Props) {
             key: '5',
             label: (
               <NavLink
-                to='/my-projects'
+                to='/my-sprints'
                 style={{
                   fontFamily: 'var(--fontFamily)',
                   fontSize: '1.25rem',
@@ -127,7 +127,7 @@ export function SignOutButton(props: Props) {
                   padding: '0.75rem',
                 }}
               >
-                Projects
+                My Sprints
               </NavLink>
             ),
           },
@@ -213,7 +213,7 @@ export function SignOutButton(props: Props) {
             key: '4',
             label: (
               <NavLink
-                to='/my-projects'
+                to='/my-sprints'
                 style={{
                   fontFamily: 'var(--fontFamily)',
                   fontSize: '1.25rem',
@@ -221,7 +221,7 @@ export function SignOutButton(props: Props) {
                   padding: '0.75rem',
                 }}
               >
-                Projects
+                My Sprints
               </NavLink>
             ),
           },
@@ -265,7 +265,7 @@ export function SignOutButton(props: Props) {
               <NavLink to='/my-favorites'>My Favorites</NavLink>
             </div>
             <div>
-              <NavLink to='/my-projects'>Projects</NavLink>
+              <NavLink to='/my-sprints'>My Sprints</NavLink>
             </div>
             <button
               type='button'
