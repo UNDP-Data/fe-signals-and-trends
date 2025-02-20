@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react';
 /* eslint-disable no-unused-vars */
 /* eslint-disable import/no-extraneous-dependencies */
 import { defineConfig, loadEnv } from 'vite';
-import eslint from 'vite-plugin-eslint';
 
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -29,6 +28,13 @@ export default defineConfig(({ command, mode }) => {
         methods: ['GET'],
         preflightContinue: false,
         optionsSuccessStatus: 204,
+      },
+      hmr: {
+        overlay: false
+      },
+      logger: {
+        hasWarned: false,
+        hasErrorLogged: false,
       },
     },
     test: {

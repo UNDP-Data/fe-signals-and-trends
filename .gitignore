@@ -25,3 +25,5 @@ dist-ssr
 *.sln
 *.sw?
 /server
+Taskfile.yml
+.actrc
