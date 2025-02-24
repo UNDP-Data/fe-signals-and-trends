@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import { Input, Select, Popconfirm } from 'antd';
+import { Input, Select, Popconfirm, Checkbox } from 'antd';
 import '../styles.css';
 import sortBy from 'lodash.sortby';
 import { useNavigate } from 'react-router-dom';
@@ -259,6 +259,7 @@ export function SignalEntryFormEl(props: Props) {
   const [selectedFileName, setSelectedFileName] = useState<string>('');
   const [pageNo, setPageNo] = useState<number>(1);
   const [, setPexelImgLoading] = useState<boolean>(false);
+  const [enterSignalManually, setEnterSignalManually] = useState(false);
 
   const toggleVisibility = () => {
     setIsVisible(!isVisible);
@@ -418,8 +419,16 @@ export function SignalEntryFormEl(props: Props) {
       </p>
       <div className='margin-bottom-07'>
         <div className='margin-bottom-07'>
-          <p className='undp-typography margin-bottom-01'>Signal Title*</p>
-          {signalData.headline ? (
+          <div className='signal-title-grid'>
+            <p className='undp-typography margin-bottom-01'>Signal Title*</p>
+            <Checkbox
+              checked={enterSignalManually}
+              onChange={e => setEnterSignalManually(e.target.checked)}
+            >
+              Enter Signal Title Manually
+            </Checkbox>
+          </div>
+          {signalData.headline || enterSignalManually ? (
             <Input
               className='undp-input'
               placeholder='Enter signal title (max 100 characters)'

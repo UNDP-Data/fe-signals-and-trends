@@ -60,6 +60,12 @@
     width: calc(50% - 0.5rem);
   }
 }
+.signal-title-grid{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  opacity: 1;
+}
 .generate-img-div{
   display: grid;
   grid-template-columns: repeat(3, 1fr);
