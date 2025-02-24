@@ -37,7 +37,15 @@
   align-items: stretch;
   display: flex;
 }
+/* Generate images to add as signal covers */
+.hover-scale-shadow { 
+  transition: transform 2s ease-in-out, 
+  box-shadow .5s ease-in-out; } 
 
+.hover-scale-shadow:hover { 
+  transform: scale(1.1); 
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
 @media(min-width: 888px){
   .signal-card{
     width: calc(50% - 0.5rem);
@@ -50,6 +58,38 @@
   }
   .trend-card-for-homepage{
     width: calc(50% - 0.5rem);
+  }
+}
+.generate-img-div{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  opacity: 1;
+  transition: opacity 0.5s ease-in-out;
+}
+.generate-img-div.hidden{
+  opacity: 0;
+}
+@media(max-width: 888px){
+  .generate-img-div{
+    display: grid;
+    grid-template-columns: repeat(2, 2fr);
+    gap: 1rem;
+  }
+  .generate-img-div img {
+    width: 75%; 
+    height: 100px;
+  }
+}
+@media(max-width: 500px){
+  .generate-img-div{
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1rem;
+  }
+  .generate-img-div img {
+    width: 75%; 
+    height: 75%;
   }
 }
 @media(min-width: 320px){
@@ -125,3 +165,95 @@
     display: none;
   }
 }
+
+.collaborator-card { 
+  display: flex; 
+  gap: -40px; /* Adjust the gap to create overlap */ 
+  align-items: center; 
+} 
+.collaborator-circle { 
+  width: 30px; 
+  height: 30px; 
+  border-radius: 50%; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  background-color: #ccc; 
+  font-size: 15px; 
+  font-weight: bold; 
+  cursor: pointer; 
+  position: relative;
+  z-index: 1;
+} 
+.add-collaborator { 
+  background-color: #007bff; 
+  color: #fff; 
+  z-index: 0; 
+}
+
+.relative {
+  position: relative;
+}
+
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--white);
+  border: 1px solid var(--gray-400);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.autocomplete-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.autocomplete-item:hover {
+  background-color: var(--gray-100);
+}
+
+.suggestion-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.suggestion-description {
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.collaborator-card { 
+  display: flex; 
+  gap: -40px; /* Adjust the gap to create overlap */ 
+  align-items: center; 
+} 
+.collaborator-circle { 
+  width: 30px; 
+  height: 30px; 
+  border-radius: 50%; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  background-color: #ccc; 
+  font-size: 15px; 
+  font-weight: bold; 
+  cursor: pointer; 
+  position: relative;
+  z-index: 1;
+} 
+.add-collaborator { 
+  background-color: #007bff; 
+  color: #fff; 
+  z-index: 0; 
+}
+
