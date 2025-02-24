@@ -1,6 +1,7 @@
 import { AuthenticatedTemplate } from '@azure/msal-react';
 import { Dropdown, Input, MenuProps, Modal, Select, Switch } from 'antd';
 import { useContext, useEffect, useState } from 'react';
+// import { NavLink, useNavigate } from 'react-router-dom';
 import { NavLink } from 'react-router-dom';
 import Context from '../Context/Context';
 import { updateUser } from '../API';
@@ -32,6 +33,7 @@ export function SignOutButton(props: Props) {
   const [submittingError, setSubmittingError] = useState<undefined | string>(
     undefined,
   );
+  // const navigate = useNavigate();
   useEffect(() => {
     setNameOfUser(name);
     setSelectedUnit(unit);
@@ -100,6 +102,38 @@ export function SignOutButton(props: Props) {
           {
             key: '4',
             label: (
+              <NavLink
+                to='/my-favorites'
+                style={{
+                  fontFamily: 'var(--fontFamily)',
+                  fontSize: '1.25rem',
+                  textTransform: 'none',
+                  padding: '0.75rem',
+                }}
+              >
+                My Favorites
+              </NavLink>
+            ),
+          },
+          {
+            key: '5',
+            label: (
+              <NavLink
+                to='/my-sprints'
+                style={{
+                  fontFamily: 'var(--fontFamily)',
+                  fontSize: '1.25rem',
+                  textTransform: 'none',
+                  padding: '0.75rem',
+                }}
+              >
+                My Sprints
+              </NavLink>
+            ),
+          },
+          {
+            key: '6',
+            label: (
               <button
                 style={{
                   fontFamily: 'var(--fontFamily)',
@@ -124,22 +158,6 @@ export function SignOutButton(props: Props) {
           {
             key: '1',
             label: (
-              <NavLink
-                to='/my-drafts'
-                style={{
-                  fontFamily: 'var(--fontFamily)',
-                  fontSize: '1.25rem',
-                  textTransform: 'none',
-                  padding: '0.75rem',
-                }}
-              >
-                My Drafts
-              </NavLink>
-            ),
-          },
-          {
-            key: '2',
-            label: (
               <button
                 style={{
                   fontFamily: 'var(--fontFamily)',
@@ -160,7 +178,55 @@ export function SignOutButton(props: Props) {
             ),
           },
           {
+            key: '2',
+            label: (
+              <NavLink
+                to='/my-drafts'
+                style={{
+                  fontFamily: 'var(--fontFamily)',
+                  fontSize: '1.25rem',
+                  textTransform: 'none',
+                  padding: '0.75rem',
+                }}
+              >
+                My Drafts
+              </NavLink>
+            ),
+          },
+          {
             key: '3',
+            label: (
+              <NavLink
+                to='/my-favorites'
+                style={{
+                  fontFamily: 'var(--fontFamily)',
+                  fontSize: '1.25rem',
+                  textTransform: 'none',
+                  padding: '0.75rem',
+                }}
+              >
+                My Favorites
+              </NavLink>
+            ),
+          },
+          {
+            key: '4',
+            label: (
+              <NavLink
+                to='/my-sprints'
+                style={{
+                  fontFamily: 'var(--fontFamily)',
+                  fontSize: '1.25rem',
+                  textTransform: 'none',
+                  padding: '0.75rem',
+                }}
+              >
+                My Sprints
+              </NavLink>
+            ),
+          },
+          {
+            key: '5',
             label: (
               <button
                 style={{
@@ -186,15 +252,21 @@ export function SignOutButton(props: Props) {
     <>
       {mobileView === true ? (
         <AuthenticatedTemplate>
-          <div>
-            <NavLink to='/my-drafts'>My Drafts</NavLink>
-          </div>
           {role === 'Admin' ? (
             <div>
               <NavLink to='/admin-panel'>Admin Panel</NavLink>
             </div>
           ) : null}
           <div>
+            <NavLink to='/my-drafts'>My Drafts</NavLink>
+          </div>
+          <div>
+            <div>
+              <NavLink to='/my-favorites'>My Favorites</NavLink>
+            </div>
+            <div>
+              <NavLink to='/my-sprints'>My Sprints</NavLink>
+            </div>
             <button
               type='button'
               onClick={() => {

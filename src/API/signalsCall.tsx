@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { isAxiosError } from 'axios';
 import { axiosInstance } from './apiConfig';
-import { SignalDataType, StatusDataType } from '../Types';
+import {
+  AutoTaggingNewsDataType,
+  SignalDataType,
+  StatusDataType,
+} from '../Types';
+import favoriteData from '../Test_Data/favorite.json';
 
 interface BaseSignalsParamsDataType {
   page?: number;
@@ -81,6 +86,10 @@ interface UpdateSignalParamsDataType {
   score?: string | null;
 }
 
+interface makeSignalFavoriteDataType {
+  status: string | null;
+}
+
 export function searchSignals(params: BaseSignalsParamsDataType = {}) {
   const {
     page = 1,
@@ -130,7 +139,16 @@ export function searchSignals(params: BaseSignalsParamsDataType = {}) {
     .get<SignalsSearchResponseDataType>('/signals/search', {
       params: queryParams,
     })
-    .then(response => response.data)
+    .then(response => {
+      console.log(
+        'API Call URL ',
+        axiosInstance.defaults.baseURL,
+        '/signals/search',
+        queryParams,
+      );
+      console.log(response.data);
+      return response.data;
+    })
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
@@ -284,6 +302,64 @@ export function createSignal(params: CreateSignalParamsDataType) {
         );
       } else {
         throw new Error(`An unknown error occurred. ${error.message}`);
+      }
+    });
+}
+
+export function makeSignalFavorite(
+  signal_id: number,
+  params: makeSignalFavoriteDataType,
+) {
+  return axiosInstance
+    .post<makeSignalFavoriteDataType>(`/favourites/${signal_id}`, params)
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to make the signal a favorite. ${
+            error.response?.data?.message || error.message
+          }`,
+        );
+      } else {
+        throw new Error(`An unknown error occurred. ${error.message}`);
+      }
+    });
+}
+
+// export function getfavoriteSignals() {
+//   return axiosInstance
+//     .get<SignalDataType[]>('/favourites')
+//     .then(response => response.data)
+//     .catch(error => {
+//       if (isAxiosError(error)) {
+//         throw new Error('Unable to fetch favorites');
+//       } else {
+//         throw new Error(`An unknown error occurred. ${error.message}`);
+//       }
+//     });
+// }
+
+export function getfavoriteSignals() {
+  return new Promise<SignalDataType[]>((resolve, reject) => {
+    try {
+      setTimeout(() => {
+        resolve(favoriteData);
+      }, 1000);
+    } catch (error) {
+      reject(new Error('Unable to fetch favorites'));
+    }
+  });
+}
+
+export function autoTaggingFetchNewsAPI() {
+  return axiosInstance
+    .get<AutoTaggingNewsDataType[]>('/signals/autocomplete')
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error('Unable to fetch news article');
+      } else {
+        throw new Error(`An unknown error occured. ${error.message}`);
       }
     });
 }
