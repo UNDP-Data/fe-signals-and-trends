@@ -321,3 +321,66 @@ export function deleteSignal(uid: number) {
       }
     });
 }
+export function getfavoriteSignals() {
+  return new Promise<SignalDataType[]>((resolve, reject) => {
+    try {
+      setTimeout(() => {
+        resolve([
+          {
+            "attachment": "https://sdgigeneralstorage.blob.core.windows.net/ftss/staging/signals/1780.jpeg",
+            "connected_trends": [],
+            "created_at": "2025-01-09T18:20:19.619964",
+            "created_by": "digital.studio@undp.org",
+            "created_for": "test",
+            "created_unit": "Regional Bureau for Latin America and the Caribbean, New York, USA",
+            "description": "Earth no planet B///////////////////...................",
+            "favorite": true,
+            "headline": "Earth",
+            "id": 1780,
+            "keywords": ["Earth", "Mars", "Moon"],
+            "location": "Global",
+            "modified_at": "2025-01-09T18:20:19.619964",
+            "modified_by": "digital.studio@undp.org",
+            "relevance": "Testing",
+            "score": "undefined",
+            "sdgs": ["GOAL 2: Zero Hunger"],
+            "signature_primary": "Poverty and Inequality",
+            "signature_secondary": ["Resilience"],
+            "status": "Draft",
+            "steep_primary": "Social – Issues related to human culture, demography, communication, movement and migration, work and education",
+            "steep_secondary": ["Technological – Made culture, tools, devices, systems, infrastructure and networks"],
+            "url": "NBC NEWS"
+          },
+          {
+            "attachment":"https://sdgigeneralstorage.blob.core.windows.net/ftss/staging/signals/1778.jpeg",
+            "connected_trends": [],
+            "created_at": "2025-01-09T18:20:19.619964",
+            "created_by": "digital.studio@undp.org",
+            "created_for": "test",
+            "created_unit": "Regional Bureau for Latin America and the Caribbean, New York, USA",
+            "description": "Earth no planet B///////////////////...................",
+            "favorite": false,
+            "headline": "Trees",
+            "id": 1780,
+            "keywords": ["Earth", "Mars", "Moon"],
+            "location": "Global",
+            "modified_at": "2025-01-09T18:20:19.619964",
+            "modified_by": "digital.studio@undp.org",
+            "relevance": "Testing",
+            "score": "undefined",
+            "sdgs": ["GOAL 2: Zero Hunger"],
+            "signature_primary": "Poverty and Inequality",
+            "signature_secondary": ["Resilience"],
+            "status": "Draft",
+            "steep_primary": "Social – Issues related to human culture, demography, communication, movement and migration, work and education",
+            "steep_secondary": ["Technological – Made culture, tools, devices, systems, infrastructure and networks"],
+            "url": "NBC NEWS"
+          }
+        ]
+        );
+      }, 1000);
+    } catch (error) {
+      reject(new Error('Unable to fetch favorites'));
+    }
+  });
+}
