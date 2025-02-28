@@ -253,7 +253,8 @@ export function SignalEntryFormEl(props: Props) {
 
   const [imageUrl, setImageUrl] = useState<string>('');
   const [pexelImages, setPexelImages] = useState<any[]>([]);
-  const [, setNoPexelImagesAvailable] = useState<boolean>(false);
+  const [noPexelImagesAvailable, setNoPexelImagesAvailable] =
+    useState<boolean>(false);
   const [isVisible, setIsVisible] = useState(true);
   const fileInputRef = useRef<any>(null);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
@@ -292,6 +293,7 @@ export function SignalEntryFormEl(props: Props) {
     return new File([buffer], filename, { type: mimeType });
   }
   const getPexelImages = async () => {
+    console.log('Pexel | Query : ', query);
     setPexelImgLoading(true);
     try {
       const refinedQuery = extractKeywords(query);
@@ -302,9 +304,11 @@ export function SignalEntryFormEl(props: Props) {
         },
       });
       if (response.data.photos.length === 0) {
+        console.log(response.data.photos.length);
         setPageNo(1);
         setNoPexelImagesAvailable(true);
       }
+      console.log(response);
       setPexelImages(response.data.photos);
       setTimeout(() => {
         setPexelImgLoading(false);
@@ -330,6 +334,15 @@ export function SignalEntryFormEl(props: Props) {
     }
     getPexelImages();
   }, [pageNo]);
+
+  useEffect(() => {
+    if (enterSignalManually) {
+      updateSignalData({
+        ...signalData,
+        headline: '',
+      });
+    }
+  }, [enterSignalManually]);
 
   // Signal Auto Complete
   const handleSuggestionSelect = (suggestion: SignalSuggestion) => {
@@ -863,7 +876,7 @@ export function SignalEntryFormEl(props: Props) {
                     />
                   </button>
                 ))
-              ) : pexelImages.length === 0 && pageNo !== 1 ? (
+              ) : noPexelImagesAvailable && pageNo === 1 ? (
                 <div style={{ textAlign: 'center', marginTop: '2rem' }}>
                   <p>
                     No related images found. Please change the Signal Title for
