@@ -89,9 +89,10 @@ export function SignalAutocomplete({
 
 	const handleSelect = (
 		value: string,
-		option: CustomOptionType | CustomOptionType[],
+		option?: CustomOptionType | CustomOptionType[],
 	) => {
 		if (!Array.isArray(option)) {
+			if(option)
 			onSuggestionSelect?.(option.suggestion);
 		}
 	};

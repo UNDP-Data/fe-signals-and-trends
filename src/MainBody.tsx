@@ -448,7 +448,7 @@ function MainBody() {
                 setOpenModal(false);
               }}
             >
-              {({ url }) =>
+              {({ url } : { url?: string | null }) =>
                 !url ? (
                   <div
                     style={{
