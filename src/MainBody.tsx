@@ -452,34 +452,14 @@ function MainBody() {
                 setOpenModal(false);
               }}
             >
-              {({ url } : { url?: string | null }) =>
-                !url ? (
-                  <div
-                    style={{
-                      width: '100%',
-                      marginTop: 'var(--spacing-07)',
-                      height: '250px',
-                      backgroundColor: 'var(--gray-200)',
-                      paddingTop: '50px',
-                    }}
-                  >
-                    <div className='undp-loader' style={{ margin: 'auto' }} />
-                    <h6
-                      className='undp-typography margin-top-05'
-                      style={{ textAlign: 'center' }}
-                    >
-                      Loading PDF... Please wait it might take some time
-                    </h6>
-                  </div>
-                ) : (
+            
                   <button
                     type='button'
                     className='undp-button button-arrow button-primary'
                   >
                     Download PDF
                   </button>
-                )
-              }
+             
             </PDFDownloadLink>
           </>
         ) : (
