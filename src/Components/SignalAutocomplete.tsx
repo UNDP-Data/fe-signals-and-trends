@@ -90,15 +90,13 @@ export function SignalAutocomplete({
   };
 
   const handleSelect = (
-	value: string,
-	option?: CustomOptionType | CustomOptionType[],
-) => {
-	if (!Array.isArray(option)) {
-		if(option)
-		onSuggestionSelect?.(option.suggestion);
-	}
-};
-
+    value1: string,
+    option?: CustomOptionType | CustomOptionType[],
+  ) => {
+    if (!Array.isArray(option)) {
+      if (option) onSuggestionSelect?.(option.suggestion);
+    }
+  };
 
   return (
     <Select<string, CustomOptionType>

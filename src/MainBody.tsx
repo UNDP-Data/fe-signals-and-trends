@@ -452,14 +452,12 @@ function MainBody() {
                 setOpenModal(false);
               }}
             >
-            
-                  <button
-                    type='button'
-                    className='undp-button button-arrow button-primary'
-                  >
-                    Download PDF
-                  </button>
-             
+              <button
+                type='button'
+                className='undp-button button-arrow button-primary'
+              >
+                Download PDF
+              </button>
             </PDFDownloadLink>
           </>
         ) : (
