@@ -58,7 +58,7 @@ describe('FetchNewsItems Integration Tests', () => {
         expect(firstSignal.keywords.length).toBeLessThanOrEqual(3);
         expect(firstSignal).toHaveProperty('location');
       }
-    });
+    }, 10000);
   });
 
   describe('autocomplete', () => {
