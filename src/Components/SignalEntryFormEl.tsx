@@ -295,12 +295,13 @@ export function SignalEntryFormEl(props: Props) {
   const getPexelImages = async () => {
     console.log('Pexel | Query : ', query);
     setPexelImgLoading(true);
+    console.log(`${process.env.VITE_PEXEL_API_KEY}`);
     try {
       const refinedQuery = extractKeywords(query);
       const response = await axios.get(PEXEL_SEARCH_IMG_GET_URL, {
         params: { query: refinedQuery, per_page: 12, page: pageNo },
         headers: {
-          Authorization: `${process.env.REACT_APP_PEXEL_API_KEY}`,
+          Authorization: `${process.env.VITE_PEXEL_API_KEY}`,
         },
       });
       if (response.data.photos.length === 0) {
