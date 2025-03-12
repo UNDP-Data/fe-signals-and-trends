@@ -29,4 +29,5 @@ Taskfile.yml
 .actrc
 
 __tests__/
+coverage/
 

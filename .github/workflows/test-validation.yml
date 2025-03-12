@@ -38,12 +38,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Vitest
+        run: npm install vitest --save-dev
+
       - name: Run validation
         run: npm run validate
         env:
           CI: true
 
-      # Add failure conditions based on coverage thresholds
+      # Comment out the "Check test coverage" step if needed
       # - name: Check test coverage
       #   run: |
       #     COVERAGE_FILE="coverage/coverage-summary.json"
@@ -51,21 +54,21 @@ jobs:
       #       echo "Coverage file not found!"
       #       exit 1
       #     fi
-          
+      #     
       #     STATEMENTS=$(jq -r '.total.statements.pct' "$COVERAGE_FILE")
       #     BRANCHES=$(jq -r '.total.branches.pct' "$COVERAGE_FILE")
       #     FUNCTIONS=$(jq -r '.total.functions.pct' "$COVERAGE_FILE")
       #     LINES=$(jq -r '.total.lines.pct' "$COVERAGE_FILE")
-          
+      #     
       #     echo "Coverage Summary:"
       #     echo "Statements: $STATEMENTS%"
       #     echo "Branches: $BRANCHES%"
       #     echo "Functions: $FUNCTIONS%"
       #     echo "Lines: $LINES%"
-          
+      #     
       #     # Set minimum coverage thresholds
       #     MIN_COVERAGE=70
-          
+      #     
       #     if (( $(echo "$STATEMENTS < $MIN_COVERAGE" | bc -l) )) || \
       #        (( $(echo "$BRANCHES < $MIN_COVERAGE" | bc -l) )) || \
       #        (( $(echo "$FUNCTIONS < $MIN_COVERAGE" | bc -l) )) || \
