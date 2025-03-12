@@ -249,7 +249,7 @@ export function SignalEntryFormEl(props: Props) {
     if (!query) {
       setQuery(signalData.headline || '');
     }
-  }, [signalData.attachment, signalData.headline]);
+  }, [signalData.attachment, signalData.headline, query]);
 
   const [imageUrl, setImageUrl] = useState<string>('');
   const [pexelImages, setPexelImages] = useState<any[]>([]);
@@ -295,14 +295,14 @@ export function SignalEntryFormEl(props: Props) {
   const getPexelImages = async () => {
     console.log('Pexel | Query : ', query);
     setPexelImgLoading(true);
-    console.log(`${process.env.VITE_PEXEL_API_KEY}`);
-    console.log(`${import.meta.env.VITE_PEXEL_API_KEY}`);
+    const PEXEL_API_KEY = import.meta.env.VITE_PEXEL_API_KEY || process.env.REACT_APP_PEXEL_API_KEY;
+    console.log(PEXEL_API_KEY);
     try {
       const refinedQuery = extractKeywords(query);
       const response = await axios.get(PEXEL_SEARCH_IMG_GET_URL, {
         params: { query: refinedQuery, per_page: 12, page: pageNo },
         headers: {
-          Authorization: `${import.meta.env.VITE_PEXEL_API_KEY}`,
+          Authorization: PEXEL_API_KEY,
         },
       });
       if (response.data.photos.length === 0) {
