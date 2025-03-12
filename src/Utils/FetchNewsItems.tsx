@@ -1,5 +1,16 @@
 import axios, { type CancelToken } from "axios";
+import axiosRetry from "axios-retry";
 
+axiosRetry(axios, {
+	retries: 3, // Number of retry attempts
+	retryDelay: (retryCount) => {
+		return retryCount * 2000; // Delay between retries
+	},
+	retryCondition: (error) => {
+		// Retry only for rate limiting errors (status 429)
+		return error.response ? error.response.status === 429 : false;
+	},
+  });
 export interface NewsArticle {
 	id: number | null;
 	title: string;
