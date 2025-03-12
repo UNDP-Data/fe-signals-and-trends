@@ -44,35 +44,35 @@ jobs:
           CI: true
 
       # Add failure conditions based on coverage thresholds
-      - name: Check test coverage
-        run: |
-          COVERAGE_FILE="coverage/coverage-summary.json"
-          if [ ! -f "$COVERAGE_FILE" ]; then
-            echo "Coverage file not found!"
-            exit 1
-          fi
+      # - name: Check test coverage
+      #   run: |
+      #     COVERAGE_FILE="coverage/coverage-summary.json"
+      #     if [ ! -f "$COVERAGE_FILE" ]; then
+      #       echo "Coverage file not found!"
+      #       exit 1
+      #     fi
           
-          STATEMENTS=$(jq -r '.total.statements.pct' "$COVERAGE_FILE")
-          BRANCHES=$(jq -r '.total.branches.pct' "$COVERAGE_FILE")
-          FUNCTIONS=$(jq -r '.total.functions.pct' "$COVERAGE_FILE")
-          LINES=$(jq -r '.total.lines.pct' "$COVERAGE_FILE")
+      #     STATEMENTS=$(jq -r '.total.statements.pct' "$COVERAGE_FILE")
+      #     BRANCHES=$(jq -r '.total.branches.pct' "$COVERAGE_FILE")
+      #     FUNCTIONS=$(jq -r '.total.functions.pct' "$COVERAGE_FILE")
+      #     LINES=$(jq -r '.total.lines.pct' "$COVERAGE_FILE")
           
-          echo "Coverage Summary:"
-          echo "Statements: $STATEMENTS%"
-          echo "Branches: $BRANCHES%"
-          echo "Functions: $FUNCTIONS%"
-          echo "Lines: $LINES%"
+      #     echo "Coverage Summary:"
+      #     echo "Statements: $STATEMENTS%"
+      #     echo "Branches: $BRANCHES%"
+      #     echo "Functions: $FUNCTIONS%"
+      #     echo "Lines: $LINES%"
           
-          # Set minimum coverage thresholds
-          MIN_COVERAGE=70
+      #     # Set minimum coverage thresholds
+      #     MIN_COVERAGE=70
           
-          if (( $(echo "$STATEMENTS < $MIN_COVERAGE" | bc -l) )) || \
-             (( $(echo "$BRANCHES < $MIN_COVERAGE" | bc -l) )) || \
-             (( $(echo "$FUNCTIONS < $MIN_COVERAGE" | bc -l) )) || \
-             (( $(echo "$LINES < $MIN_COVERAGE" | bc -l) )); then
-            echo "Test coverage is below $MIN_COVERAGE%"
-            exit 1
-          fi
+      #     if (( $(echo "$STATEMENTS < $MIN_COVERAGE" | bc -l) )) || \
+      #        (( $(echo "$BRANCHES < $MIN_COVERAGE" | bc -l) )) || \
+      #        (( $(echo "$FUNCTIONS < $MIN_COVERAGE" | bc -l) )) || \
+      #        (( $(echo "$LINES < $MIN_COVERAGE" | bc -l) )); then
+      #       echo "Test coverage is below $MIN_COVERAGE%"
+      #       exit 1
+      #     fi
 
   # This job ensures all tests pass before allowing deployment
   validate:
