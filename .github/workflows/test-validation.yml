@@ -45,6 +45,10 @@ jobs:
         run: npm run validate
         env:
           CI: true
+      
+      - name: Set environment variables
+        run: echo "VITE_PEXEL_API_KEY=${{ secrets.PEXEL_API_KEY }}" >> $GITHUB_ENV
+
 
       # Comment out the "Check test coverage" step if needed
       # - name: Check test coverage
