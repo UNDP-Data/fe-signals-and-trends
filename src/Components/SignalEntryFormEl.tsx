@@ -432,16 +432,15 @@ export function SignalEntryFormEl(props: Props) {
       </p>
       <div className='margin-bottom-07'>
         <div className='margin-bottom-07 '>
-		  <div className='signal-title-grid' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-		  <p className='undp-typography margin-bottom-01'>Signal Title*</p>
-			<Checkbox
-			  checked={enterSignalManually}
-			  onChange={e => setEnterSignalManually(e.target.checked)}
-			>
-			  Enter Signal Title Manually
-			</Checkbox>
-			
-		  </div>
+          <div className='signal-title-grid' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <p className='undp-typography margin-bottom-01'>Signal Title*</p>
+            <Checkbox
+                checked={enterSignalManually}
+                onChange={e => setEnterSignalManually(e.target.checked)}
+              >
+                Enter Signal Title Manually
+            </Checkbox>
+          </div>
           {signalData.headline || enterSignalManually ? (
             <Input
               className='undp-input'

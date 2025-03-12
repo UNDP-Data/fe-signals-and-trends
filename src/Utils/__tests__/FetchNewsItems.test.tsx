@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference types="vitest" />
 import { beforeEach, describe, expect, it } from 'vitest';
 import { autocomplete, convertToSignals, searchNews } from '../FetchNewsItems';

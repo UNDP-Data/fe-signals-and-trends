@@ -1,7 +1,6 @@
 import react from '@vitejs/plugin-react';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
-/* eslint-disable import/no-extraneous-dependencies */
 import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig(({ command, mode }) => {
