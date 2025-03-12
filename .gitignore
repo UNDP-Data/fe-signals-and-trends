@@ -27,3 +27,6 @@ dist-ssr
 /server
 Taskfile.yml
 .actrc
+
+__tests__/
+
