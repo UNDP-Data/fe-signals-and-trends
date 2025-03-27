@@ -248,7 +248,7 @@ export function AllSignals(props: Props) {
               {totalCount}{' '}
               {totalCount > 1 ? 'signals available' : 'signal available'}
             </div>
-            {role === 'Admin' || role === 'User' ? (
+            {role === 'Admin' || role === 'Curator' ? (
               <button
                 type='button'
                 className='undp-button button-primary'
@@ -277,7 +277,7 @@ export function AllSignals(props: Props) {
                 Download Excel - All {totalCount} Signals 
               </button>
             ) : null}
-            {role === 'Admin' || role === 'User' ? (
+            {role === 'Admin' || role === 'Curator' ? (
               <button
                 type='button'
                 className='undp-button button-primary'
