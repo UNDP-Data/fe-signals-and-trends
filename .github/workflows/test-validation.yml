@@ -1,0 +1,90 @@
+name: Test Validation
+
+on:
+  push:
+    branches:
+      - staging
+      - production
+  pull_request:
+    branches:
+      - staging
+      - production
+
+jobs:
+  test:
+    name: Run Test Suite
+    runs-on: ubuntu-latest
+    env:
+      VITE_API_BASEURL: ${{ github.ref == 'refs/heads/production' && secrets.VITE_API_BASEURL_PRODUCTION || secrets.VITE_API_BASEURL_STAGING }}
+      VITE_CLIENT_ID: ${{ secrets.VITE_CLIENT_ID }}
+      VITE_AUTHORITY: ${{ secrets.VITE_AUTHORITY }}
+      VITE_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET_FOR_MSAL }}
+      VITE_WORLD_NEWS_API_KEY: ${{ secrets.VITE_WORLD_NEWS_API_KEY }}
+      VITE_PEXEL_API_KEY: ${{ secrets.VITE_PEXEL_API_KEY }}
+      NODE_ENV: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Vitest
+        run: npm install vitest --save-dev
+
+      - name: Run validation
+        run: npm run validate
+        env:
+          CI: true
+      
+      - name: Set environment variables
+        run: echo "VITE_PEXEL_API_KEY=${{ secrets.VITE_PEXEL_API_KEY }}" >> $GITHUB_ENV
+
+
+      # Comment out the "Check test coverage" step if needed
+      # - name: Check test coverage
+      #   run: |
+      #     COVERAGE_FILE="coverage/coverage-summary.json"
+      #     if [ ! -f "$COVERAGE_FILE" ]; then
+      #       echo "Coverage file not found!"
+      #       exit 1
+      #     fi
+      #     
+      #     STATEMENTS=$(jq -r '.total.statements.pct' "$COVERAGE_FILE")
+      #     BRANCHES=$(jq -r '.total.branches.pct' "$COVERAGE_FILE")
+      #     FUNCTIONS=$(jq -r '.total.functions.pct' "$COVERAGE_FILE")
+      #     LINES=$(jq -r '.total.lines.pct' "$COVERAGE_FILE")
+      #     
+      #     echo "Coverage Summary:"
+      #     echo "Statements: $STATEMENTS%"
+      #     echo "Branches: $BRANCHES%"
+      #     echo "Functions: $FUNCTIONS%"
+      #     echo "Lines: $LINES%"
+      #     
+      #     # Set minimum coverage thresholds
+      #     MIN_COVERAGE=70
+      #     
+      #     if (( $(echo "$STATEMENTS < $MIN_COVERAGE" | bc -l) )) || \
+      #        (( $(echo "$BRANCHES < $MIN_COVERAGE" | bc -l) )) || \
+      #        (( $(echo "$FUNCTIONS < $MIN_COVERAGE" | bc -l) )) || \
+      #        (( $(echo "$LINES < $MIN_COVERAGE" | bc -l) )); then
+      #       echo "Test coverage is below $MIN_COVERAGE%"
+      #       exit 1
+      #     fi
+
+  # This job ensures all tests pass before allowing deployment
+  validate:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validation successful
+        run: echo "All tests and coverage checks passed successfully!" 

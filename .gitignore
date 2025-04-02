@@ -12,6 +12,7 @@ build
 dist
 dist-ssr
 *.local
+.env
 
 # Editor directories and files
 .vscode/*
@@ -23,3 +24,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+/server
+Taskfile.yml
+.actrc
+
+__tests__/
+coverage/
+

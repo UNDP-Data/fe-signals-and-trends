@@ -409,7 +409,7 @@ function MainBody() {
                 );
               })}
             </div>
-            <PDFDownloadLink
+            { <PDFDownloadLink
               document={
                 <PDFDocument
                   pages={cardsToPrint.map(d =>
@@ -448,7 +448,7 @@ function MainBody() {
                 setOpenModal(false);
               }}
             >
-              {({ url }) =>
+              {/* {({ url }) =>
                 !url ? (
                   <div
                     style={{
@@ -467,16 +467,16 @@ function MainBody() {
                       Loading PDF... Please wait it might take some time
                     </h6>
                   </div>
-                ) : (
+                ) : ( */}
                   <button
                     type='button'
                     className='undp-button button-arrow button-primary'
                   >
                     Download PDF
                   </button>
-                )
-              }
-            </PDFDownloadLink>
+                {/* )
+              } */}
+            </PDFDownloadLink> }
           </>
         ) : (
           <div className='undp-loader-container'>

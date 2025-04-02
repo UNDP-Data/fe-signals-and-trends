@@ -100,6 +100,79 @@ export function AllSignals(props: Props) {
     return params;
   };
 
+  // Download all signals in excel format
+  const getQueryParamsToDownloadAll = () => {
+    const params: Record<string, unknown> = {
+      page: paginationValue,
+      per_page: totalCount,
+      order_by: isArchived ? 'modified_at' : signalsSortBy,
+      direction:
+        signalsSortBy === 'created_at' ||
+        signalsSortBy === 'modified_at' ||
+        isArchived
+          ? 'desc'
+          : 'asc',
+      statuses: isArchived
+        ? ['Archived']
+        : signalFilters.status === 'All Status'
+        ? role === 'Curator' || role === 'Admin'
+          ? ['New', 'Approved']
+          : ['Approved', 'New']
+        : [signalFilters.status],
+    };
+
+    if (signalFilters.steep_primary !== 'All Primary STEEP+V') {
+      params.steep_primary = signalFilters.steep_primary;
+    }
+    if (signalFilters.steep_secondary !== 'All Secondary STEEP+V') {
+      params.steep_secondary = signalFilters.steep_secondary;
+    }
+    if (
+      signalFilters.signature_primary !==
+      'All Primary Signature Solutions/Enabler'
+    ) {
+      params.signature_primary = signalFilters.signature_primary;
+    }
+    if (
+      signalFilters.signature_secondary !==
+      'All Secondary Signature Solutions/Enabler'
+    ) {
+      params.signature_secondary = signalFilters.signature_secondary;
+    }
+    if (signalFilters.sdg !== 'All SDGs') {
+      params.sdgs = signalFilters.sdg;
+    }
+    if (signalFilters.created_for !== 'All Options') {
+      params.created_for = signalFilters.created_for;
+    }
+    if (signalFilters.horizon !== 'All Horizons') {
+      params.time_horizon = signalFilters.horizon;
+    }
+    if (signalFilters.impact !== 'All Ratings') {
+      params.impact_rating = signalFilters.impact;
+    }
+    if (signalFilters.search) {
+      params.query = signalFilters.search;
+    }
+    if (signalFilters.location !== 'All Locations') {
+      params.location = signalFilters.location;
+    }
+    if (signalFilters.bureau) {
+      params.bureau = signalFilters.bureau;
+    }
+    if (signalFilters.score !== 'All Scores') {
+      params.score = signalFilters.score;
+    }
+    if (signalFilters.unit_region !== 'All Units') {
+      params.unit = signalFilters.unit_region;
+    }
+    if (signalFilters.created_by && signalFilters.created_by !== 'All') {
+      params.created_by = signalFilters.created_by;
+    }
+
+    return params;
+  };
+
   useEffect(() => {
     updateSignalList(undefined);
     searchSignals(getQueryParams())
@@ -175,6 +248,35 @@ export function AllSignals(props: Props) {
               {totalCount}{' '}
               {totalCount > 1 ? 'signals available' : 'signal available'}
             </div>
+            {role === 'Admin' || role === 'Curator' ? (
+              <button
+                type='button'
+                className='undp-button button-primary'
+                onClick={() => {
+                  setLoading(true);
+                  exportSignals(getQueryParamsToDownloadAll()).then(response => {
+                    const url = window.URL.createObjectURL(
+                      new Blob([response]),
+                    );
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute(
+                      'download',
+                      `FTSS_signals_${new Date(Date.now()).getFullYear()}-${
+                        new Date(Date.now()).getMonth() + 1
+                      }-${new Date(Date.now()).getDate()}.xlsx`,
+                    );
+                    document.body.appendChild(link);
+                    link.click();
+                    setLoading(false);
+                  },
+                // console.log(exportSignals)
+                );
+                }}
+              >
+                Download Excel - All {totalCount} Signals 
+              </button>
+            ) : null}
             {role === 'Admin' || role === 'Curator' ? (
               <button
                 type='button'
