@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { ChatIcon } from './ChatIcon';
 
+const displayMessage = "Chat with our new AI assistant!"
+
 export function ChatBubble() {
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
@@ -9,7 +11,7 @@ export function ChatBubble() {
     setIsClicked(true);
     // Add a small delay for the animation before opening the window
     setTimeout(() => {
-      window.open(import.meta.env.VITE_UNDP_CHAT_URL, '_blank');
+      window.open("https://future-signals-concierge.vercel.app/", '_blank');
       // Reset the animation state after opening
       setTimeout(() => setIsClicked(false), 300);
     }, 150);
@@ -61,7 +63,7 @@ export function ChatBubble() {
             animation: 'fadeIn 0.3s ease',
           }}
         >
-          Hi, I'm a new chatbot expert.
+          {displayMessage}
           <div
             style={{
               position: 'absolute',

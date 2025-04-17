@@ -90,7 +90,6 @@ export function AddNewTrendEl() {
         ) : (
           <TrendEntryFormEl />
         )}
-        <ChatBubble />
       </AuthenticatedTemplate>
       <UnauthenticatedTemplate>
         <div
