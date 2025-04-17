@@ -1,6 +1,6 @@
 import {
-    AuthenticatedTemplate,
-    UnauthenticatedTemplate,
+  AuthenticatedTemplate,
+  UnauthenticatedTemplate,
 } from '@azure/msal-react';
 import { useContext } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -47,7 +47,7 @@ export function AddNewSignalEl() {
           ← Back
         </button>
         <h3 className='undp-typography margin-top-05'>Add New Signal</h3>
-        <SignalEntryFormEl draft={false} initialData={initialFormData} />
+        <SignalEntryFormEl draft={false} />
       </AuthenticatedTemplate>
       <UnauthenticatedTemplate>
         <div
@@ -90,6 +90,7 @@ export function AddNewTrendEl() {
         ) : (
           <TrendEntryFormEl />
         )}
+        <ChatBubble />
       </AuthenticatedTemplate>
       <UnauthenticatedTemplate>
         <div

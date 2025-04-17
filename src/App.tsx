@@ -4,6 +4,7 @@ import { Modal, Select, Switch } from 'antd';
 import { useEffect, useReducer, useMemo, useState } from 'react';
 import { Footer } from './Components/FooterEl';
 import { SignUpButton } from './Components/SignUpButton';
+import { ChatBubble } from './Components/ChatBubble';
 import { CHOICES, CLIENT_ID } from './Constants';
 import Context from './Context/Context';
 import Reducer from './Context/Reducer';
@@ -318,6 +319,7 @@ function App() {
         >
           <MainBody />
           <Footer />
+          {isAuthenticated && <ChatBubble />}
         </div>
       ) : (
         <div
@@ -367,7 +369,7 @@ function App() {
         <p className='undp-typography italics small-font margin-top-07 margin-bottom-05'>
           The Future Trends and Signals System is internal to UNDP staff only.
           If you submit a signal, you are consenting that UNDP staff will be
-          able to view the information you provide in the “Add signal” form,
+          able to view the information you provide in the "Add signal" form,
           including your email address. The signals you submit may also be
           printed by a staff member and shared with external partners. This
           print view will include all signal information, with the exception of
