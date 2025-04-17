@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   AuthenticatedTemplate,
   UnauthenticatedTemplate,
@@ -11,6 +11,26 @@ import Context from '../Context/Context';
 
 export function AddNewSignalEl() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  // Parse query parameters for initial form data
+  const initialFormData = {
+    headline: searchParams.get('headline') || undefined,
+    description: searchParams.get('description') || undefined,
+    url: searchParams.get('url') || undefined,
+    location: searchParams.get('location') || undefined,
+    steep_primary: searchParams.get('steep_primary') || undefined,
+    signature_primary: searchParams.get('signature_primary') || undefined,
+    relevance: searchParams.get('relevance') || undefined,
+    created_unit: searchParams.get('created_unit') || undefined,
+    keywords: [
+      searchParams.get('keyword1') || undefined,
+      searchParams.get('keyword2') || undefined,
+      searchParams.get('keyword3') || undefined,
+    ].filter(Boolean),
+    sdgs: searchParams.get('sdgs')?.split(',').filter(Boolean) || [],
+  };
+
   return (
     <div
       className='undp-container flex-wrap margin-bottom-09'
@@ -27,7 +47,7 @@ export function AddNewSignalEl() {
           ← Back
         </button>
         <h3 className='undp-typography margin-top-05'>Add New Signal</h3>
-        <SignalEntryFormEl draft={false} />
+        <SignalEntryFormEl draft={false} initialData={initialFormData} />
       </AuthenticatedTemplate>
       <UnauthenticatedTemplate>
         <div

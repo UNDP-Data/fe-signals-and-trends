@@ -26,6 +26,7 @@ import { PEXEL_SEARCH_IMG_GET_URL } from '../Constants';
 interface Props {
   updateSignal?: SignalDataType;
   draft: boolean;
+  initialData?: Partial<NewSignalDataType>;
 }
 
 const UploadEl = styled.div`
@@ -148,7 +149,7 @@ export function isSignalInvalid(
 export function SignalEntryFormEl(props: Props) {
   const navigate = useNavigate();
 
-  const { updateSignal, draft } = props;
+  const { updateSignal, draft, initialData } = props;
   const { userName, role, updateNotificationText, choices, unit } =
     useContext(Context);
   // const [loading, setLoading] = useState(false);
@@ -157,7 +158,7 @@ export function SignalEntryFormEl(props: Props) {
   const [signalData, updateSignalData] = useState<
     SignalDataType | NewSignalDataType
   >(
-    updateSignal || {
+    updateSignal || initialData || {
       status: 'New',
       created_by: userName,
       headline: undefined,
