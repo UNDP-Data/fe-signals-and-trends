@@ -1,27 +1,27 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import { Input, Select, Popconfirm, Checkbox } from 'antd';
-import '../styles.css';
-import sortBy from 'lodash.sortby';
-import { useNavigate } from 'react-router-dom';
+import { Checkbox, Input, Popconfirm, Select } from 'antd';
 import axios from 'axios';
+import sortBy from 'lodash.sortby';
 import { useContext, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import Context from '../Context/Context';
+import '../styles.css';
 import { NewSignalDataType, SignalDataType, TrendDataType } from '../Types';
 import { AddTrendsModal } from './AddTrendsModal';
-import Context from '../Context/Context';
 // import { pexelCall } from '../API/pexelCall';
 
 import {
   createSignal,
-  updateSignal as updateSignalApi,
   deleteSignal,
   // generateSignal,
   searchTrends,
+  updateSignal as updateSignalApi,
 } from '../API';
 
-import { SignalAutocomplete, SignalSuggestion } from './SignalAutocomplete';
-import { extractKeywords } from '../Utils/ExtractKeyWords';
 import { PEXEL_SEARCH_IMG_GET_URL } from '../Constants';
+import { extractKeywords } from '../Utils/ExtractKeyWords';
+import { SignalAutocomplete, SignalSuggestion } from './SignalAutocomplete';
 
 interface Props {
   updateSignal?: SignalDataType;
@@ -158,25 +158,25 @@ export function SignalEntryFormEl(props: Props) {
   const [signalData, updateSignalData] = useState<
     SignalDataType | NewSignalDataType
   >(
-    updateSignal || initialData || {
+    updateSignal || {
       status: 'New',
       created_by: userName,
-      headline: undefined,
-      description: undefined,
-      attachment: undefined,
-      steep_primary: undefined,
-      steep_secondary: [],
-      signature_primary: undefined,
-      signature_secondary: [],
-      sdgs: [],
-      created_unit: unit,
-      url: undefined,
-      relevance: undefined,
-      keywords: [],
-      location: undefined,
-      score: undefined,
-      connected_trends: [],
-      created_for: undefined,
+      headline: initialData?.headline || undefined,
+      description: initialData?.description || undefined,
+      attachment: initialData?.attachment || undefined,
+      steep_primary: initialData?.steep_primary || undefined,
+      steep_secondary: initialData?.steep_secondary || [],
+      signature_primary: initialData?.signature_primary || undefined,
+      signature_secondary: initialData?.signature_secondary || [],
+      sdgs: initialData?.sdgs || [],
+      created_unit: initialData?.created_unit || unit,
+      url: initialData?.url || undefined,
+      relevance: initialData?.relevance || undefined,
+      keywords: initialData?.keywords || [],
+      location: initialData?.location || undefined,
+      score: initialData?.score || undefined,
+      connected_trends: initialData?.connected_trends || [],
+      created_for: initialData?.created_for || undefined,
     },
   );
   const [buttonDisabled, setButtonDisabled] = useState(false);
@@ -200,6 +200,7 @@ export function SignalEntryFormEl(props: Props) {
   const [keyword3, setKeyword3] = useState<string | undefined>(
     updateSignal?.keywords ? updateSignal?.keywords[2] || undefined : undefined,
   );
+  const [useFetchedArticles, setUseFetchedArticles] = useState(false);
 
   const confirmDelete = (id: number, navigatePath: string) => {
     setButtonDisabled(true);
@@ -261,7 +262,6 @@ export function SignalEntryFormEl(props: Props) {
   const [selectedFileName, setSelectedFileName] = useState<string>('');
   const [pageNo, setPageNo] = useState<number>(1);
   const [, setPexelImgLoading] = useState<boolean>(false);
-  const [enterSignalManually, setEnterSignalManually] = useState(false);
 
   const toggleVisibility = () => {
     setIsVisible(!isVisible);
@@ -294,10 +294,13 @@ export function SignalEntryFormEl(props: Props) {
     return new File([buffer], filename, { type: mimeType });
   }
   const getPexelImages = async () => {
-    console.log('Pexel | Query : ', query);
+    // console.log('Pexel | Query : ', query);
+    if (!query) {
+      return;
+    }
     setPexelImgLoading(true);
     const PEXEL_API_KEY = import.meta.env.VITE_PEXEL_API_KEY || process.env.REACT_APP_PEXEL_API_KEY;
-    console.log(PEXEL_API_KEY);
+    // console.log(PEXEL_API_KEY);
     try {
       const refinedQuery = extractKeywords(query);
       const response = await axios.get(PEXEL_SEARCH_IMG_GET_URL, {
@@ -339,13 +342,13 @@ export function SignalEntryFormEl(props: Props) {
   }, [pageNo]);
 
   useEffect(() => {
-    if (enterSignalManually) {
+    if (useFetchedArticles) {
       updateSignalData({
         ...signalData,
         headline: '',
       });
     }
-  }, [enterSignalManually]);
+  }, [useFetchedArticles]);
 
   // Signal Auto Complete
   const handleSuggestionSelect = (suggestion: SignalSuggestion) => {
@@ -438,13 +441,13 @@ export function SignalEntryFormEl(props: Props) {
           <div className='signal-title-grid' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <p className='undp-typography margin-bottom-01'>Signal Title*</p>
             <Checkbox
-                checked={enterSignalManually}
-                onChange={e => setEnterSignalManually(e.target.checked)}
+                checked={useFetchedArticles}
+                onChange={e => setUseFetchedArticles(e.target.checked)}
               >
-                Enter Signal Title Manually
+                Use Article Suggestions
             </Checkbox>
           </div>
-          {signalData.headline || enterSignalManually ? (
+          {!useFetchedArticles ? (
             <Input
               className='undp-input'
               placeholder='Enter signal title (max 100 characters)'

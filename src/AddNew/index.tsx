@@ -1,12 +1,12 @@
-import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  AuthenticatedTemplate,
-  UnauthenticatedTemplate,
+    AuthenticatedTemplate,
+    UnauthenticatedTemplate,
 } from '@azure/msal-react';
 import { useContext } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SignalEntryFormEl } from '../Components/SignalEntryFormEl';
-import { TrendEntryFormEl } from '../Components/TrendEntryFormEl';
 import { SignInButton } from '../Components/SignInButton';
+import { TrendEntryFormEl } from '../Components/TrendEntryFormEl';
 import Context from '../Context/Context';
 
 export function AddNewSignalEl() {
@@ -24,10 +24,10 @@ export function AddNewSignalEl() {
     relevance: searchParams.get('relevance') || undefined,
     created_unit: searchParams.get('created_unit') || undefined,
     keywords: [
-      searchParams.get('keyword1') || undefined,
-      searchParams.get('keyword2') || undefined,
-      searchParams.get('keyword3') || undefined,
-    ].filter(Boolean),
+      searchParams.get('keyword1'),
+      searchParams.get('keyword2'),
+      searchParams.get('keyword3'),
+    ].filter(Boolean) as string[],
     sdgs: searchParams.get('sdgs')?.split(',').filter(Boolean) || [],
   };
 
