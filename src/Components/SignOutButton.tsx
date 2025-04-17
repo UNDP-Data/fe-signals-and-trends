@@ -38,14 +38,47 @@ export function SignOutButton(props: Props) {
     setAcceleratorLab(isAcceleratorLab);
   }, [name, unit, isAcceleratorLab]);
   const [openModal, setOpenModal] = useState(false);
-  const items: MenuProps['items'] =
-    role === 'Admin'
+
+  const navigationItems: MenuProps['items'] = [
+    {
+      key: 'signals',
+      label: (
+        <NavLink
+          to='./signals'
+          style={{
+            fontFamily: 'var(--fontFamily)',
+            fontSize: '1.25rem',
+            textTransform: 'none',
+            padding: '0.75rem',
+          }}
+        >
+          All Signals
+        </NavLink>
+      ),
+    },
+    {
+      key: 'trends',
+      label: (
+        <NavLink
+          to='./trends'
+          style={{
+            fontFamily: 'var(--fontFamily)',
+            fontSize: '1.25rem',
+            textTransform: 'none',
+            padding: '0.75rem',
+          }}
+        >
+          All Trends
+        </NavLink>
+      ),
+    },
+    ...(role === 'Admin' || role === 'Curator'
       ? [
           {
-            key: '1',
+            key: 'archived-signals',
             label: (
               <NavLink
-                to='/my-drafts'
+                to='./archived-signals'
                 style={{
                   fontFamily: 'var(--fontFamily)',
                   fontSize: '1.25rem',
@@ -53,36 +86,77 @@ export function SignOutButton(props: Props) {
                   padding: '0.75rem',
                 }}
               >
-                My Drafts
+                Archived Signals
               </NavLink>
             ),
           },
           {
-            key: '2',
+            key: 'archived-trends',
             label: (
-              <button
+              <NavLink
+                to='./archived-trends'
                 style={{
                   fontFamily: 'var(--fontFamily)',
                   fontSize: '1.25rem',
                   textTransform: 'none',
-                  border: 0,
-                  background: 'none',
-                  margin: 0,
                   padding: '0.75rem',
                 }}
-                type='button'
-                onClick={() => {
-                  setNameOfUser(name);
-                  setSelectedUnit(unit);
-                  setOpenModal(true);
-                }}
               >
-                View My Profile
-              </button>
+                Archived Trends
+              </NavLink>
             ),
           },
+        ]
+      : []),
+    {
+      type: 'divider',
+    },
+    {
+      key: 'drafts',
+      label: (
+        <NavLink
+          to='/my-drafts'
+          style={{
+            fontFamily: 'var(--fontFamily)',
+            fontSize: '1.25rem',
+            textTransform: 'none',
+            padding: '0.75rem',
+          }}
+        >
+          My Drafts
+        </NavLink>
+      ),
+    },
+    {
+      key: 'profile',
+      label: (
+        <button
+          style={{
+            fontFamily: 'var(--fontFamily)',
+            fontSize: '1.25rem',
+            textTransform: 'none',
+            border: 0,
+            background: 'none',
+            margin: 0,
+            padding: '0.75rem',
+            width: '100%',
+            textAlign: 'left',
+          }}
+          type='button'
+          onClick={() => {
+            setNameOfUser(name);
+            setSelectedUnit(unit);
+            setOpenModal(true);
+          }}
+        >
+          View My Profile
+        </button>
+      ),
+    },
+    ...(role === 'Admin'
+      ? [
           {
-            key: '3',
+            key: 'admin',
             label: (
               <NavLink
                 to='/admin-panel'
@@ -97,101 +171,80 @@ export function SignOutButton(props: Props) {
               </NavLink>
             ),
           },
-          {
-            key: '4',
-            label: (
-              <button
-                style={{
-                  fontFamily: 'var(--fontFamily)',
-                  fontSize: '1.25rem',
-                  textTransform: 'none',
-                  background: 'none',
-                  border: 0,
-                  margin: 0,
-                  padding: '0.75rem',
-                }}
-                type='button'
-                onClick={() => {
-                  signOutClickHandler();
-                }}
-              >
-                Sign Out
-              </button>
-            ),
-          },
         ]
-      : [
-          {
-            key: '1',
-            label: (
-              <NavLink
-                to='/my-drafts'
-                style={{
-                  fontFamily: 'var(--fontFamily)',
-                  fontSize: '1.25rem',
-                  textTransform: 'none',
-                  padding: '0.75rem',
-                }}
-              >
-                My Drafts
-              </NavLink>
-            ),
-          },
-          {
-            key: '2',
-            label: (
-              <button
-                style={{
-                  fontFamily: 'var(--fontFamily)',
-                  fontSize: '1.25rem',
-                  textTransform: 'none',
-                  background: 'none',
-                  border: 0,
-                  margin: 0,
-                  padding: '0.75rem',
-                }}
-                type='button'
-                onClick={() => {
-                  setOpenModal(true);
-                }}
-              >
-                View My Profile
-              </button>
-            ),
-          },
-          {
-            key: '3',
-            label: (
-              <button
-                style={{
-                  fontFamily: 'var(--fontFamily)',
-                  fontSize: '1.25rem',
-                  textTransform: 'none',
-                  background: 'none',
-                  border: 0,
-                  margin: 0,
-                  padding: '0.75rem',
-                }}
-                type='button'
-                onClick={() => {
-                  signOutClickHandler();
-                }}
-              >
-                Sign Out
-              </button>
-            ),
-          },
-        ];
+      : []),
+    {
+      key: 'signout',
+      label: (
+        <button
+          style={{
+            fontFamily: 'var(--fontFamily)',
+            fontSize: '1.25rem',
+            textTransform: 'none',
+            background: 'none',
+            border: 0,
+            margin: 0,
+            padding: '0.75rem',
+            width: '100%',
+            textAlign: 'left',
+          }}
+          type='button'
+          onClick={() => {
+            signOutClickHandler();
+          }}
+        >
+          Sign Out
+        </button>
+      ),
+    },
+  ];
+
   return (
     <>
       {mobileView === true ? (
         <AuthenticatedTemplate>
           <div>
-            <NavLink to='/my-drafts'>My Drafts</NavLink>
+            <NavLink
+              to='./signals'
+              className='header-link'
+            >
+              All Signals
+            </NavLink>
+          </div>
+          <div>
+            <NavLink
+              to='./trends'
+              className='header-link'
+            >
+              All Trends
+            </NavLink>
+          </div>
+          {role === 'Admin' || role === 'Curator' ? (
+            <>
+              <div>
+                <NavLink
+                  to='./archived-signals'
+                  className='header-link'
+                >
+                  Archived Signals
+                </NavLink>
+              </div>
+              <div>
+                <NavLink
+                  to='./archived-trends'
+                  className='header-link'
+                >
+                  Archived Trends
+                </NavLink>
+              </div>
+            </>
+          ) : null}
+          <div>
+            <NavLink to='/my-drafts' className='header-link'>My Drafts</NavLink>
           </div>
           {role === 'Admin' ? (
             <div>
-              <NavLink to='/admin-panel'>Admin Panel</NavLink>
+              <NavLink to='/admin-panel' className='header-link'>Admin Panel</NavLink>
             </div>
           ) : null}
           <div>
@@ -222,7 +275,7 @@ export function SignOutButton(props: Props) {
       ) : (
         <AuthenticatedTemplate>
           <Dropdown
-            menu={{ items }}
+            menu={{ items: navigationItems }}
             placement='bottomRight'
             className='undp-button-dropdown'
             overlayClassName='undp-dropdown-menu'
@@ -310,7 +363,7 @@ export function SignOutButton(props: Props) {
               showSearch
             >
               {choices?.unit_name.map((d, i) => (
-                <Select.Option className='undp-select-option' key={i} value={d}>
+                <Select.Option className='undp-select-option' key={d} value={d}>
                   {d}
                 </Select.Option>
               ))}
