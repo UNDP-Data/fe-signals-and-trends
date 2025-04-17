@@ -17,7 +17,7 @@ export function LoggedInHeader(props: Props) {
   const ConciergeLink = () => {
     return (
       <a
-        href='https://chat.signals.data.undp.com'
+        href='https://future-signals-concierge.vercel.app'
         target='_blank'
         rel='noopener noreferrer'
         className='header-link'
