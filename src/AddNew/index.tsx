@@ -7,6 +7,7 @@ import { useContext } from 'react';
 import { SignalEntryFormEl } from '../Components/SignalEntryFormEl';
 import { TrendEntryFormEl } from '../Components/TrendEntryFormEl';
 import { SignInButton } from '../Components/SignInButton';
+import { ChatBubble } from '../Components/ChatBubble';
 import Context from '../Context/Context';
 
 export function AddNewSignalEl() {
@@ -28,6 +29,7 @@ export function AddNewSignalEl() {
         </button>
         <h3 className='undp-typography margin-top-05'>Add New Signal</h3>
         <SignalEntryFormEl draft={false} />
+        <ChatBubble />
       </AuthenticatedTemplate>
       <UnauthenticatedTemplate>
         <div
@@ -70,6 +72,7 @@ export function AddNewTrendEl() {
         ) : (
           <TrendEntryFormEl />
         )}
+        <ChatBubble />
       </AuthenticatedTemplate>
       <UnauthenticatedTemplate>
         <div
