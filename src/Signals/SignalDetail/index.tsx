@@ -532,6 +532,9 @@ export function SignalDetail() {
                 )}
               </div>
               <div className='margin-top-07'>
+                <h6 className='undp-typography margin-top-00 margin-bottom-03'>
+                  Save for Later
+                </h6>
                 <FavoriteButton
                   signalId={Number(id)}
                   initialFavoriteStatus={data?.favorite || false}
