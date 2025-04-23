@@ -19,6 +19,7 @@ import { SignInButton } from '../../Components/SignInButton';
 import { TrendCard } from '../../Components/TrendCard';
 import { MONTHS, SSCOLOR } from '../../Constants';
 import Context from '../../Context/Context';
+import { SignalDataType, TrendDataType } from '../../Types';
 import { getSDGIcon } from '../../Utils/GetSDGIcons';
 
 interface HeroImageProps {

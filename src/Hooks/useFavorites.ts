@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import sortBy from 'lodash.sortby';
+import React from 'react';
 import { getfavoriteSignals } from '../API';
 import { SignalDataType } from '../Types';
 
@@ -10,7 +11,7 @@ interface UseFavoritesParams {
 }
 
 export const useFavorites = ({ page, pageSize, onSuccess }: UseFavoritesParams) => {
-  return useQuery({
+  const query = useQuery<SignalDataType[]>({
     queryKey: ['favorites', page, pageSize],
     queryFn: async () => {
       const response = await getfavoriteSignals({
@@ -26,6 +27,14 @@ export const useFavorites = ({ page, pageSize, onSuccess }: UseFavoritesParams) 
       return [];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
-    onSuccess,
   });
+
+  // Handle onSuccess via useEffect if needed
+  React.useEffect(() => {
+    if (query.data && onSuccess) {
+      onSuccess(query.data);
+    }
+  }, [query.data, onSuccess]);
+
+  return query;
 }; 

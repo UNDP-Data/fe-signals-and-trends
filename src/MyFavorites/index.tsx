@@ -26,7 +26,7 @@ export function MyFavorites() {
   const [pageSize, setPageSize] = useState(20);
 
   const {
-    data: favoriteSignals,
+    data,
     error,
     isLoading,
   } = useFavorites({
@@ -37,7 +37,10 @@ export function MyFavorites() {
     },
   });
 
-  const totalNoOfPages = favoriteSignals?.length 
+  // Safely handle the data as an array
+  const favoriteSignals = data || [];
+
+  const totalNoOfPages = favoriteSignals.length 
     ? Math.ceil(favoriteSignals.length / pageSize) 
     : 0;
 
@@ -69,7 +72,7 @@ export function MyFavorites() {
           <div>
             <h3 className='undp-typography margin-top-05'>My Favorites</h3>
             <div className='flex-div flex-wrap listing'>
-              {favoriteSignals && favoriteSignals.length > 0 ? (
+              {favoriteSignals.length > 0 ? (
                 <FavoritesList signals={favoriteSignals} />
               ) : (
                 <h5
@@ -86,7 +89,7 @@ export function MyFavorites() {
                 </h5>
               )}
             </div>
-            {favoriteSignals && favoriteSignals.length > 0 && (
+            {favoriteSignals.length > 0 && (
               <div className='flex-div flex-hor-align-center margin-top-07'>
                 <Pagination
                   className='undp-pagination'
