@@ -1,29 +1,26 @@
-import { Popconfirm, Modal } from 'antd';
-import { NavLink, useParams, useNavigate } from 'react-router-dom';
-import { useContext, useEffect, useState } from 'react';
 import {
   AuthenticatedTemplate,
   UnauthenticatedTemplate,
 } from '@azure/msal-react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
-import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
+import { Popconfirm } from 'antd';
+import { useContext, useEffect, useState } from 'react';
+import { NavLink, useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import UNDPColorModule from 'undp-viz-colors';
-import Background from '../../assets/UNDP-hero-image.jpg';
-import { SignalDataType, TrendDataType } from '../../Types';
-import { MONTHS, SSCOLOR } from '../../Constants';
-import { TrendCard } from '../../Components/TrendCard';
-import { SignInButton } from '../../Components/SignInButton';
-import Context from '../../Context/Context';
-import { ChipEl } from '../../Components/ChipEl';
-import { getSDGIcon } from '../../Utils/GetSDGIcons';
 import {
   deleteSignal,
-  makeSignalFavorite,
   readSignal,
-  searchTrends,
+  searchTrends
 } from '../../API';
+import Background from '../../assets/UNDP-hero-image.jpg';
+import { ChipEl } from '../../Components/ChipEl';
+import { FavoriteButton } from '../../Components/FavoriteButton';
+import { SignInButton } from '../../Components/SignInButton';
+import { TrendCard } from '../../Components/TrendCard';
+import { MONTHS, SSCOLOR } from '../../Constants';
+import Context from '../../Context/Context';
+import { SignalDataType, TrendDataType } from '../../Types';
+import { getSDGIcon } from '../../Utils/GetSDGIcons';
 
 interface HeroImageProps {
   bgImage?: string;
@@ -60,21 +57,16 @@ export function SignalDetail() {
     choices,
     updateCardsToPrint,
     cardsToPrint,
+    userName,
+    name,
+    userID,
   } = useContext(Context);
   const navigate = useNavigate();
   const [buttonDisabled, setButtonDisabled] = useState(false);
   const [submittingError, setSubmittingError] = useState<undefined | string>(
     undefined,
   );
-  const [openModal, setOpenModal] = useState(false);
-  const [isFilled, setIsFilled] = useState<boolean>(false);
-  const { userName, name, userID } = useContext(Context);
-  const myFavBtnClick = () => {
-    const res = makeSignalFavorite(Number(id), { status: 'created' });
-    setIsFilled(!isFilled);
-    setOpenModal(true);
-    console.log(res);
-  };
+
   useEffect(() => {
     console.log('User Name : ', userName);
     console.log('Name : ', name);
@@ -82,9 +74,6 @@ export function SignalDetail() {
     console.log('Signal ID : ', id);
     readSignal(Number(id)).then(response => {
       setData(response);
-      if (response?.favorite) {
-        setIsFilled(true);
-      }
       if (response?.connected_trends?.length) {
         const trendsIds = response.connected_trends
           .map(d => Number(d))
@@ -98,6 +87,7 @@ export function SignalDetail() {
       }
     });
   }, [id]);
+
   return (
     <div>
       {data ? (
@@ -542,48 +532,13 @@ export function SignalDetail() {
                 )}
               </div>
               <div className='margin-top-07'>
-                <button
-                  type='button'
-                  onClick={myFavBtnClick}
-                  style={{
-                    border: 'none',
-                    background: 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <FontAwesomeIcon
-                    icon={isFilled ? solidHeart : regularHeart}
-                    style={{
-                      color: isFilled ? 'red' : 'black',
-                      fontSize: '2em',
-                    }}
-                  />
-                </button>
-                <Modal
-                  className='undp-modal'
-                  open={openModal}
-                  onCancel={() => {
-                    setOpenModal(false);
-                  }}
-                >
-                  {isFilled ? (
-                    <NavLink to='/my-favorites'>
-                      <h6
-                        className='undp-typography'
-                        style={{ color: 'var(--dark-red)' }}
-                      >
-                        This signal has been added to your favorites.
-                      </h6>
-                    </NavLink>
-                  ) : (
-                    <h6
-                      className='undp-typography'
-                      style={{ color: 'var(--dark-red)' }}
-                    >
-                      This article has been removed from favorites.
-                    </h6>
-                  )}
-                </Modal>
+                <FavoriteButton
+                  signalId={Number(id)}
+                  initialFavoriteStatus={data?.favorite || false}
+                  size="large"
+                  withContainer={false}
+                  iconColor="red"
+                />
               </div>
               <div className='margin-top-07'>
                 <h6 className='undp-typography margin-top-00'>

@@ -1,13 +1,12 @@
 import styled from 'styled-components';
 // import { NavLink } from 'react-router-dom';
+import { useContext } from 'react';
+import { NavLink } from 'react-router-dom';
 import UNDPColorModule from 'undp-viz-colors';
-import { useContext, useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
-import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
-import { SignalDataType } from '../Types';
 import Background from '../assets/UNDP-hero-image.jpg';
 import Context from '../Context/Context';
+import { SignalDataType } from '../Types';
+import { FavoriteButton } from './FavoriteButton';
 
 import '../styles.css';
 import { ChipEl } from './ChipEl';
@@ -40,6 +39,7 @@ const HeroImageEl = styled.div<HeroImageProps>`
     filter: brightness(80%);
     transition: filter 0.2s;
   }
+  position: relative;
 `;
 
 const CardEl = styled.div`
@@ -71,27 +71,8 @@ const LinkP = styled.p`
 
 export function FavoriteCard(props: Props) {
   const { data } = props;
-  const { role, choices, signalList } = useContext(Context);
-
-  //   const [isFilled, setIsFilled] = useState<boolean>(false);
-  //   const myFavBtnClick = () => {
-  //     setIsFilled(!isFilled);
-  //     console.log(data);
-  //   };
-  const [isFavorite, setIsFavorite] = useState(data.favorite || false);
-  const updateFavoriteStatus = (favData: SignalDataType) => {
-    console.log('Updating favorite status on server:', favData);
-    // API call to persist the changes
-  };
-  const handleFavoriteClick = (favData: SignalDataType) => {
-    setIsFavorite(prevState => !prevState);
-    const updatedFavData = { ...favData, favorite: !favData.favorite };
-    console.log(updatedFavData.favorite);
-    // API call to update the favorite status on the server
-    updateFavoriteStatus(updatedFavData);
-  };
-  //   Not sure whether to use useEffect or another technique to reload the page upon unfavoring a signal.
-  useEffect(() => {}, [signalList]);
+  const { role, choices } = useContext(Context);
+  
   return (
     <div className='signal-card'>
       <CardEl>
@@ -115,28 +96,13 @@ export function FavoriteCard(props: Props) {
                 {data.status === 'New' ? 'Awaiting Approval' : data.status}
               </div>
             ) : null}
-            <button
-              type='button'
-              onClick={e => {
-                e.preventDefault();
-                handleFavoriteClick(data);
-              }}
-              style={{
-                border: 'none',
-                background: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              <IconContainer>
-                <FontAwesomeIcon
-                  icon={isFavorite ? solidHeart : regularHeart}
-                  style={{
-                    color: isFavorite ? 'orange' : 'black',
-                    fontSize: '1.5em',
-                  }}
-                />
-              </IconContainer>
-            </button>
+            <FavoriteButton
+              signalId={data.id}
+              initialFavoriteStatus={data.favorite || false}
+              size="medium"
+              withContainer={true}
+              iconColor="orange"
+            />
           </HeroImageEl>
           <div style={{ padding: '1rem 1rem 0 1rem' }}>
             <div className='flex-div flex-wrap'>
@@ -213,12 +179,14 @@ export function FavoriteCard(props: Props) {
               padding: '0',
             }}
           >
-            <button
-              className='undp-button button-tertiary button-arrow'
-              type='button'
-            >
-              Click
-            </button>
+            <NavLink to={`/signals/${data.id}`}>
+              <button
+                className='undp-button button-tertiary button-arrow'
+                type='button'
+              >
+                View Signal
+              </button>
+            </NavLink>
           </div>
         </div>
       </CardEl>
