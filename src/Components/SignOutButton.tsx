@@ -2,8 +2,8 @@ import { AuthenticatedTemplate } from '@azure/msal-react';
 import { Dropdown, Input, MenuProps, Modal, Select, Switch } from 'antd';
 import { useContext, useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import Context from '../Context/Context';
 import { updateUser } from '../API';
+import Context from '../Context/Context';
 
 interface Props {
   signOutClickHandler: () => void;
@@ -110,6 +110,22 @@ export function SignOutButton(props: Props) {
       : []),
     {
       type: 'divider',
+    },
+    {
+      key: 'favourites',
+      label: (
+        <NavLink
+          to='/my-favorites'
+          style={{
+            fontFamily: 'var(--fontFamily)',
+            fontSize: '1.25rem',
+            textTransform: 'none',
+            padding: '0.75rem',
+          }}
+        >
+          My Favourites
+        </NavLink>
+      ),
     },
     {
       key: 'drafts',

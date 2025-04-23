@@ -24,6 +24,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.7.1",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@react-pdf/renderer": "^3.1.11",
+    "@tanstack/react-query": "^5.74.4",
     "@types/jszip": "^3.4.0",
     "@types/lodash.remove": "^4.7.7",
     "@types/lodash.sortby": "^4.7.7",

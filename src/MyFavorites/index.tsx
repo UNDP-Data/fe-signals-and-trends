@@ -3,47 +3,43 @@ import {
   UnauthenticatedTemplate,
 } from '@azure/msal-react';
 import { Pagination, PaginationProps } from 'antd';
-import sortBy from 'lodash.sortby';
-import { useContext, useEffect, useState } from 'react';
-import { getfavoriteSignals } from '../API';
+import { useContext, useState } from 'react';
+import { FavoriteCard } from '../Components/FavoriteCard';
 import { SignInButton } from '../Components/SignInButton';
 import Context from '../Context/Context';
-import { getfavoriteSignals, searchSignals } from '../API';
-import { FavoriteCardList } from '../Signals/AllSignals/FavoriteGridView';
+import { useFavorites } from '../Hooks/useFavorites';
+import { SignalDataType } from '../Types';
+
+const FavoritesList = ({ signals }: { signals: SignalDataType[] }) => {
+  return (
+    <>
+      {signals.map((signal, index) => (
+        <FavoriteCard key={`favorite-${signal.id}-${index}`} data={signal} />
+      ))}
+    </>
+  );
+};
 
 export function MyFavorites() {
-  const { signalList, updateSignalList } = useContext(Context);
+  const { updateSignalList } = useContext(Context);
   const [paginationValue, setPaginationValue] = useState(1);
-  const [error, setError] = useState<undefined | string>(undefined);
   const [pageSize, setPageSize] = useState(20);
-  const [totalNoOfPages, setTotalNoOfPages] = useState(0);
 
-  useEffect(() => {
-    setError(undefined);
-    updateSignalList(undefined);
-    getfavoriteSignals()
-      .then(response => {
-        if (response && response.length > 0) {
-          const sortedData = sortBy(response, d => Date.parse(d.created_at)).reverse();
-          updateSignalList(sortedData);
-          setTotalNoOfPages(Math.ceil(sortedData.length / pageSize));
-        } else {
-          updateSignalList([]);
-        }
-      })
-      .catch(err => {
-        if (err.response?.status === 404) {
-          updateSignalList([]);
-        } else {
-          setError(
-            `${err}. ${err.response?.status === 500
-              ? 'Please try again in some time'
-              : ''
-            }`,
-          );
-        }
-      });
-  }, [pageSize]);
+  const {
+    data: favoriteSignals,
+    error,
+    isLoading,
+  } = useFavorites({
+    page: paginationValue,
+    pageSize,
+    onSuccess: (data) => {
+      updateSignalList(data);
+    },
+  });
+
+  const totalNoOfPages = favoriteSignals?.length 
+    ? Math.ceil(favoriteSignals.length / pageSize) 
+    : 0;
 
   const onShowSizeChange: PaginationProps['onShowSizeChange'] = (
     _current,
@@ -58,12 +54,23 @@ export function MyFavorites() {
       style={{ paddingLeft: '1rem', paddingRight: '1rem' }}
     >
       <AuthenticatedTemplate>
-        {signalList ? (
+        {isLoading ? (
+          <div className='undp-loader-container'>
+            <div className='undp-loader' />
+          </div>
+        ) : error ? (
+          <p
+            className='margin-top-00 margin-bottom-00'
+            style={{ color: 'var(--dark-red)' }}
+          >
+            {error instanceof Error ? error.message : 'An error occurred while fetching favorites'}
+          </p>
+        ) : (
           <div>
             <h3 className='undp-typography margin-top-05'>My Favorites</h3>
             <div className='flex-div flex-wrap listing'>
-              {signalList.length > 0 ? (
-                <FavoriteCardList />
+              {favoriteSignals && favoriteSignals.length > 0 ? (
+                <FavoritesList signals={favoriteSignals} />
               ) : (
                 <h5
                   className='undp-typography bold'
@@ -79,31 +86,22 @@ export function MyFavorites() {
                 </h5>
               )}
             </div>
-            <div className='flex-div flex-hor-align-center margin-top-07'>
-              <Pagination
-                className='undp-pagination'
-                onChange={e => {
-                  setPaginationValue(e);
-                }}
-                defaultCurrent={1}
-                current={paginationValue}
-                total={totalNoOfPages * pageSize}
-                pageSize={pageSize}
-                showSizeChanger
-                onShowSizeChange={onShowSizeChange}
-              />
-            </div>
-          </div>
-        ) : error ? (
-          <p
-            className='margin-top-00 margin-bottom-00'
-            style={{ color: 'var(--dark-red)' }}
-          >
-            {error}
-          </p>
-        ) : (
-          <div className='undp-loader-container'>
-            <div className='undp-loader' />
+            {favoriteSignals && favoriteSignals.length > 0 && (
+              <div className='flex-div flex-hor-align-center margin-top-07'>
+                <Pagination
+                  className='undp-pagination'
+                  onChange={e => {
+                    setPaginationValue(e);
+                  }}
+                  defaultCurrent={1}
+                  current={paginationValue}
+                  total={totalNoOfPages * pageSize}
+                  pageSize={pageSize}
+                  showSizeChanger
+                  onShowSizeChange={onShowSizeChange}
+                />
+              </div>
+            )}
           </div>
         )}
       </AuthenticatedTemplate>
