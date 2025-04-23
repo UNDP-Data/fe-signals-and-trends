@@ -192,15 +192,24 @@ export function SignalEntryFormEl(props: Props) {
     undefined,
   );
   const [keyword1, setKeyword1] = useState<string | undefined>(
-    updateSignal?.keywords ? updateSignal?.keywords[0] || undefined : undefined,
+    updateSignal?.keywords ? updateSignal?.keywords[0] || undefined : initialData?.keywords ? initialData.keywords[0] || undefined : undefined,
   );
   const [keyword2, setKeyword2] = useState<string | undefined>(
-    updateSignal?.keywords ? updateSignal?.keywords[1] || undefined : undefined,
+    updateSignal?.keywords ? updateSignal?.keywords[1] || undefined : initialData?.keywords ? initialData.keywords[1] || undefined : undefined,
   );
   const [keyword3, setKeyword3] = useState<string | undefined>(
-    updateSignal?.keywords ? updateSignal?.keywords[2] || undefined : undefined,
+    updateSignal?.keywords ? updateSignal?.keywords[2] || undefined : initialData?.keywords ? initialData.keywords[2] || undefined : undefined,
   );
   const [useFetchedArticles, setUseFetchedArticles] = useState(false);
+
+  // Initialize keywords from initialData if available
+  useEffect(() => {
+    if (initialData?.keywords?.length) {
+      setKeyword1(initialData.keywords[0]);
+      if (initialData.keywords.length > 1) setKeyword2(initialData.keywords[1]);
+      if (initialData.keywords.length > 2) setKeyword3(initialData.keywords[2]);
+    }
+  }, [initialData]);
 
   const confirmDelete = (id: number, navigatePath: string) => {
     setButtonDisabled(true);
@@ -352,7 +361,8 @@ export function SignalEntryFormEl(props: Props) {
 
   // Signal Auto Complete
   const handleSuggestionSelect = (suggestion: SignalSuggestion) => {
-    console.log('Selected Suggestion:', suggestion);
+    // console.log('Selected Suggestion:', suggestion);
+
     updateSignalData({
       ...signalData,
       headline: suggestion.headline,
@@ -933,7 +943,7 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword1(e.target.value);
             }}
-            value={keyword1 || undefined || signalData.keywords[0] || ''}
+            value={keyword1 || ''}
           />
           <Input
             className='undp-input'
@@ -941,7 +951,7 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword2(e.target.value);
             }}
-            value={keyword2 || undefined || signalData.keywords[1] || ''}
+            value={keyword2 || ''}
           />
           <Input
             className='undp-input'
@@ -949,7 +959,7 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword3(e.target.value);
             }}
-            value={keyword3 || undefined || signalData.keywords[2] || ''}
+            value={keyword3 || ''}
           />
         </div>
         <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
@@ -1241,6 +1251,25 @@ export function SignalEntryFormEl(props: Props) {
                     // submit signal
                     setButtonDisabled(true);
                     setSubmittingError(undefined);
+                    
+                    // Make sure steep_primary is in the correct format if it's a simple string
+                    let steep_primary = signalData.steep_primary || '';
+                    if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
+                      const fullSteep = choices.steep.find(s => s.startsWith(steep_primary as string));
+                      if (fullSteep) {
+                        steep_primary = fullSteep;
+                      }
+                    }
+                    
+                    // Make sure sdgs are in the correct format
+                    let sdgs = signalData.sdgs || [];
+                    if (sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
+                      sdgs = sdgs.map(sdg => {
+                        const fullSdg = choices.goal.find(g => g.includes(sdg));
+                        return fullSdg || sdg;
+                      });
+                    }
+                    
                     if (signalData.id)
                       updateSignalApi(updateSignal.id, {
                         // ...signalData,
@@ -1248,11 +1277,11 @@ export function SignalEntryFormEl(props: Props) {
                         headline: signalData.headline || '',
                         description: signalData.description || '',
                         attachment: signalData.attachment || '',
-                        steep_primary: signalData.steep_primary || '',
+                        steep_primary: steep_primary,
                         signature_primary: signalData.signature_primary || '',
                         signature_secondary:
                           signalData.signature_secondary || [],
-                        sdgs: signalData.sdgs || [],
+                        sdgs: sdgs,
                         url: signalData.url || '',
                         relevance: signalData.relevance || '',
                         location: signalData.location || '',
@@ -1294,6 +1323,25 @@ export function SignalEntryFormEl(props: Props) {
                     console.log(signalData.attachment);
                     setButtonDisabled(true);
                     setSubmittingError(undefined);
+                    
+                    // Make sure steep_primary is in the correct format if it's not null and doesn't have the full format
+                    let steep_primary = signalData.steep_primary || null;
+                    if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
+                      const fullSteep = choices.steep.find(s => s.startsWith(steep_primary as string));
+                      if (fullSteep) {
+                        steep_primary = fullSteep;
+                      }
+                    }
+                    
+                    // Make sure sdgs are in the correct format if not null
+                    let sdgs = signalData.sdgs || null;
+                    if (sdgs && sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
+                      sdgs = sdgs.map(sdg => {
+                        const fullSdg = choices.goal.find(g => g.includes(sdg));
+                        return fullSdg || sdg;
+                      });
+                    }
+                    
                     if (signalData.id)
                       updateSignalApi(updateSignal.id, {
                         // ...signalData,
@@ -1301,12 +1349,12 @@ export function SignalEntryFormEl(props: Props) {
                         headline: signalData.headline || null,
                         description: signalData.description || null,
                         attachment: signalData.attachment || null,
-                        steep_primary: signalData.steep_primary || null,
+                        steep_primary: steep_primary,
                         steep_secondary: signalData.steep_secondary || null,
                         signature_primary: signalData.signature_primary || null,
                         signature_secondary:
                           signalData.signature_secondary || null,
-                        sdgs: signalData.sdgs || null,
+                        sdgs: sdgs,
                         url: signalData.url || null,
                         relevance: signalData.relevance || null,
                         location: signalData.location || null,
@@ -1381,6 +1429,25 @@ export function SignalEntryFormEl(props: Props) {
                   // update signal
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
+                  
+                  // Make sure steep_primary is in the correct format if it's a simple string
+                  let steep_primary = signalData.steep_primary || '';
+                  if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
+                    const fullSteep = choices.steep.find(s => s.startsWith(steep_primary as string));
+                    if (fullSteep) {
+                      steep_primary = fullSteep;
+                    }
+                  }
+                  
+                  // Make sure sdgs are in the correct format
+                  let sdgs = signalData.sdgs || [];
+                  if (sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
+                    sdgs = sdgs.map(sdg => {
+                      const fullSdg = choices.goal.find(g => g.includes(sdg));
+                      return fullSdg || sdg;
+                    });
+                  }
+                  
                   if (signalData.id)
                     updateSignalApi(updateSignal.id, {
                       // ...signalData,
@@ -1388,10 +1455,10 @@ export function SignalEntryFormEl(props: Props) {
                       headline: signalData.headline || '',
                       description: signalData.description || '',
                       attachment: signalData.attachment || undefined,
-                      steep_primary: signalData.steep_primary || '',
+                      steep_primary: steep_primary,
                       signature_primary: signalData.signature_primary || '',
                       signature_secondary: signalData.signature_secondary || [],
-                      sdgs: signalData.sdgs || [],
+                      sdgs: sdgs,
                       url: signalData.url || '',
                       relevance: signalData.relevance || '',
                       location: signalData.location || '',
@@ -1448,15 +1515,34 @@ export function SignalEntryFormEl(props: Props) {
                 onClick={() => {
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
+                  
+                  // Make sure steep_primary is in the correct format if it's a simple string
+                  let steep_primary = signalData.steep_primary || '';
+                  if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
+                    const fullSteep = choices.steep.find(s => s.startsWith(steep_primary as string));
+                    if (fullSteep) {
+                      steep_primary = fullSteep;
+                    }
+                  }
+                  
+                  // Make sure sdgs are in the correct format
+                  let sdgs = signalData.sdgs || [];
+                  if (sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
+                    sdgs = sdgs.map(sdg => {
+                      const fullSdg = choices.goal.find(g => g.includes(sdg));
+                      return fullSdg || sdg;
+                    });
+                  }
+                  
                   createSignal({
                     headline: signalData.headline || '',
                     description: signalData.description || '',
                     attachment: signalData.attachment || '',
-                    steep_primary: signalData.steep_primary || '',
+                    steep_primary: steep_primary,
                     steep_secondary: signalData.steep_secondary || undefined,
                     signature_primary: signalData.signature_primary || '',
                     signature_secondary: signalData.signature_secondary || [],
-                    sdgs: signalData.sdgs || [],
+                    sdgs: sdgs,
                     created_unit: signalData.created_unit || '',
                     url: signalData.url || '',
                     relevance: signalData.relevance || '',
@@ -1497,16 +1583,35 @@ export function SignalEntryFormEl(props: Props) {
                   console.log('Saving as a draft', signalData.attachment);
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
+                  
+                  // Make sure steep_primary is in the correct format if it's not null and doesn't have the full format
+                  let steep_primary = signalData.steep_primary || null;
+                  if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
+                    const fullSteep = choices.steep.find(s => s.startsWith(steep_primary as string));
+                    if (fullSteep) {
+                      steep_primary = fullSteep;
+                    }
+                  }
+                  
+                  // Make sure sdgs are in the correct format if not null
+                  let sdgs = signalData.sdgs || null;
+                  if (sdgs && sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
+                    sdgs = sdgs.map(sdg => {
+                      const fullSdg = choices.goal.find(g => g.includes(sdg));
+                      return fullSdg || sdg;
+                    });
+                  }
+                  
                   // console.log(signalData);
                   createSignal({
                     headline: signalData.headline || null,
                     description: signalData.description || null,
                     attachment: signalData.attachment || null,
-                    steep_primary: signalData.steep_primary || null,
+                    steep_primary: steep_primary,
                     steep_secondary: signalData.steep_secondary || null,
                     signature_primary: signalData.signature_primary || null,
                     signature_secondary: signalData.signature_secondary || null,
-                    sdgs: signalData.sdgs || null,
+                    sdgs: sdgs,
                     created_unit: signalData.created_unit || null,
                     url: signalData.url || null,
                     relevance: signalData.relevance || null,

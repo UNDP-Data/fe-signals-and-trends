@@ -1,28 +1,28 @@
 import { AuthenticationResult } from '@azure/msal-browser';
 import { useIsAuthenticated, useMsal } from '@azure/msal-react';
 import { Modal, Select, Switch } from 'antd';
-import { useEffect, useReducer, useMemo, useState } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
+import { ChatBubble } from './Components/ChatBubble';
 import { Footer } from './Components/FooterEl';
 import { SignUpButton } from './Components/SignUpButton';
-import { ChatBubble } from './Components/ChatBubble';
 import { CHOICES, CLIENT_ID } from './Constants';
 import Context from './Context/Context';
 import Reducer from './Context/Reducer';
 import MainBody from './MainBody';
 import {
-  AllowedRolesDataType,
-  CardsToPrintDataType,
-  ChoicesDataType,
-  CurrentUserResponseDataType,
-  SignalFiltersDataType,
-  TrendFiltersDataType,
+    AllowedRolesDataType,
+    CardsToPrintDataType,
+    ChoicesDataType,
+    CurrentUserResponseDataType,
+    SignalFiltersDataType,
+    TrendFiltersDataType,
 } from './Types';
 
+import { getChoices, readCurrentUser } from './API';
 import './App.css';
 import { Header } from './Components/HeaderEl';
 import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
 import { signOutClickHandler } from './Utils/AuthStatusHandler';
-import { getChoices, readCurrentUser } from './API';
 import { setLocalStorage } from './Utils/UpdateLocalStrage';
 
 function App() {
@@ -246,7 +246,7 @@ function App() {
               })
               .catch(err => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if ((err.response?.data as any).detail === 'User not found.') {
+                if (err.response?.data && (err.response.data as any).detail === 'User not found.') {
                   setOpenModal(true);
                 }
               });
