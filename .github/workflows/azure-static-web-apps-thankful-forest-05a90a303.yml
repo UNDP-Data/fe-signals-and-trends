@@ -23,6 +23,8 @@ jobs:
       VITE_CLIENT_ID: ${{ secrets.VITE_CLIENT_ID }}
       VITE_AUTHORITY: ${{ secrets.VITE_AUTHORITY }}
       VITE_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET_FOR_MSAL }}
+      VITE_PEXEL_API_KEY: ${{ secrets.VITE_PEXEL_API_KEY }}
+      VITE_WORLD_NEWS_API_KEY: ${{ secrets.VITE_WORLD_NEWS_API_KEY }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -41,3 +43,5 @@ jobs:
           access_token_for_api: ${{ secrets.ACCESS_CODE_FOR_API }}
           redirect_uri_for_msal: ${{ secrets.REDIRECT_URI_FOR_MSAL }}
           client_secret_for_msal: ${{ secrets.CLIENT_SECRET_FOR_MSAL }}
+          app_build_command: "npm run build:azure"
+          app_settings: '{"VITE_PEXEL_API_KEY":"${{ secrets.VITE_PEXEL_API_KEY }}","VITE_WORLD_NEWS_API_KEY":"${{ secrets.VITE_WORLD_NEWS_API_KEY }}"}'
