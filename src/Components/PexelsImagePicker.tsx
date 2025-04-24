@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { PEXEL_SEARCH_IMG_GET_URL } from '../Constants';
 import { extractKeywords } from '../Utils/ExtractKeyWords';
@@ -126,6 +126,67 @@ const PexelsLogo = styled.img`
   margin-bottom: 8px;
 `;
 
+const SearchInput = styled.input`
+  padding: 8px 12px;
+  border: 1px solid var(--gray-400);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  flex-grow: 1;
+  margin-right: 0.5rem;
+  
+  &:focus {
+    outline: none;
+    border-color: var(--blue-500);
+    box-shadow: 0 0 0 2px rgba(0, 127, 255, 0.2);
+  }
+`;
+
+const SearchContainer = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+`;
+
+const MainButton = styled.button`
+  background-color: var(--gray-300);
+  padding: var(--spacing-05);
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 1rem;
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background-color: var(--gray-200);
+  }
+  
+  .toggle-indicator {
+    margin-left: 8px;
+    font-size: 0.75rem;
+  }
+`;
+
+const ToggleButton = styled.button`
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: var(--blue-600);
+  cursor: pointer;
+  padding: var(--spacing-02);
+  
+  &:hover {
+    color: var(--blue-700);
+  }
+`;
+
 export function PexelsImagePicker({ query, onImageSelect }: Props) {
   const [pexelImages, setPexelImages] = useState<PexelsImage[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -133,6 +194,8 @@ export function PexelsImagePicker({ query, onImageSelect }: Props) {
   const [isVisible, setIsVisible] = useState(true);
   const [pageNo, setPageNo] = useState<number>(1);
   const [totalResults, setTotalResults] = useState<number>(0);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const toggleVisibility = () => {
     setIsVisible(!isVisible);
@@ -144,8 +207,10 @@ export function PexelsImagePicker({ query, onImageSelect }: Props) {
     return new File([buffer], filename, { type: mimeType });
   }
 
-  const getPexelImages = async () => {
-    if (!query) {
+  const getPexelImages = async (searchTerm?: string) => {
+    const activeQuery = searchTerm || searchQuery || query;
+    
+    if (!activeQuery) {
       return;
     }
     
@@ -154,7 +219,7 @@ export function PexelsImagePicker({ query, onImageSelect }: Props) {
     
     try {
       // Extract keywords to get better search results
-      const refinedQuery = extractKeywords(query);
+      const refinedQuery = extractKeywords(activeQuery);
       
       const response = await axios.get(PEXEL_SEARCH_IMG_GET_URL, {
         params: { 
@@ -188,15 +253,29 @@ export function PexelsImagePicker({ query, onImageSelect }: Props) {
     }
   };
 
-  const refreshPexelImages = () => {
-    setPageNo(prevPage => prevPage + 1);
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    
+    // Clear any existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    
+    // Set a new timeout for debounce (1.5 seconds)
+    if (value.trim()) {
+      searchTimeoutRef.current = setTimeout(() => {
+        setPageNo(1); // Reset to first page when searching
+        getPexelImages(value);
+      }, 1500);
+    }
   };
 
   const handleImageSelect = async (image: PexelsImage) => {
     try {
       const file = await urlToFile(
         image.src.medium,
-        `${query} pexel-image.jpg`,
+        `${searchQuery || query} pexel-image.jpg`,
         'image/jpeg'
       );
       onImageSelect(image.src.medium, file);
@@ -206,127 +285,141 @@ export function PexelsImagePicker({ query, onImageSelect }: Props) {
     }
   };
 
-  // Initial load and page changes
-  useEffect(() => {
-    if (query) {
+  const refreshPexelImages = () => {
+    setPageNo(prevPage => prevPage + 1);
+  };
+
+  const generateOrToggle = () => {
+    if (pexelImages.length > 0 || noPexelImagesAvailable) {
+      toggleVisibility();
+    } else {
       getPexelImages();
     }
+  };
+
+  // Initial load and page changes
+  useEffect(() => {
+    if (searchQuery || query) {
+      getPexelImages();
+    }
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
   }, [pageNo, query]);
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <button
-          type='button'
-          className='undp-button button-tertiary flex'
-          onClick={getPexelImages}
-          style={{
-            backgroundColor: query ? 'var(--gray-300)' : 'var(--gray-200)',
-            padding: 'var(--spacing-05)',
-            alignSelf: 'flex-end',
-            cursor: query ? 'pointer' : 'not-allowed',
-            opacity: query ? '1' : '0.6',
-          }}
-          disabled={!query || isLoading}
-        >
-          {isLoading ? 'Loading...' : 'Generate Image'}
-        </button>
-        
-        {pexelImages.length > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <MainButton
+        type='button'
+        className='undp-button button-tertiary'
+        onClick={generateOrToggle}
+      >
+        {isLoading ? 'Loading...' : 'Generate Image'}
+        {(pexelImages.length > 0 || noPexelImagesAvailable) && (
+          <span className="toggle-indicator">{isVisible ? '▲' : '▼'}</span>
+        )}
+      </MainButton>
+      
+      {isVisible && (
+        <>
+          <SearchContainer>
+            <SearchInput
+              type="text"
+              placeholder="Search for images..."
+              value={searchQuery}
+              onChange={handleSearchInputChange}
+              disabled={isLoading}
+            />
+          </SearchContainer>
+          
+          <PexelsInfoBox>
+            <PexelsLogo src="https://images.pexels.com/lib/api/pexels.png" alt="Pexels Logo" />
+            <p>
+              Images provided by <PexelsLink href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Pexels</PexelsLink>. 
+              All photos are free to use under the <PexelsLink href="https://www.pexels.com/license/" target="_blank" rel="noopener noreferrer">Pexels License</PexelsLink> and can be used for 
+              non-commercial and commercial purposes.
+            </p>
+            <p>
+              <strong>Tips for better results:</strong> Use descriptive, specific titles for your signals to 
+              get the most relevant images. The search is based on extracting keywords from your signal title.
+            </p>
+          </PexelsInfoBox>
+          
+          {isLoading && (
+            <LoadingContainer>
+              <LoadingSpinner />
+            </LoadingContainer>
+          )}
+          
+          {!isLoading && pexelImages.length > 0 && (
+            <p className="undp-typography small-font margin-bottom-02">
+              Showing results for "{searchQuery || query}". {totalResults} images found.
+            </p>
+          )}
+          
+          {!isLoading && (
+            <ImageGrid className='generate-img-div'>
+              {pexelImages.length > 0 ? (
+                pexelImages.map((image, index) => (
+                  <ImageButton
+                    key={index}
+                    type='button'
+                    onClick={() => handleImageSelect(image)}
+                  >
+                    <ImagePreview
+                      className='hover-scale-shadow'
+                      src={image.src.medium}
+                      alt={image.alt || 'Pexels image preview'}
+                      height='200px'
+                      width='200px'
+                    />
+                    <ImageMetadata>
+                      Photo by <PhotographerLink 
+                        href={image.photographer_url} 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()} // Prevent triggering image selection
+                      >
+                        {image.photographer}
+                      </PhotographerLink>
+                      <br />
+                      {image.width}×{image.height}px
+                    </ImageMetadata>
+                  </ImageButton>
+                ))
+              ) : noPexelImagesAvailable && pageNo === 1 ? (
+                <div style={{ textAlign: 'center', marginTop: '2rem', gridColumn: '1 / -1' }}>
+                  <p>
+                    No related images found. Please change the Signal Title for
+                    a better image generation.
+                  </p>
+                  <p className="undp-typography small-font margin-top-02">
+                    Try using simpler, more descriptive terms or generic concepts related to your signal.
+                  </p>
+                </div>
+              ) : null}
+            </ImageGrid>
+          )}
+          
+          {pexelImages.length > 0 && !isLoading && (
             <button
               type='button'
-              className='undp-button button-tertiary flex'
-              onClick={toggleVisibility}
+              className='undp-button button-tertiary flex margin-bottom-05'
+              onClick={refreshPexelImages}
+              style={{
+                backgroundColor: 'var(--gray-300)',
+                padding: 'var(--spacing-05)',
+                alignSelf: 'flex-end',
+              }}
             >
-              {isVisible ? '▲ Hide' : '▼ Show'}
+              Load More Images
             </button>
-          </div>
-        )}
-      </div>
-      
-      <PexelsInfoBox>
-        <PexelsLogo src="https://images.pexels.com/lib/api/pexels.png" alt="Pexels Logo" />
-        <p>
-          Images provided by <PexelsLink href="https://www.pexels.com" target="_blank" rel="noopener noreferrer">Pexels</PexelsLink>. 
-          All photos are free to use under the <PexelsLink href="https://www.pexels.com/license/" target="_blank" rel="noopener noreferrer">Pexels License</PexelsLink> and can be used for 
-          non-commercial and commercial purposes.
-        </p>
-        <p>
-          <strong>Tips for better results:</strong> Use descriptive, specific titles for your signals to 
-          get the most relevant images. The search is based on extracting keywords from your signal title.
-        </p>
-      </PexelsInfoBox>
-      
-      {isLoading && (
-        <LoadingContainer>
-          <LoadingSpinner />
-        </LoadingContainer>
-      )}
-      
-      {isVisible && !isLoading && pexelImages.length > 0 && (
-        <p className="undp-typography small-font margin-bottom-02">
-          Showing results for "{query}". {totalResults} images found.
-        </p>
-      )}
-      
-      {isVisible && !isLoading && (
-        <ImageGrid className='generate-img-div'>
-          {pexelImages.length > 0 ? (
-            pexelImages.map((image, index) => (
-              <ImageButton
-                key={index}
-                type='button'
-                onClick={() => handleImageSelect(image)}
-              >
-                <ImagePreview
-                  className='hover-scale-shadow'
-                  src={image.src.medium}
-                  alt={image.alt || 'Pexels image preview'}
-                  height='200px'
-                  width='200px'
-                />
-                <ImageMetadata>
-                  Photo by <PhotographerLink 
-                    href={image.photographer_url} 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()} // Prevent triggering image selection
-                  >
-                    {image.photographer}
-                  </PhotographerLink>
-                  <br />
-                  {image.width}×{image.height}px
-                </ImageMetadata>
-              </ImageButton>
-            ))
-          ) : noPexelImagesAvailable && pageNo === 1 ? (
-            <div style={{ textAlign: 'center', marginTop: '2rem', gridColumn: '1 / -1' }}>
-              <p>
-                No related images found. Please change the Signal Title for
-                a better image generation.
-              </p>
-              <p className="undp-typography small-font margin-top-02">
-                Try using simpler, more descriptive terms or generic concepts related to your signal.
-              </p>
-            </div>
-          ) : null}
-        </ImageGrid>
-      )}
-      
-      {isVisible && pexelImages.length > 0 && !isLoading && (
-        <button
-          type='button'
-          className='undp-button button-tertiary flex margin-bottom-05'
-          onClick={refreshPexelImages}
-          style={{
-            backgroundColor: 'var(--gray-300)',
-            padding: 'var(--spacing-05)',
-            alignSelf: 'flex-end',
-          }}
-        >
-          Load More Images
-        </button>
+          )}
+        </>
       )}
     </div>
   );

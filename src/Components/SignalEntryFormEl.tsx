@@ -782,30 +782,10 @@ export function SignalEntryFormEl(props: Props) {
             must be maximum 1 MBs. Compress larger images, if applicable.
           </p>
         </div>
-        <div>
-          {signalData.headline ? (
-            <PexelsImagePicker
-              query={query}
-              onImageSelect={handlePexelsImageSelect}
-            />
-          ) : (
-            <button
-              type='button'
-              className='undp-button button-tertiary flex margin-bottom-05'
-              style={{
-                backgroundColor: 'var(--gray-200)',
-                color: 'var(--gray-500)',
-                padding: 'var(--spacing-05)',
-                alignSelf: 'flex-end',
-                cursor: 'not-allowed',
-                opacity: '0.6',
-              }}
-              disabled
-            >
-              Generate Image
-            </button>
-          )}
-        </div>
+        <PexelsImagePicker 
+          query={query} 
+          onImageSelect={handlePexelsImageSelect} 
+        />
       </div>
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Keywords*</p>
