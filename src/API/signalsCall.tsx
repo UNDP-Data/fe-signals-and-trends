@@ -55,6 +55,7 @@ export interface CreateSignalParamsDataType {
   relevance: string | null;
   keywords: string[] | null;
   location: string | null;
+  secondary_location?: string[] | null;
   score?: string | null;
   created_for?: string | null;
   status: string | null;
@@ -68,6 +69,7 @@ interface UpdateSignalParamsDataType {
   headline: string | null;
   keywords: string[] | null;
   location?: string | null;
+  secondary_location?: string[] | null;
   relevance?: string | null;
   sdgs: string[] | null;
   signature_primary?: string | null;
@@ -157,8 +159,7 @@ export function searchSignals(params: BaseSignalsParamsDataType = {}) {
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to search signals at the moment, try again later. ${
-            error.response?.data?.message || error.message
+          `Unable to search signals at the moment, try again later. ${error.response?.data?.message || error.message
           } `,
         );
       } else {
@@ -221,8 +222,7 @@ export function exportSignals(params: BaseSignalsParamsDataType = {}) {
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to export signals at the moment, try again later. ${
-            error.response?.data?.message || error.message
+          `Unable to export signals at the moment, try again later. ${error.response?.data?.message || error.message
           } `,
         );
       } else {
@@ -244,8 +244,7 @@ export function generateSignal(params: { url: string }) {
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to generate signal at the moment, try again later. ${
-            error.response?.data?.message || error.message
+          `Unable to generate signal at the moment, try again later. ${error.response?.data?.message || error.message
           } `,
         );
       } else {
@@ -261,8 +260,7 @@ export function readSignal(uid: number) {
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to retrieve the signal at the moment, try again later. ${
-            error.response?.data?.message || error.message
+          `Unable to retrieve the signal at the moment, try again later. ${error.response?.data?.message || error.message
           } `,
         );
       } else {
@@ -284,8 +282,7 @@ export function readMySignals(params: ReadMySignalsParamsDataType) {
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to retrieve your signals at the moment, try again later. ${
-            error.response?.data?.message || error.message
+          `Unable to retrieve your signals at the moment, try again later. ${error.response?.data?.message || error.message
           } `,
         );
       } else {
@@ -301,8 +298,7 @@ export function createSignal(params: CreateSignalParamsDataType) {
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to create signal at the moment, try again later. ${
-            error.response?.data?.message || error.message
+          `Unable to create signal at the moment, try again later. ${error.response?.data?.message || error.message
           } `,
         );
       } else {
@@ -321,8 +317,7 @@ export function makeSignalFavorite(
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to make the signal a favorite. ${
-            error.response?.data?.message || error.message
+          `Unable to make the signal a favorite. ${error.response?.data?.message || error.message
           }`,
         );
       } else {
@@ -348,8 +343,7 @@ export async function getfavoriteSignals(params: GetFavoriteSignalsParamsDataTyp
   } catch (error) {
     if (isAxiosError(error)) {
       throw new Error(
-        `Unable to retrieve your favorite signals at the moment, try again later. ${
-          error.response?.data?.message || error.message
+        `Unable to retrieve your favorite signals at the moment, try again later. ${error.response?.data?.message || error.message
         } `,
       );
     } else if (error instanceof Error) {
@@ -380,8 +374,7 @@ export function updateSignal(uid: number, params: UpdateSignalParamsDataType) {
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to update signal at the moment, try again later. ${
-            error.response?.data?.message || error.message
+          `Unable to update signal at the moment, try again later. ${error.response?.data?.message || error.message
           } `,
         );
       } else {
@@ -397,8 +390,7 @@ export function deleteSignal(uid: number) {
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to delete the signal at the moment, try again later. ${
-            error.response?.data?.message || error.message
+          `Unable to delete the signal at the moment, try again later. ${error.response?.data?.message || error.message
           } `,
         );
       } else {
