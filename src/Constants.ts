@@ -337,4 +337,6 @@ export const navLinks = {
   mySignals: '/my-signals',
   myTrends: '/my-trends',
   adminPanel: '/admin-panel',
+  addNewSignal: '/add-new-signal',
+  addNewTrend: '/add-new-trend',
 }
