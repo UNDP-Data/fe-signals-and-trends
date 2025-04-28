@@ -6,7 +6,7 @@ import UNDPColorModule from 'undp-viz-colors';
 import Background from '../assets/UNDP-hero-image.jpg';
 import Context from '../Context/Context';
 import { SignalDataType } from '../Types';
-import { FavoriteButton } from './FavoriteButton';
+// import { FavoriteButton } from './FavoriteButton';
 
 import '../styles.css';
 import { ChipEl } from './ChipEl';
@@ -96,13 +96,6 @@ export function FavoriteCard(props: Props) {
                 {data.status === 'New' ? 'Awaiting Approval' : data.status}
               </div>
             ) : null}
-            <FavoriteButton
-              signalId={data.id}
-              initialFavoriteStatus={data.favorite || false}
-              size="medium"
-              withContainer={true}
-              iconColor="orange"
-            />
           </HeroImageEl>
           <div style={{ padding: '1rem 1rem 0 1rem' }}>
             <div className='flex-div flex-wrap'>

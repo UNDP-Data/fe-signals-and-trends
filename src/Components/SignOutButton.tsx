@@ -3,6 +3,7 @@ import { Dropdown, Input, MenuProps, Modal, Select, Switch } from 'antd';
 import { useContext, useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { updateUser } from '../API';
+import { navLinks } from '../Constants';
 import Context from '../Context/Context';
 
 interface Props {
@@ -115,7 +116,7 @@ export function SignOutButton(props: Props) {
       key: 'favourites',
       label: (
         <NavLink
-          to='/my-favorites'
+          to={navLinks.myFavorites}
           style={{
             fontFamily: 'var(--fontFamily)',
             fontSize: '1.25rem',
@@ -131,7 +132,7 @@ export function SignOutButton(props: Props) {
       key: 'drafts',
       label: (
         <NavLink
-          to='/my-drafts'
+          to={navLinks.myDrafts}
           style={{
             fontFamily: 'var(--fontFamily)',
             fontSize: '1.25rem',
@@ -191,7 +192,7 @@ export function SignOutButton(props: Props) {
             key: 'admin',
             label: (
               <NavLink
-                to='/admin-panel'
+                to={navLinks.adminPanel}
                 style={{
                   fontFamily: 'var(--fontFamily)',
                   fontSize: '1.25rem',

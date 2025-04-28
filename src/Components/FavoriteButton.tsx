@@ -1,9 +1,10 @@
 import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
 import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Modal } from 'antd';
+import { Modal, Tooltip } from 'antd';
 import { NavLink } from 'react-router-dom';
 import styled from 'styled-components';
+import { navLinks } from '../Constants';
 import { useFavoriteToggle } from '../Hooks/useFavoriteToggle';
 
 interface FavoriteButtonProps {
@@ -48,55 +49,92 @@ export function FavoriteButton({
     }
   };
 
+  const tooltipTitle = isFavorite 
+    ? "Remove from favorites" 
+    : "Add to favorites - Save this signal for easy access later";
+
   const button = (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.preventDefault();
-        handleFavoriteClick();
-      }}
-      style={{
-        border: 'none',
-        background: 'none',
-        cursor: 'pointer',
-      }}
-    >
-      {withContainer ? (
-        <IconContainer>
-          <FontAwesomeIcon
-            icon={isFavorite ? solidHeart : regularHeart}
-            style={{
-              color: isFavorite ? iconColor : 'black',
-              fontSize: getFontSize(),
-            }}
-          />
-        </IconContainer>
-      ) : (
-        <FontAwesomeIcon
-          icon={isFavorite ? solidHeart : regularHeart}
-          style={{
-            color: isFavorite ? iconColor : 'black',
-            fontSize: getFontSize(),
-          }}
-        />
-      )}
-    </button>
+    <Tooltip title={tooltipTitle} placement="top">
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          handleFavoriteClick();
+        }}
+        style={{
+          border: 'none',
+          background: 'none',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+        }}
+        aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+      >
+        {withContainer ? (
+          <IconContainer>
+            <FontAwesomeIcon
+              icon={isFavorite ? solidHeart : regularHeart}
+              style={{
+                color: isFavorite ? iconColor : 'black',
+                fontSize: getFontSize(),
+              }}
+            />
+          </IconContainer>
+        ) : (
+          <>
+            <FontAwesomeIcon
+              icon={isFavorite ? solidHeart : regularHeart}
+              style={{
+                color: isFavorite ? iconColor : 'black',
+                fontSize: getFontSize(),
+              }}
+            />
+            <span className="undp-typography small-font">
+              {isFavorite ? "Saved to favorites" : "Save to favorites"}
+            </span>
+          </>
+        )}
+      </button>
+    </Tooltip>
   );
 
   return (
     <>
       {button}
-      <Modal className="undp-modal" open={openModal} onCancel={closeModal}>
+      <Modal 
+        className="undp-modal" 
+        open={openModal} 
+        onCancel={closeModal}
+        title={isFavorite ? "Added to Favorites" : "Removed from Favorites"}
+        footer={[
+          <button 
+            key="close" 
+            onClick={closeModal} 
+            className="undp-button button-secondary"
+          >
+            Close
+          </button>,
+          isFavorite && (
+            <NavLink key="view-favorites" to="/my-favorites">
+              <button className="undp-button button-primary">
+                View My Favorites
+              </button>
+            </NavLink>
+          )
+        ]}
+      >
         {isFavorite ? (
-          <NavLink to="/my-favorites">
-            <h6 className="undp-typography" style={{ color: 'var(--dark-red)' }}>
-              This signal has been added to your favorites.
-            </h6>
-          </NavLink>
+          <div>
+            <p className="undp-typography">
+              This signal has been added to your favorites collection. You can access all your 
+              favorite signals anytime by visiting your <NavLink to={navLinks.myFavorites}>Favorites</NavLink> page.
+            </p>
+          </div>
         ) : (
-          <h6 className="undp-typography" style={{ color: 'var(--dark-red)' }}>
-            This article has been removed from favorites.
-          </h6>
+          <p className="undp-typography">
+            This signal has been removed from your favorites collection.
+          </p>
         )}
       </Modal>
     </>

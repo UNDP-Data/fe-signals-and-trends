@@ -1,9 +1,10 @@
-import { Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
-import { NavLink } from 'react-router-dom';
+import { Dropdown } from 'antd';
 import { useContext, useState } from 'react';
-import { SignOutButton } from '../SignOutButton';
+import { NavLink } from 'react-router-dom';
+import { navLinks } from '../../Constants';
 import Context from '../../Context/Context';
+import { SignOutButton } from '../SignOutButton';
 
 interface Props {
   signOutClickHandler: () => void;
@@ -13,6 +14,7 @@ export function LoggedInHeader(props: Props) {
   const { signOutClickHandler } = props;
   const { role } = useContext(Context);
   const [showMenu, setShowMenu] = useState(false);
+  const isAdmin = role === 'Admin' || role === 'Curator';
 
   const items: MenuProps['items'] = [
     {

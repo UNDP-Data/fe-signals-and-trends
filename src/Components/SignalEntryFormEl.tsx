@@ -1,6 +1,5 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { Checkbox, Input, Popconfirm, Select } from 'antd';
-import axios from 'axios';
 import sortBy from 'lodash.sortby';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -9,18 +8,15 @@ import Context from '../Context/Context';
 import '../styles.css';
 import { NewSignalDataType, SignalDataType, TrendDataType } from '../Types';
 import { AddTrendsModal } from './AddTrendsModal';
-// import { pexelCall } from '../API/pexelCall';
+import { PexelsImagePicker } from './PexelsImagePicker';
 
 import {
   createSignal,
   deleteSignal,
-  // generateSignal,
   searchTrends,
   updateSignal as updateSignalApi,
 } from '../API';
 
-import { PEXEL_SEARCH_IMG_GET_URL } from '../Constants';
-import { extractKeywords } from '../Utils/ExtractKeyWords';
 import { SignalAutocomplete, SignalSuggestion } from './SignalAutocomplete';
 
 interface Props {
@@ -263,22 +259,9 @@ export function SignalEntryFormEl(props: Props) {
   }, [signalData.attachment, signalData.headline, query]);
 
   const [imageUrl, setImageUrl] = useState<string>('');
-  const [pexelImages, setPexelImages] = useState<any[]>([]);
-  const [noPexelImagesAvailable, setNoPexelImagesAvailable] =
-    useState<boolean>(false);
-  const [isVisible, setIsVisible] = useState(true);
   const fileInputRef = useRef<any>(null);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
-  const [pageNo, setPageNo] = useState<number>(1);
-  const [, setPexelImgLoading] = useState<boolean>(false);
 
-  const toggleVisibility = () => {
-    setIsVisible(!isVisible);
-  };
-  // const targetDiv = document.getElementById('target-div');
-  // if (targetDiv) {
-  //   targetDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  // }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleFileSelect = (event: any) => {
     if (event.target.files) {
@@ -297,58 +280,16 @@ export function SignalEntryFormEl(props: Props) {
       setSelectedFileName(event.target.files[0].name);
     }
   };
-  async function urlToFile(url: string, filename: string, mimeType: string) {
-    const response = await fetch(url);
-    const buffer = await response.arrayBuffer();
-    return new File([buffer], filename, { type: mimeType });
-  }
-  const getPexelImages = async () => {
-    // console.log('Pexel | Query : ', query);
-    if (!query) {
-      return;
-    }
-    setPexelImgLoading(true);
-    const PEXEL_API_KEY = import.meta.env.VITE_PEXEL_API_KEY || process.env.REACT_APP_PEXEL_API_KEY;
-    // console.log(PEXEL_API_KEY);
-    try {
-      const refinedQuery = extractKeywords(query);
-      const response = await axios.get(PEXEL_SEARCH_IMG_GET_URL, {
-        params: { query: refinedQuery, per_page: 12, page: pageNo },
-        headers: {
-          Authorization: PEXEL_API_KEY,
-        },
-      });
-      if (response.data.photos.length === 0) {
-        console.log(response.data.photos.length);
-        setPageNo(1);
-        setNoPexelImagesAvailable(true);
-      }
-      console.log(response);
-      setPexelImages(response.data.photos);
-      setTimeout(() => {
-        setPexelImgLoading(false);
-      }, 500);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new Error(err.message);
-      } else {
-        throw new Error('An unexpected error occurred');
-      }
-    }
+
+  const handlePexelsImageSelect = (imageUrl: string, file: File) => {
+    setSelectedFileName(file.name);
+    setImageUrl(imageUrl);
+    updateSignalData({
+      ...signalData,
+      attachment: imageUrl,
+    });
+    handleFileSelect({ target: { files: [file] } });
   };
-  const refreshPexelImages = async () => {
-    setPexelImgLoading(true);
-    setPageNo(pageNo + 1);
-    setPexelImgLoading(false);
-  };
-  const isFirstRender = useRef(true);
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    getPexelImages();
-  }, [pageNo]);
 
   useEffect(() => {
     if (useFetchedArticles) {
@@ -469,14 +410,12 @@ export function SignalEntryFormEl(props: Props) {
                   headline: d.target.value,
                 });
                 setQuery(d.target.value);
-                setPageNo(1);
               }}
             />
           ) : (
             <SignalAutocomplete
               onChange={d => {
                 setQuery(d);
-                setPageNo(1);
               }}
               onSuggestionSelect={handleSuggestionSelect}
               value={signalData.headline}
@@ -622,96 +561,136 @@ export function SignalEntryFormEl(props: Props) {
           </button>
             */}
         </div>
-      </div>
-      <div className='margin-bottom-07'>
-        <p className='undp-typography margin-bottom-01'>Signal Description*</p>
-        <Input.TextArea
-          className='undp-input'
-          placeholder='Enter signal description (max 1000 characters)'
-          maxLength={1000}
-          status={
-            signalData.description
-              ? signalData.description.length > 30
-                ? ''
-                : 'error'
-              : ''
-          }
-          onChange={e => {
-            updateSignalData({
-              ...signalData,
-              description: e.target.value,
-            });
-          }}
-          value={signalData.description}
-        />
-        <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
-          What is the Signal about? Keep this description concise and think
-          about using commonly used terms and clear language. This should be
-          your summarised description, not cut-and-paste from article. Min 30
-          characters required.{' '}
-          {signalData.description ? 1000 - signalData.description.length : 1000}{' '}
-          characters left
-        </p>
-      </div>
-      <div className='flex-div'>
-        <div className='margin-bottom-07' style={{ width: '100%' }}>
-          <p className='undp-typography margin-bottom-01'>
-            Location of the signal*
-          </p>
-          <Select
-            className='undp-select'
-            placeholder='Select location'
-            onChange={(e: string) => {
-              updateSignalData({
-                ...signalData,
-                location: e,
-              });
-            }}
-            value={signalData.location}
-            showSearch
-          >
-            {choices?.location.map((d, i) => (
-              <Select.Option className='undp-select-option' key={i} value={d}>
-                {d}
-              </Select.Option>
-            ))}
-          </Select>
-          <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
-            Region and/or country for which this signal has greatest relevance
-          </p>
-        </div>
-      </div>
-      <div className='margin-bottom-07'>
-        <p className='undp-typography margin-bottom-01'>Signal Relevance*</p>
-        <Input.TextArea
-          className='undp-input'
-          placeholder='Enter signal relevance'
-          onChange={e => {
-            updateSignalData({
-              ...signalData,
-              relevance: e.target.value,
-            });
-          }}
-          value={signalData.relevance}
-        />
-        <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
-          What is the significance of this Signal to UNDP? Consider both the
-          near term and longer term futures of development.
-        </p>
-      </div>
-      <div className='margin-bottom-07'>
-        <div style={{ width: '100%' }}>
-          <p className='undp-typography margin-bottom-01'>Primary STEEP+V*</p>
-          <Select
-            className='undp-select'
-            placeholder='Select STEEP+V'
+        <div className='margin-bottom-07'>
+          <p className='undp-typography margin-bottom-01'>Signal Description*</p>
+          <Input.TextArea
+            className='undp-input'
+            placeholder='Enter signal description (max 1000 characters)'
+            maxLength={1000}
+            status={
+              signalData.description
+                ? signalData.description.length > 30
+                  ? ''
+                  : 'error'
+                : ''
+            }
             onChange={e => {
               updateSignalData({
                 ...signalData,
-                steep_primary: e,
+                description: e.target.value,
               });
             }}
-            value={signalData.steep_primary}
+            value={signalData.description}
+          />
+          <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
+            What is the Signal about? Keep this description concise and think
+            about using commonly used terms and clear language. This should be
+            your summarised description, not cut-and-paste from article. Min 30
+            characters required.{' '}
+            {signalData.description ? 1000 - signalData.description.length : 1000}{' '}
+            characters left
+          </p>
+        </div>
+        <div className='flex-div'>
+          <div className='margin-bottom-07' style={{ width: '100%' }}>
+            <p className='undp-typography margin-bottom-01'>
+              Location of the signal*
+            </p>
+            <Select
+              className='undp-select'
+              placeholder='Select location'
+              onChange={(e: string) => {
+                updateSignalData({
+                  ...signalData,
+                  location: e,
+                });
+              }}
+              value={signalData.location}
+              showSearch
+            >
+              {choices?.location.map((d, i) => (
+                <Select.Option className='undp-select-option' key={i} value={d}>
+                  {d}
+                </Select.Option>
+              ))}
+            </Select>
+            <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
+              Region and/or country for which this signal has greatest relevance
+            </p>
+          </div>
+        </div>
+        <div className='margin-bottom-07'>
+          <p className='undp-typography margin-bottom-01'>Signal Relevance*</p>
+          <Input.TextArea
+            className='undp-input'
+            placeholder='Enter signal relevance'
+            onChange={e => {
+              updateSignalData({
+                ...signalData,
+                relevance: e.target.value,
+              });
+            }}
+            value={signalData.relevance}
+          />
+          <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
+            What is the significance of this Signal to UNDP? Consider both the
+            near term and longer term futures of development.
+          </p>
+        </div>
+        <div className='margin-bottom-07'>
+          <div style={{ width: '100%' }}>
+            <p className='undp-typography margin-bottom-01'>Primary STEEP+V*</p>
+            <Select
+              className='undp-select'
+              placeholder='Select STEEP+V'
+              onChange={e => {
+                updateSignalData({
+                  ...signalData,
+                  steep_primary: e,
+                });
+              }}
+              value={signalData.steep_primary}
+            >
+              {choices?.steep.map((d, i) => (
+                <Select.Option className='undp-select-option' key={i} value={d}>
+                  {d}
+                </Select.Option>
+              ))}
+            </Select>
+          </div>
+          <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
+            STEEP+V analysis methodology stands for Social, Technological,
+            Economic, Environmental (or Ecological), Political and Values
+          </p>
+        </div>
+        <div style={{ width: '100%' }} className='margin-bottom-07'>
+          <p className='undp-typography margin-bottom-01'>Secondary STEEP+V</p>
+          <Select
+            className='undp-select'
+            placeholder='Select STEEP+V'
+            mode='multiple'
+            maxTagCount='responsive'
+            onChange={e => {
+              if (e.length > 1) {
+                updateSignalData({
+                  ...signalData,
+                  steep_secondary: [e[0], e[e.length - 1]],
+                });
+              } else {
+                updateSignalData({
+                  ...signalData,
+                  steep_secondary: e.length === 0 || !e ? [] : e,
+                });
+              }
+            }}
+            value={
+              signalData.steep_secondary
+                ? signalData.steep_secondary?.length > 0 &&
+                  signalData.steep_secondary
+                  ? signalData.steep_secondary
+                  : undefined
+                : undefined
+            }
           >
             {choices?.steep.map((d, i) => (
               <Select.Option className='undp-select-option' key={i} value={d}>
@@ -720,219 +699,65 @@ export function SignalEntryFormEl(props: Props) {
             ))}
           </Select>
         </div>
-        <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
-          STEEP+V analysis methodology stands for Social, Technological,
-          Economic, Environmental (or Ecological), Political and Values
-        </p>
-      </div>
-      <div style={{ width: '100%' }} className='margin-bottom-07'>
-        <p className='undp-typography margin-bottom-01'>Secondary STEEP+V</p>
-        <Select
-          className='undp-select'
-          placeholder='Select STEEP+V'
-          mode='multiple'
-          maxTagCount='responsive'
-          onChange={e => {
-            if (e.length > 1) {
-              updateSignalData({
-                ...signalData,
-                steep_secondary: [e[0], e[e.length - 1]],
-              });
-            } else {
-              updateSignalData({
-                ...signalData,
-                steep_secondary: e.length === 0 || !e ? [] : e,
-              });
-            }
-          }}
-          value={
-            signalData.steep_secondary
-              ? signalData.steep_secondary?.length > 0 &&
-                signalData.steep_secondary
-                ? signalData.steep_secondary
-                : undefined
-              : undefined
-          }
-        >
-          {choices?.steep.map((d, i) => (
-            <Select.Option className='undp-select-option' key={i} value={d}>
-              {d}
-            </Select.Option>
-          ))}
-        </Select>
-      </div>
-      <div className='margin-bottom-07' id='target-div'>
-        <p className='undp-typography margin-bottom-01'>Cover Image</p>
-        {signalData.attachment ? (
-          <div className='flex-div padding-bottom-05'>
-            <UploadedImgEl bgImage={imageUrl} />
-            <button
-              type='button'
-              className='undp-button button-tertiary flex'
-              onClick={() => {
-                setSelectedFileName('');
-                updateSignalData({
-                  ...signalData,
-                  attachment: undefined,
-                });
-              }}
-              style={{
-                backgroundColor: 'var(--gray-300)',
-                padding: 'var(--spacing-05)',
-                alignSelf: 'flex-end',
-              }}
-            >
-              Remove Image
-            </button>
-          </div>
-        ) : null}
-        <UploadEl>
-          <label htmlFor='file-upload-analyze' className='custom-file-upload'>
-            <UploadButtonEl style={{ width: '177.55px' }}>
-              Upload a Image
-            </UploadButtonEl>
-          </label>
-          {selectedFileName !== '' ? (
-            <SelectedEl>
-              Selected <span className='bold'>{selectedFileName}</span>
-            </SelectedEl>
-          ) : (
-            <SelectedEl style={{ opacity: '0.6' }}>No file selected</SelectedEl>
-          )}
-          <FileAttachmentButton
-            ref={fileInputRef}
-            id='file-upload-analyze'
-            accept='image/png, image/jpeg, image/jpg, image/gif, image/svg'
-            type='file'
-            onChange={handleFileSelect}
-          />
-        </UploadEl>
-        <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
-          {signalData.attachment
-            ? 'Uploading file with replace the already uploaded image shown above. '
-            : ''}
-          Attach an image here to illustrate this Signal, if available. Use only
-          images that are non-copyright or license-free/Creative Commons. File
-          must be maximum 1 MBs. Compress larger images, if applicable.
-        </p>
-      </div>
-      <div>
-        {signalData.headline ? (
-          <>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
+        <div className='margin-bottom-07' id='target-div'>
+          <p className='undp-typography margin-bottom-01'>Cover Image</p>
+          {signalData.attachment ? (
+            <div className='flex-div padding-bottom-05'>
+              <UploadedImgEl bgImage={imageUrl} />
               <button
                 type='button'
                 className='undp-button button-tertiary flex'
-                onClick={() => getPexelImages()}
+                onClick={() => {
+                  setSelectedFileName('');
+                  updateSignalData({
+                    ...signalData,
+                    attachment: undefined,
+                  });
+                }}
                 style={{
                   backgroundColor: 'var(--gray-300)',
                   padding: 'var(--spacing-05)',
                   alignSelf: 'flex-end',
                 }}
               >
-                Generate Image
+                Remove Image
               </button>
-              {pexelImages && (
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button
-                    type='button'
-                    className='undp-button button-tertiary flex'
-                    onClick={toggleVisibility}
-                  >
-                    {isVisible ? '▲ Hide' : '▼ Show'}
-                  </button>
-                </div>
-              )}
             </div>
-            <div className='margin-top-09 margin-bottom-09 generate-img-div'>
-              {isVisible && pexelImages && pexelImages.length > 0 ? (
-                pexelImages.map((image, index) => (
-                  <button
-                    key={index}
-                    type='button'
-                    onClick={async () => {
-                      const file = await urlToFile(
-                        image.src.medium,
-                        `${query} pexel-image.jpg`,
-                        'image/jpeg',
-                      );
-                      setSelectedFileName(file.name);
-                      setImageUrl(image.src.medium);
-                      updateSignalData({
-                        ...signalData,
-                        attachment: image.src.medium,
-                      });
-                      handleFileSelect({ target: { files: [file] } });
-                      setIsVisible(false);
-                    }}
-                    style={{
-                      border: 'none',
-                      background: 'none',
-                      padding: 2,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <img
-                      key={index}
-                      className='hover-scale-shadow'
-                      src={image.src.medium}
-                      alt='No preview available'
-                      height='200px'
-                      width='200px'
-                      style={{
-                        objectFit: 'cover',
-                        transition: 'box-shadow 0.4s ease-in-out',
-                      }}
-                    />
-                  </button>
-                ))
-              ) : noPexelImagesAvailable && pageNo === 1 ? (
-                <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-                  <p>
-                    No related images found. Please change the Signal Title for
-                    a better image generation.
-                  </p>
-                </div>
-              ) : null}
-            </div>
-            {isVisible && (
-              <button
-                type='button'
-                className='undp-button button-tertiary flex margin-bottom-05'
-                onClick={refreshPexelImages}
-                style={{
-                  backgroundColor: 'var(--gray-300)',
-                  padding: 'var(--spacing-05)',
-                  alignSelf: 'flex-end',
-                }}
-              >
-                Refresh
-              </button>
+          ) : null}
+          <UploadEl>
+            <label htmlFor='file-upload-analyze' className='custom-file-upload'>
+              <UploadButtonEl style={{ width: '177.55px' }}>
+                Upload a Image
+              </UploadButtonEl>
+            </label>
+            {selectedFileName !== '' ? (
+              <SelectedEl>
+                Selected <span className='bold'>{selectedFileName}</span>
+              </SelectedEl>
+            ) : (
+              <SelectedEl style={{ opacity: '0.6' }}>No file selected</SelectedEl>
             )}
-          </>
-        ) : (
-          <button
-            type='button'
-            className='undp-button button-tertiary flex margin-bottom-05'
-            onClick={() => getPexelImages()}
-            style={{
-              backgroundColor: 'var(--gray-200)',
-              color: 'var(--gray-500)',
-              padding: 'var(--spacing-05)',
-              alignSelf: 'flex-end',
-              cursor: 'not-allowed',
-              opacity: '0.6',
-            }}
-          >
-            Generate Image
-          </button>
-        )}
+            <FileAttachmentButton
+              ref={fileInputRef}
+              id='file-upload-analyze'
+              accept='image/png, image/jpeg, image/jpg, image/gif, image/svg'
+              type='file'
+              onChange={handleFileSelect}
+            />
+          </UploadEl>
+          <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
+            {signalData.attachment
+              ? 'Uploading file with replace the already uploaded image shown above. '
+              : ''}
+            Attach an image here to illustrate this Signal, if available. Use only
+            images that are non-copyright or license-free/Creative Commons. File
+            must be maximum 1 MBs. Compress larger images, if applicable.
+          </p>
+        </div>
+        <PexelsImagePicker 
+          query={query} 
+          onImageSelect={handlePexelsImageSelect} 
+        />
       </div>
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Keywords*</p>
