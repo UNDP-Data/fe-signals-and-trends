@@ -8,6 +8,7 @@ import {
   SignalFiltersDataType,
   TrendDataType,
   TrendFiltersDataType,
+  UserGroupDataType,
 } from '../Types';
 
 const Context = createContext<CtxDataType>({
@@ -20,6 +21,7 @@ const Context = createContext<CtxDataType>({
   notificationText: undefined,
   choices: undefined,
   cardsToPrint: [],
+  userGroups: undefined,
   trendFilters: {
     impact: 'All Ratings',
     horizon: 'All Horizons',
@@ -70,6 +72,7 @@ const Context = createContext<CtxDataType>({
   updateTrendsSortBy: (_d: string) => {},
   updateTrendList: (_d?: TrendDataType[]) => {},
   updateSignalList: (_d?: SignalDataType[]) => {},
+  updateUserGroups: (_d?: UserGroupDataType[]) => {},
 });
 
 export default Context;

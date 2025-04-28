@@ -5,6 +5,7 @@ import {
   AllowedRolesDataType,
   CurrentUserResponseDataType,
   UserDataType,
+  UserGroupDataType,
 } from '../Types';
 
 interface UpdateUserResponseDataType {
@@ -52,6 +53,12 @@ export interface SearchUsersParamsDataType {
   direction?: 'desc' | 'asc';
   roles?: AllowedRolesDataType[];
   query?: string;
+}
+
+export interface UserGroupResponseDataType {
+  id: number;
+  name: string;
+  users: string[];
 }
 
 export function readCurrentUser() {
@@ -134,6 +141,125 @@ export function updateUser(uid: number, params: UpdateUserParamsDataType) {
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to update user at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      } else {
+        throw new Error(`An unknown error occurred. ${error.message}`);
+      }
+    });
+}
+
+export function listUserGroups() {
+  return axiosInstance
+    .get<UserGroupResponseDataType[]>('/user-groups')
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to retrieve user groups at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      } else {
+        throw new Error(`An unknown error occurred. ${error.message}`);
+      }
+    });
+}
+
+export function createUserGroup(group: { name: string; users: string[] }) {
+  return axiosInstance
+    .post<UserGroupResponseDataType>('/user-groups', group)
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to create user group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      } else {
+        throw new Error(`An unknown error occurred. ${error.message}`);
+      }
+    });
+}
+
+export function getUserGroup(groupId: number) {
+  return axiosInstance
+    .get<UserGroupResponseDataType>(`/user-groups/${groupId}`)
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to retrieve user group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      } else {
+        throw new Error(`An unknown error occurred. ${error.message}`);
+      }
+    });
+}
+
+export function updateUserGroup(groupId: number, group: { name: string; users: string[] }) {
+  return axiosInstance
+    .put<UserGroupResponseDataType>(`/user-groups/${groupId}`, { ...group, id: groupId })
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to update user group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      } else {
+        throw new Error(`An unknown error occurred. ${error.message}`);
+      }
+    });
+}
+
+export function deleteUserGroup(groupId: number) {
+  return axiosInstance
+    .delete<boolean>(`/user-groups/${groupId}`)
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to delete user group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      } else {
+        throw new Error(`An unknown error occurred. ${error.message}`);
+      }
+    });
+}
+
+export function addUserToGroup(groupId: number, email: string) {
+  return axiosInstance
+    .post<boolean>(`/user-groups/${groupId}/users/${email}`)
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to add user to group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      } else {
+        throw new Error(`An unknown error occurred. ${error.message}`);
+      }
+    });
+}
+
+export function removeUserFromGroup(groupId: number, email: string) {
+  return axiosInstance
+    .delete<boolean>(`/user-groups/${groupId}/users/${email}`)
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to remove user from group at the moment, try again later. ${
             error.response?.data?.message || error.message
           } `,
         );

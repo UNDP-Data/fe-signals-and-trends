@@ -103,6 +103,14 @@ export function LoggedInHeader(props: Props) {
             className='flex-div gap-09'
             style={{ flexGrow: 1, justifyContent: 'center' }}
           >
+            <NavLink
+              to='/my-sprints'
+              className={({ isActive }) =>
+                isActive ? 'header-link-active' : 'header-link'
+              }
+            >
+              My Sprints & Groups
+            </NavLink>
           </div>
           <div>
             <div className='flex-div flex-vert-align-center'>
@@ -139,6 +147,19 @@ export function LoggedInHeader(props: Props) {
           showMenu ? 'undp-mobile-nav mobile-nav-show' : 'undp-mobile-nav'
         }
       >
+        <div>
+          <NavLink
+            to='/my-sprints'
+            className={({ isActive }) =>
+              isActive ? 'header-link-active' : 'header-link'
+            }
+            onClick={() => {
+              setShowMenu(false);
+            }}
+          >
+            My Sprints & Groups
+          </NavLink>
+        </div>
         <div>
           <NavLink
             to='/add-new-signal'

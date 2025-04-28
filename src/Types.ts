@@ -117,6 +117,12 @@ export interface UserDataType {
   id: number;
 }
 
+export interface UserGroupDataType {
+  id: number;
+  name: string;
+  users: string[];
+}
+
 export interface SignalFiltersDataType {
   horizon?: string;
   impact?: string;
@@ -179,6 +185,7 @@ export interface CtxDataType {
   notificationText?: string;
   choices?: ChoicesDataType;
   cardsToPrint: CardsToPrintDataType[];
+  userGroups?: UserGroupDataType[];
   trendFilters: TrendFiltersDataType;
   noOfTrendsFiltersActive: number;
   signalFilters: SignalFiltersDataType;
@@ -204,6 +211,7 @@ export interface CtxDataType {
   updateTrendsSortBy: (_d: string) => void;
   updateTrendList: (_d?: TrendDataType[]) => void;
   updateSignalList: (_d?: SignalDataType[]) => void;
+  updateUserGroups: (_d?: UserGroupDataType[]) => void;
 }
 
 export interface ObjForPrintingDataType {
