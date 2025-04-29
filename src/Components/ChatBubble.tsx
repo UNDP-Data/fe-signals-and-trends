@@ -56,34 +56,39 @@ export function ChatBubble() {
         aria-label="Chat with Echo, AI assistant"
       >
         <ChatIcon />
-        {!notificationDismissed && (
-          <button 
-            type="button"
-            style={{
-              position: 'absolute',
-              top: '-8px',
-              right: '-8px',
-              backgroundColor: 'var(--red-500, #e53e3e)',
-              color: 'white',
-              borderRadius: '50%',
-              width: '22px',
-              height: '22px',
-              fontSize: '12px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 'bold',
-              border: '2px solid white',
-              cursor: 'pointer',
-              padding: 0,
-            }}
-            onClick={dismissNotification}
-            title="Dismiss notification"
-          >
-            {/* Echo */}
-          </button>
-        )}
       </button>
+      
+      {!notificationDismissed && (
+        <div 
+          role="button"
+          tabIndex={0}
+          onClick={dismissNotification}
+          onKeyDown={(e) => e.key === 'Enter' && dismissNotification(e)}
+          style={{
+            position: 'absolute',
+            top: '0px',
+            right: '0px',
+            backgroundColor: 'var(--red-500, #e53e3e)',
+            color: 'white',
+            borderRadius: '50%',
+            width: '22px',
+            height: '22px',
+            fontSize: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 'bold',
+            border: '2px solid white',
+            cursor: 'pointer',
+            padding: 0,
+          }}
+          title="Dismiss notification"
+          aria-label="Dismiss notification"
+        >
+          {/* Echo */}
+        </div>
+      )}
+      
       {isHovered && !isClicked && (
         <div
           style={{
