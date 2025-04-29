@@ -8,6 +8,7 @@ import Context from '../Context/Context';
 import '../styles.css';
 import { NewSignalDataType, SignalDataType, TrendDataType } from '../Types';
 import { AddTrendsModal } from './AddTrendsModal';
+import { ExtractedNewsData, LinkExtractor } from './LinkExtractor';
 import { PexelsImagePicker } from './PexelsImagePicker';
 
 import {
@@ -378,6 +379,62 @@ export function SignalEntryFormEl(props: Props) {
   };
   */
 
+  // Handler for extracted data from LinkExtractor
+  const handleExtractedData = (data: ExtractedNewsData) => {
+    // Set headline from title (truncate if too long)
+    const headline = data.title.length > 100 ? data.title.substring(0, 97) + '...' : data.title;
+    
+    // Set description from text (truncate if too long)
+    const description = data.text.length > 1000 ? data.text.substring(0, 997) + '...' : data.text;
+    
+    // Set keywords
+    if (data.keywords && data.keywords.length > 0) {
+      setKeyword1(data.keywords[0]);
+      if (data.keywords.length > 1) setKeyword2(data.keywords[1]);
+      if (data.keywords.length > 2) setKeyword3(data.keywords[2]);
+    }
+    
+    // Set location from source_country if available
+    const location = data.source_country ? data.source_country.toUpperCase() : signalData.location;
+    
+    // Update signal data first without the image
+    updateSignalData({
+      ...signalData,
+      headline,
+      description,
+      url: data.url,
+      location: location || signalData.location,
+    });
+    
+    // Handle image if available
+    if (data.image) {
+      setImageUrl(data.image);
+      
+      // Fetch the image and convert to base64
+      fetch(data.image)
+        .then(res => res.blob())
+        .then(blob => {
+          const fileName = "extracted-image.jpg";
+          const file = new File([blob], fileName, { type: "image/jpeg" });
+          setSelectedFileName(fileName);
+          
+          // Create a FileReader to convert the blob to base64
+          const reader = new FileReader();
+          reader.readAsBinaryString(file);
+          reader.onloadend = (e: any) => {
+            const base64String = btoa(e.target.result);
+            updateSignalData(prevData => ({
+              ...prevData,
+              attachment: `${file.type};base64,${base64String}`,
+            }));
+          };
+        })
+        .catch(err => {
+          console.error("Error fetching image:", err);
+        });
+    }
+  };
+
   return (
     <div className='undp-container max-width padding-top-00 padding-bottom-00'>
       <p className='undp-typography'>
@@ -431,16 +488,15 @@ export function SignalEntryFormEl(props: Props) {
           <p className='undp-typography margin-bottom-01'>Signal Source*</p>
           <div className='flex-div margin-bottom-00'>
             <div style={{ flexGrow: 1 }}>
-              <Input
-                className='undp-input'
-                placeholder='Enter signal source'
-                onChange={d => {
+              <LinkExtractor
+                value={signalData.url}
+                onChange={(value) => {
                   updateSignalData({
                     ...signalData,
-                    url: d.target.value,
+                    url: value,
                   });
                 }}
-                value={signalData.url}
+                onFetch={handleExtractedData}
               />
             </div>
           </div>
