@@ -38,12 +38,7 @@ export function MySprints() {
   const groupsPageSize = 9;
   const [hasFetchedGroups, setHasFetchedGroups] = useState(false);
 
-  // Fetch sprints data
-  useEffect(() => {
-    if (!userName) return; // Don't fetch if userName is not available
-    
-    setError(undefined);
-    
+  function fetchSprints() {
     searchSignals({
       page: paginationValue,
       per_page: pageSize,
@@ -69,6 +64,15 @@ export function MySprints() {
           );
         }
       });
+  } 
+
+  // Fetch sprints data
+  useEffect(() => {
+    if (!userName) return; // Don't fetch if userName is not available
+    
+    setError(undefined);
+    // fetchSprints();
+    
   }, [paginationValue, pageSize, userName, updateSignalList]);
 
   // Fetch user groups
@@ -219,25 +223,6 @@ export function MySprints() {
             )}
           </>
         )}
-
-        {/* Collaborators Section */}
-        <SectionTitle>Collaborators</SectionTitle>
-        <Divider className="margin-top-00 margin-bottom-07" />
-        
-        <div className="flex-div flex-wrap margin-top-07 margin-bottom-09">
-          {userGroups?.flatMap(group => 
-            group.users.map(user => (
-              <div key={`${group.id}-${user}`} className="margin-right-05 margin-bottom-05">
-                <Collaborator name={user} />
-              </div>
-            ))
-          )}
-          
-          {(!userGroups || userGroups.length === 0 || userGroups.every(g => g.users.length === 0)) && (
-            <p className="margin-top-00 margin-bottom-09">No collaborators found.</p>
-          )}
-        </div>
-
         <Modal
           title={selectedGroup ? `Edit Group: ${selectedGroup.name}` : "Create New Group"}
           open={groupModalVisible}

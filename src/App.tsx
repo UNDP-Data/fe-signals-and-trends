@@ -16,6 +16,7 @@ import {
     CurrentUserResponseDataType,
     SignalFiltersDataType,
     TrendFiltersDataType,
+    UserGroupDataType,
 } from './Types';
 
 import { getChoices, readCurrentUser } from './API';
@@ -79,6 +80,7 @@ function App() {
     trendsSortBy: 'created_at',
     trendList: undefined,
     signalList: undefined,
+    userGroups: [],
   };
 
   const [state, dispatch] = useReducer(Reducer, initialState);
@@ -198,6 +200,12 @@ function App() {
       payload: d,
     });
   };
+  const updateUserGroups = (d?: UserGroupDataType[]) => {
+    dispatch({
+      type: 'UPDATE_USER_GROUPS',
+      payload: d,
+    });
+  };
   const { accounts, instance } = useMsal();
 
   useEffect(() => {
@@ -282,6 +290,7 @@ function App() {
       updateTrendsSortBy,
       updateTrendList,
       updateSignalList,
+      updateUserGroups,
     }),
     [
       state,
@@ -303,6 +312,7 @@ function App() {
       updateTrendsSortBy,
       updateTrendList,
       updateSignalList,
+      updateUserGroups,
     ],
   );
   return (
