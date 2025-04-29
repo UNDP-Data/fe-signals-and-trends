@@ -170,6 +170,7 @@ export function SignalEntryFormEl(props: Props) {
       relevance: initialData?.relevance || undefined,
       keywords: initialData?.keywords || [],
       location: initialData?.location || undefined,
+      secondary_location: initialData?.secondary_location || [],
       score: initialData?.score || undefined,
       connected_trends: initialData?.connected_trends || [],
       created_for: initialData?.created_for || undefined,
@@ -218,8 +219,7 @@ export function SignalEntryFormEl(props: Props) {
       .catch(err => {
         setButtonDisabled(false);
         setSubmittingError(
-          `${err}. ${
-            err.response?.status === 500 ? 'Please try again in some time' : ''
+          `${err}. ${err.response?.status === 500 ? 'Please try again in some time' : ''
           }`,
         );
       });
@@ -239,10 +239,9 @@ export function SignalEntryFormEl(props: Props) {
         })
         .catch(err => {
           setSubmittingError(
-            `${err}. ${
-              err.response?.status === 500
-                ? 'Please try again in some time'
-                : ''
+            `${err}. ${err.response?.status === 500
+              ? 'Please try again in some time'
+              : ''
             }`,
           );
         });
@@ -392,10 +391,10 @@ export function SignalEntryFormEl(props: Props) {
           <div className='signal-title-grid' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <p className='undp-typography margin-bottom-01'>Signal Title*</p>
             <Checkbox
-                checked={useFetchedArticles}
-                onChange={e => setUseFetchedArticles(e.target.checked)}
-              >
-                Use Article Suggestions
+              checked={useFetchedArticles}
+              onChange={e => setUseFetchedArticles(e.target.checked)}
+            >
+              Use Article Suggestions
             </Checkbox>
           </div>
           {!useFetchedArticles ? (
@@ -591,8 +590,8 @@ export function SignalEntryFormEl(props: Props) {
             characters left
           </p>
         </div>
-        <div className='flex-div'>
-          <div className='margin-bottom-07' style={{ width: '100%' }}>
+        <div className='flex-div' style={{ gap: '1rem', marginBottom: 'var(--spacing-07)' }}>
+          <div className='margin-bottom-00' style={{ width: '50%' }}>
             <p className='undp-typography margin-bottom-01'>
               Location of the signal*
             </p>
@@ -616,6 +615,35 @@ export function SignalEntryFormEl(props: Props) {
             </Select>
             <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
               Region and/or country for which this signal has greatest relevance
+            </p>
+          </div>
+
+          <div className='margin-bottom-00' style={{ width: '50%' }}>
+            <p className='undp-typography margin-bottom-01'>
+              Secondary Locations
+            </p>
+            <Select
+              className='undp-select'
+              placeholder='Select secondary locations'
+              mode='multiple'
+              maxTagCount='responsive'
+              onChange={(e: string[]) => {
+                updateSignalData({
+                  ...signalData,
+                  secondary_location: e.length === 0 ? [] : e,
+                });
+              }}
+              value={signalData.secondary_location || []}
+              showSearch
+            >
+              {choices?.location.map((d, i) => (
+                <Select.Option className='undp-select-option' key={i} value={d}>
+                  {d}
+                </Select.Option>
+              ))}
+            </Select>
+            <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
+              Additional regions and/or countries for which this signal has relevance
             </p>
           </div>
         </div>
@@ -1055,15 +1083,14 @@ export function SignalEntryFormEl(props: Props) {
             updateSignal.status === 'Draft' ? (
               <div className='flex-div'>
                 <button
-                  className={`${
-                    isSignalInvalid(signalData, [
-                      keyword1,
-                      keyword2,
-                      keyword3,
-                    ]) || buttonDisabled
-                      ? 'disabled'
-                      : ''
-                  } undp-button button-secondary button-arrow`}
+                  className={`${isSignalInvalid(signalData, [
+                    keyword1,
+                    keyword2,
+                    keyword3,
+                  ]) || buttonDisabled
+                    ? 'disabled'
+                    : ''
+                    } undp-button button-secondary button-arrow`}
                   type='button'
                   disabled={
                     isSignalInvalid(signalData, [
@@ -1076,7 +1103,7 @@ export function SignalEntryFormEl(props: Props) {
                     // submit signal
                     setButtonDisabled(true);
                     setSubmittingError(undefined);
-                    
+
                     // Make sure steep_primary is in the correct format if it's a simple string
                     let steep_primary = signalData.steep_primary || '';
                     if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
@@ -1085,7 +1112,7 @@ export function SignalEntryFormEl(props: Props) {
                         steep_primary = fullSteep;
                       }
                     }
-                    
+
                     // Make sure sdgs are in the correct format
                     let sdgs = signalData.sdgs || [];
                     if (sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
@@ -1094,7 +1121,7 @@ export function SignalEntryFormEl(props: Props) {
                         return fullSdg || sdg;
                       });
                     }
-                    
+
                     if (signalData.id)
                       updateSignalApi(updateSignal.id, {
                         // ...signalData,
@@ -1110,6 +1137,7 @@ export function SignalEntryFormEl(props: Props) {
                         url: signalData.url || '',
                         relevance: signalData.relevance || '',
                         location: signalData.location || '',
+                        secondary_location: signalData.secondary_location || [],
                         created_by: signalData.created_by || '',
                         created_for: signalData.created_for,
                         score: signalData.score,
@@ -1129,10 +1157,9 @@ export function SignalEntryFormEl(props: Props) {
                         .catch(err => {
                           setButtonDisabled(false);
                           setSubmittingError(
-                            `${err}. ${
-                              err.response?.status === 500
-                                ? 'Please try again in some time'
-                                : ''
+                            `${err}. ${err.response?.status === 500
+                              ? 'Please try again in some time'
+                              : ''
                             }`,
                           );
                         });
@@ -1148,7 +1175,7 @@ export function SignalEntryFormEl(props: Props) {
                     console.log(signalData.attachment);
                     setButtonDisabled(true);
                     setSubmittingError(undefined);
-                    
+
                     // Make sure steep_primary is in the correct format if it's not null and doesn't have the full format
                     let steep_primary = signalData.steep_primary || null;
                     if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
@@ -1157,7 +1184,7 @@ export function SignalEntryFormEl(props: Props) {
                         steep_primary = fullSteep;
                       }
                     }
-                    
+
                     // Make sure sdgs are in the correct format if not null
                     let sdgs = signalData.sdgs || null;
                     if (sdgs && sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
@@ -1166,7 +1193,7 @@ export function SignalEntryFormEl(props: Props) {
                         return fullSdg || sdg;
                       });
                     }
-                    
+
                     if (signalData.id)
                       updateSignalApi(updateSignal.id, {
                         // ...signalData,
@@ -1183,6 +1210,7 @@ export function SignalEntryFormEl(props: Props) {
                         url: signalData.url || null,
                         relevance: signalData.relevance || null,
                         location: signalData.location || null,
+                        secondary_location: signalData.secondary_location || null,
                         score: signalData.score || null,
                         created_by: signalData.created_by || null,
                         created_for: signalData.created_for || null,
@@ -1202,10 +1230,9 @@ export function SignalEntryFormEl(props: Props) {
                         .catch(err => {
                           setButtonDisabled(false);
                           setSubmittingError(
-                            `${err}. ${
-                              err.response?.status === 500
-                                ? 'Please try again in some time'
-                                : ''
+                            `${err}. ${err.response?.status === 500
+                              ? 'Please try again in some time'
+                              : ''
                             }`,
                           );
                         });
@@ -1233,12 +1260,11 @@ export function SignalEntryFormEl(props: Props) {
               </div>
             ) : (
               <button
-                className={`${
-                  isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
+                className={`${isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
                   buttonDisabled
-                    ? 'disabled'
-                    : ''
-                } undp-button button-secondary button-arrow`}
+                  ? 'disabled'
+                  : ''
+                  } undp-button button-secondary button-arrow`}
                 type='button'
                 disabled={
                   isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
@@ -1246,7 +1272,7 @@ export function SignalEntryFormEl(props: Props) {
                 }
                 title={
                   isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                  buttonDisabled
+                    buttonDisabled
                     ? 'All fields are required to update a signal. Descriptions should be > 30 letters'
                     : 'Click to update a signal'
                 }
@@ -1254,7 +1280,7 @@ export function SignalEntryFormEl(props: Props) {
                   // update signal
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
-                  
+
                   // Make sure steep_primary is in the correct format if it's a simple string
                   let steep_primary = signalData.steep_primary || '';
                   if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
@@ -1263,7 +1289,7 @@ export function SignalEntryFormEl(props: Props) {
                       steep_primary = fullSteep;
                     }
                   }
-                  
+
                   // Make sure sdgs are in the correct format
                   let sdgs = signalData.sdgs || [];
                   if (sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
@@ -1272,7 +1298,7 @@ export function SignalEntryFormEl(props: Props) {
                       return fullSdg || sdg;
                     });
                   }
-                  
+
                   if (signalData.id)
                     updateSignalApi(updateSignal.id, {
                       // ...signalData,
@@ -1287,6 +1313,7 @@ export function SignalEntryFormEl(props: Props) {
                       url: signalData.url || '',
                       relevance: signalData.relevance || '',
                       location: signalData.location || '',
+                      secondary_location: signalData.secondary_location || [],
                       status: signalData.status || '',
                       created_by: signalData.created_by || '',
                       created_for: signalData.created_for || '',
@@ -1307,10 +1334,9 @@ export function SignalEntryFormEl(props: Props) {
                       .catch(err => {
                         setButtonDisabled(false);
                         setSubmittingError(
-                          `${err}. ${
-                            err.response?.status === 500
-                              ? 'Please try again in some time'
-                              : ''
+                          `${err}. ${err.response?.status === 500
+                            ? 'Please try again in some time'
+                            : ''
                           }`,
                         );
                       });
@@ -1322,10 +1348,9 @@ export function SignalEntryFormEl(props: Props) {
           ) : (
             <div className='flex-div'>
               <button
-                className={`${
-                  isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
+                className={`${isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
                   buttonDisabled
-                }undp-button button-secondary button-arrow`}
+                  }undp-button button-secondary button-arrow`}
                 type='button'
                 disabled={
                   isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
@@ -1333,14 +1358,14 @@ export function SignalEntryFormEl(props: Props) {
                 }
                 title={
                   isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                  buttonDisabled
+                    buttonDisabled
                     ? 'All fields are required to submit a signal. Descriptions should be > 30 letters'
                     : 'Click to submit a signal'
                 }
                 onClick={() => {
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
-                  
+
                   // Make sure steep_primary is in the correct format if it's a simple string
                   let steep_primary = signalData.steep_primary || '';
                   if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
@@ -1349,7 +1374,7 @@ export function SignalEntryFormEl(props: Props) {
                       steep_primary = fullSteep;
                     }
                   }
-                  
+
                   // Make sure sdgs are in the correct format
                   let sdgs = signalData.sdgs || [];
                   if (sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
@@ -1358,7 +1383,7 @@ export function SignalEntryFormEl(props: Props) {
                       return fullSdg || sdg;
                     });
                   }
-                  
+
                   createSignal({
                     headline: signalData.headline || '',
                     description: signalData.description || '',
@@ -1373,6 +1398,7 @@ export function SignalEntryFormEl(props: Props) {
                     relevance: signalData.relevance || '',
                     created_for: signalData.created_for || '',
                     location: signalData.location || '',
+                    secondary_location: signalData.secondary_location || [],
                     score: signalData.score,
                     connected_trends: selectedTrendsList,
                     status: 'New',
@@ -1390,10 +1416,9 @@ export function SignalEntryFormEl(props: Props) {
                     .catch(err => {
                       setButtonDisabled(false);
                       setSubmittingError(
-                        `${err}. ${
-                          err.response?.status === 500
-                            ? 'Please try again in some time'
-                            : ''
+                        `${err}. ${err.response?.status === 500
+                          ? 'Please try again in some time'
+                          : ''
                         }`,
                       );
                     });
@@ -1408,7 +1433,7 @@ export function SignalEntryFormEl(props: Props) {
                   console.log('Saving as a draft', signalData.attachment);
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
-                  
+
                   // Make sure steep_primary is in the correct format if it's not null and doesn't have the full format
                   let steep_primary = signalData.steep_primary || null;
                   if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
@@ -1417,7 +1442,7 @@ export function SignalEntryFormEl(props: Props) {
                       steep_primary = fullSteep;
                     }
                   }
-                  
+
                   // Make sure sdgs are in the correct format if not null
                   let sdgs = signalData.sdgs || null;
                   if (sdgs && sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
@@ -1426,7 +1451,7 @@ export function SignalEntryFormEl(props: Props) {
                       return fullSdg || sdg;
                     });
                   }
-                  
+
                   // console.log(signalData);
                   createSignal({
                     headline: signalData.headline || null,
@@ -1441,6 +1466,7 @@ export function SignalEntryFormEl(props: Props) {
                     url: signalData.url || null,
                     relevance: signalData.relevance || null,
                     created_for: signalData.created_for || null,
+                    secondary_location: signalData.secondary_location || null,
                     score: signalData.score || null,
                     location: signalData.location || null,
                     connected_trends: selectedTrendsList,
@@ -1459,10 +1485,9 @@ export function SignalEntryFormEl(props: Props) {
                     .catch(err => {
                       setButtonDisabled(false);
                       setSubmittingError(
-                        `${err}. ${
-                          err.response?.status === 500
-                            ? 'Please try again in some time'
-                            : ''
+                        `${err}. ${err.response?.status === 500
+                          ? 'Please try again in some time'
+                          : ''
                         }`,
                       );
                     });
@@ -1473,8 +1498,8 @@ export function SignalEntryFormEl(props: Props) {
             </div>
           )}
           {updateSignal &&
-          updateSignal.status === 'Archived' &&
-          (role === 'Curator' || role === 'Admin') ? (
+            updateSignal.status === 'Archived' &&
+            (role === 'Curator' || role === 'Admin') ? (
             <Popconfirm
               title='Delete Signal'
               description='Are you sure to delete this signal?'

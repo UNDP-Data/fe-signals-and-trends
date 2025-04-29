@@ -26,6 +26,7 @@ export interface SignalDataType {
   relevance: string;
   keywords: string[];
   location: string;
+  secondary_location?: string[];
   score?: string;
   connected_trends: number[];
   created_for?: string;
@@ -52,6 +53,7 @@ export interface NewSignalDataType {
   relevance?: string;
   keywords: string[];
   location?: string;
+  secondary_location?: string[];
   score?: string;
   connected_trends?: number[];
   created_for?: string;

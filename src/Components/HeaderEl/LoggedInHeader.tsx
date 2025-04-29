@@ -113,20 +113,45 @@ export function LoggedInHeader(props: Props) {
             >
               My Sprints & Groups
             </NavLink>
-          </div>
-          <div>
-            <div className='flex-div flex-vert-align-center'>
-              <Dropdown
-                menu={{ items }}
-                placement='bottomRight'
-                className='undp-button-dropdown'
-                overlayClassName='undp-dropdown-menu'
+            {isAdmin && (
+              <NavLink
+                to='./trends'
+                className={({ isActive }) =>
+                  isActive ? 'header-link-active' : 'header-link'
+                }
               >
-                <div className='small-font'>Add A New</div>
-              </Dropdown>
-              <SignOutButton signOutClickHandler={signOutClickHandler} />
-            </div>
+                All Trends
+              </NavLink>
+            )}
+            {!isAdmin && (
+              <NavLink
+                to={navLinks.addNewSignal}
+                className={({ isActive }) =>
+                  isActive ? 'header-link-active' : 'header-link'
+                }
+              >
+                Add Signal
+              </NavLink>  
+            )}
           </div>
+          {isAdmin && (
+            <div>
+              <div className='flex-div flex-vert-align-center'>
+                <Dropdown
+                  menu={{ items }}
+                  placement='bottomRight'
+                  className='undp-button-dropdown'
+                  overlayClassName='undp-dropdown-menu'
+                >
+                  <div className='small-font'>Add A New</div>
+                </Dropdown>
+                <SignOutButton signOutClickHandler={signOutClickHandler} />
+              </div>
+            </div>
+          )}
+          {!isAdmin && (
+            <SignOutButton signOutClickHandler={signOutClickHandler} />
+          )}
         </div>
         <button
           type='button'

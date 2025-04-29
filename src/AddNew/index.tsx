@@ -36,6 +36,9 @@ export function AddNewSignalEl() {
     description: searchParams.get('description') || undefined,
     url: searchParams.get('url') || undefined,
     location: searchParams.get('location') || undefined,
+    secondary_location: searchParams.get('secondary_location') 
+      ? [searchParams.get('secondary_location')].filter(Boolean) as string[] 
+      : [],  
     steep_primary: mapSteepToFullFormat(searchParams.get('steep_primary'), choices?.steep),
     signature_primary: searchParams.get('signature_primary') || undefined,
     relevance: searchParams.get('relevance') || undefined,
