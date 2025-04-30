@@ -2,8 +2,11 @@ import { Alert, Button, Input, Spin, Tooltip } from 'antd';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+// Import antd icons
+import { LinkOutlined } from '@ant-design/icons';
 
-let extractNewsUtils: any = null;
+// Replace any with a specific type or interface
+const extractNewsUtils: { extractNewsFromUrl?: (url: string, apiKey: string, useFallback: boolean, callback: () => void) => Promise<ExtractedNewsData> } = {};
 
 export interface ExtractedNewsData {
   title: string;
@@ -30,6 +33,7 @@ interface Props {
   onFetch?: (extractedData: ExtractedNewsData) => void;
   disabled?: boolean;
   useFallback?: boolean;
+  useJsonLink?: boolean;
 }
 
 const InputWrapper = styled.div`
@@ -39,21 +43,56 @@ const InputWrapper = styled.div`
   width: 100%;
 `;
 
+
+/**
+ * Extract metadata from a URL using JSONLink API
+ * @param url The URL to extract metadata from
+ * @returns Normalized metadata matching ExtractedNewsData format
+ */
+const extractWithJsonLink = async (url: string): Promise<ExtractedNewsData> => {
+  const encodedUrl = encodeURIComponent(url);
+  const apiUrl = `https://jsonlink.io/api/extract?url=${encodedUrl}&api_key=${import.meta.env.VITE_JSONLINK_API_KEY}`;
+  
+  const response = await fetch(apiUrl);
+  
+  if (!response.ok) {
+    throw new Error(`JSONLink API error: ${response.status} - ${response.statusText}`);
+  }
+  
+  const data = await response.json();
+  
+  // Normalize the JSONLink response to match ExtractedNewsData structure
+  return {
+    title: data.title || '',
+    text: data.description || '',
+    url: data.url || url,
+    image: data.images?.[0] || '',
+    images: data.images?.map((img: string) => ({ url: img })) || [],
+    publish_date: '', // JSONLink doesn't provide this field
+    author: '', // JSONLink doesn't provide this field
+    authors: [], // JSONLink doesn't provide this field
+    keywords: [], // JSONLink doesn't provide this field
+    language: '', // JSONLink doesn't provide this field
+    source_country: '' // JSONLink doesn't provide this field
+  };
+};
+
 export function LinkExtractor({ 
   value, 
   onChange, 
   onFetch, 
   disabled,
-  useFallback = true 
+  useFallback = true,
+  useJsonLink = true
 }: Props) {
   const [url, setUrl] = useState(value || '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [usingFallback, setUsingFallback] = useState(false);
-  const [extractionStatus, setExtractionStatus] = useState<'idle' | 'api' | 'fallback' | 'success' | 'error'>('idle');
+  const [extractionStatus, setExtractionStatus] = useState<'idle' | 'api' | 'jsonlink' | 'fallback' | 'success' | 'error'>('idle');
   
   // Only show fallback UI if the utils are available
-  const showFallbackUI = extractNewsUtils !== null && useFallback;
+  const showFallbackUI = extractNewsUtils.extractNewsFromUrl !== undefined && useFallback;
 
   // Update local state when prop value changes
   useEffect(() => {
@@ -117,17 +156,33 @@ export function LinkExtractor({
     setIsLoading(true);
     setError(null);
     setUsingFallback(false);
-    setExtractionStatus('api');
 
     try {
+      let extractedData: ExtractedNewsData;
+      
+      // First try JSONLink if enabled
+      if (useJsonLink) {
+        try {
+          setExtractionStatus('jsonlink');
+          extractedData = await extractWithJsonLink(url);
+          setExtractionStatus('success');
+          onFetch?.(extractedData);
+          setIsLoading(false);
+          return;
+        } catch (jsonLinkError) {
+          console.warn('JSONLink extraction failed, falling back:', jsonLinkError);
+          // Continue to other extraction methods
+        }
+      }
+      
+      setExtractionStatus('api');
+      
       const WORLD_NEWS_API_KEY = 
         import.meta.env.VITE_WORLD_NEWS_API_KEY || 
         process.env.REACT_APP_WORLD_NEWS_API_KEY;
       
-      let extractedData: ExtractedNewsData;
-      
       // Use utility function if available, otherwise use basic implementation
-      if (extractNewsUtils) {
+      if (extractNewsUtils.extractNewsFromUrl) {
         extractedData = await extractNewsUtils.extractNewsFromUrl(
           url, 
           WORLD_NEWS_API_KEY, 
@@ -156,6 +211,8 @@ export function LinkExtractor({
   // Get status text and color based on extraction status
   const getStatusInfo = () => {
     switch (extractionStatus) {
+      case 'jsonlink':
+        return { text: 'Extracting data with JSONLink...', color: 'var(--blue-600)' };
       case 'api':
         return { text: 'Extracting data from API...', color: 'var(--blue-600)' };
       case 'fallback':
@@ -186,7 +243,7 @@ export function LinkExtractor({
         />
         
         <Tooltip 
-          title="Extract article information (title, description, image, keywords, location) from this URL to auto-populate the form fields" 
+          title="Extract article information from this URL" 
           placement="top"
           overlayClassName="undp-tooltip"
         >
@@ -199,13 +256,15 @@ export function LinkExtractor({
               flexShrink: 0,
               backgroundColor: 'var(--blue-600)',
               color: 'var(--white)',
-              padding: '4px 12px',
-              lineHeight: '32px',
-              height: '32px'
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '50px',
+              height: '42px',
+              padding: '0'
             }}
-          >
-            {isLoading ? <Spin size="small" /> : 'Extract'}
-          </Button>
+            icon={isLoading ? <Spin size="small" /> : <LinkOutlined />}
+          />
         </Tooltip>
       </InputWrapper>
       
