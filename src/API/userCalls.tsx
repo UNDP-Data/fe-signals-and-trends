@@ -152,7 +152,7 @@ export function updateUser(uid: number, params: UpdateUserParamsDataType) {
 
 export function listUserGroups() {
   return axiosInstance
-    .get<UserGroupResponseDataType[]>('/user-groups')
+    .get<UserGroupResponseDataType[]>('/user-groups/me')
     .then(response => response.data)
     .catch(error => {
       if (isAxiosError(error)) {

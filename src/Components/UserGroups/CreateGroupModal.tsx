@@ -4,6 +4,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import Context from '../../Context/Context';
 import { createUserGroup } from '../../API/userCalls';
 import MemberSelect from '../MemberSelect';
+import { UserGroupDataType } from '../../Types';
 import './CreateGroupModal.css';
 
 interface CreateGroupModalProps {
@@ -29,16 +30,20 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   }, [visible, form]);
 
   const handleSubmit = async (values: { name: string; users: string[] }) => {
+    
     setLoading(true);
     try {
       const newGroup = await createUserGroup(values);
-      updateUserGroups(userGroups ? [...userGroups, newGroup] : [newGroup]);
-      message.success(`Group "${values.name}" has been created.`);
-      form.resetFields();
       
+      // Add the new group directly, avoiding dependency on userGroups
       if (onSuccess) {
-        onSuccess();
+        onSuccess(); // Use the callback to refresh groups from parent
+      } else {
+        // Fallback if onSuccess is not provided
+        message.success(`Group "${values.name}" has been created.`);
       }
+      
+      form.resetFields();
       onClose();
     } catch (error) {
       message.error('Failed to create the group. Please try again.');
@@ -65,6 +70,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
   >
     <Form.Item 
       name="name" 
+      label="Group Title"
       className="styled-form-item"
       rules={[{ 
         required: true, 
@@ -73,7 +79,6 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({
       }]}
       validateTrigger={['onChange', 'onBlur']}
     >
-      <div className="group-title">Group Title*</div>
       <Input
         className="styled-input"
         placeholder="Enter group title (max 100 characters)"

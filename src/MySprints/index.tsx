@@ -1,21 +1,28 @@
-import { useContext, useEffect, useState } from 'react';
-import { Pagination, Modal, Typography, Divider } from 'antd';
+import { useContext, useState, useCallback, useRef, useEffect } from 'react';
+import { Pagination, Modal, Typography, Divider, Button } from 'antd';
 import type { PaginationProps } from 'antd';
 import sortBy from 'lodash.sortby';
 import {
   AuthenticatedTemplate,
   UnauthenticatedTemplate,
 } from '@azure/msal-react';
+import { useQuery } from '@tanstack/react-query';
 import { SignInButton } from '../Components/SignInButton';
 import Context from '../Context/Context';
 import { searchSignals } from '../API';
 import { listUserGroups } from '../API/userCalls';
-import { ProjectsCardList } from '../Signals/AllSignals/MySprintsGridView';
 import { UserGroupForm, UserGroupsList } from '../Components/UserGroups';
-import type { UserGroupDataType } from '../Types';
-import { Collaborator } from '../Components/Collaborator';
+import type { UserGroupDataType, SignalDataType } from '../Types';
+import { SprintCard } from '../Components/SprintCard';
+import TEST_USER_GROUPS, { 
+  ExtendedUserGroupDataType,
+  convertToStandardFormat 
+} from '../mockData/userGroupsTestData';
 
 const { Title } = Typography;
+
+// Check if test data loading is enabled via environment variable
+const LOAD_TEST_DATA = import.meta.env.VITE_LOAD_TEST_DATA === 'true';
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
   <Title level={4} className="undp-typography margin-top-09 margin-bottom-05">
@@ -24,83 +31,96 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
 );
 
 export function MySprints() {
-  const { userName, signalList, updateSignalList, role, userGroups, updateUserGroups } = useContext(Context);
+  const { userName, updateSignalList, updateUserGroups } = useContext(Context);
   const [paginationValue, setPaginationValue] = useState(1);
-  const [error, setError] = useState<undefined | string>(undefined);
   const [pageSize, setPageSize] = useState(20);
-  const [totalNoOfPages, setTotalNoOfPages] = useState(0);
   
   // User Groups state
   const [groupModalVisible, setGroupModalVisible] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<UserGroupDataType | undefined>(undefined);
-  const [groupsLoading, setGroupsLoading] = useState(false);
   const [groupsCurrentPage, setGroupsCurrentPage] = useState(1);
   const groupsPageSize = 9;
-  const [hasFetchedGroups, setHasFetchedGroups] = useState(false);
+  
+  // Test data loading state
+  const [useTestData, setUseTestData] = useState(false);
+  
+  // Prevent unnecessary context updates by tracking previous data
+  const prevSignalsRef = useRef<string>('');
+  const prevGroupsRef = useRef<string>('');
 
-  function fetchSprints() {
-    searchSignals({
-      page: paginationValue,
-      per_page: pageSize,
-      statuses: ['Draft'],
-      created_by: userName,
-    })
-      .then(response => {
-        updateSignalList(
-          sortBy(response.data, d => Date.parse(d.created_at)).reverse(),
-        );
-        setTotalNoOfPages(response.total_pages || 0);
-      })
-      .catch(err => {
-        if (err.response?.status === 404) {
-          updateSignalList([]);
-        } else {
-          setError(
-            `${err}. ${
-              err.response?.status === 500
+  // Fetch user's sprints with React Query
+  const sprintsQuery = useQuery({
+    queryKey: ['sprints', userName, paginationValue, pageSize],
+    queryFn: async (): Promise<SignalDataType[]> => {
+      if (!userName) return [];
+      
+      try {
+        const response = await searchSignals({
+          page: paginationValue,
+          per_page: pageSize,
+          statuses: ['Draft'],
+          created_by: userName,
+        });
+        
+        return sortBy(response.data, d => Date.parse(d.created_at)).reverse();
+      } catch (err) {
+        if (err instanceof Error || (err && typeof err === 'object' && 'response' in err)) {
+          const error = err as Error & { response?: { status?: number } };
+          if (error.response?.status === 404) {
+            return [];
+          }
+          throw new Error(
+            `${error}. ${
+              error.response?.status === 500
                 ? 'Please try again in some time'
                 : ''
-            }`,
+            }`
           );
         }
-      });
-  } 
+        throw new Error('An unknown error occurred');
+      }
+    },
+    enabled: !!userName && !useTestData
+  });
 
-  // Fetch sprints data
-  useEffect(() => {
-    if (!userName) return; // Don't fetch if userName is not available
-    
-    setError(undefined);
-    // fetchSprints();
-    
-  }, [paginationValue, pageSize, userName, updateSignalList]);
-
-  // Fetch user groups
-  useEffect(() => {
-    if (!hasFetchedGroups) {
-      fetchUserGroups();
-      setHasFetchedGroups(true);
-    }
-  }, [hasFetchedGroups]);
-
-  const fetchUserGroups = async () => {
-    if (groupsLoading) return; // Prevent multiple simultaneous fetches
-    
-    setGroupsLoading(true);
-    try {
-      // Uncomment when API call is ready
-      // const groups = await listUserGroups();
-      // updateUserGroups(groups);
+  // Fetch user groups with React Query
+  const userGroupsQuery = useQuery({
+    queryKey: ['userGroups', userName],
+    queryFn: async (): Promise<UserGroupDataType[]> => {
+      if (!userName) return [];
       
-      // For now, using empty array (dummy data)
-      const groups: UserGroupDataType[] = [];
-      updateUserGroups(groups);
-    } catch (error) {
-      console.error('Failed to fetch user groups:', error);
-    } finally {
-      setGroupsLoading(false);
+      try {
+        // Use the endpoint from the OpenAPI spec for user groups
+        const groups = await listUserGroups();
+        return groups;
+      } catch (error) {
+        console.error('Failed to fetch user groups:', error);
+        return [];
+      }
+    },
+    enabled: !!userName && !useTestData
+  });
+
+  // Update context only when the data actually changes to prevent infinite loops
+  useEffect(() => {
+    if (sprintsQuery.data && !sprintsQuery.isLoading) {
+      const dataString = JSON.stringify(sprintsQuery.data);
+      if (dataString !== prevSignalsRef.current) {
+        prevSignalsRef.current = dataString;
+        updateSignalList(sprintsQuery.data);
+      }
     }
-  };
+  }, [sprintsQuery.data, sprintsQuery.isLoading, updateSignalList]);
+
+  useEffect(() => {
+    if (userGroupsQuery.data && !userGroupsQuery.isLoading) {
+      const dataString = JSON.stringify(userGroupsQuery.data);
+      if (dataString !== prevGroupsRef.current) {
+        prevGroupsRef.current = dataString;
+        updateUserGroups(userGroupsQuery.data);
+      }
+    }
+  }, [userGroupsQuery.data, userGroupsQuery.isLoading, updateUserGroups]);
 
   const handleEditGroup = (group: UserGroupDataType) => {
     setSelectedGroup(group);
@@ -115,21 +135,37 @@ export function MySprints() {
   const onGroupFormSuccess = () => {
     setGroupModalVisible(false);
     setSelectedGroup(undefined);
-    // If we need to refresh groups, we can set hasFetchedGroups to false to trigger a re-fetch
-    setHasFetchedGroups(false);
+    // Invalidate the userGroups query to trigger a refetch
+    userGroupsQuery.refetch();
   };
 
-  const onShowSizeChange: PaginationProps['onShowSizeChange'] = (
-    _current,
-    size,
-  ) => {
-    setPageSize(size);
+  // Handle loading test data
+  const handleLoadTestData = () => {
+    setUseTestData(true);
+    // Convert to standard format for context update
+    updateUserGroups(convertToStandardFormat(TEST_USER_GROUPS));
+    
+    // Get all signals from test user groups
+    const allSignals: SignalDataType[] = [];
+    
+    // Use for...of instead of forEach
+    for (const group of TEST_USER_GROUPS) {
+      if (group.signals && group.signals.length > 0) {
+        allSignals.push(...group.signals);
+      }
+    }
+    
+    // Sort by creation date (newest first)
+    const sortedSignals = sortBy(allSignals, d => -Date.parse(d.created_at));
+    updateSignalList(sortedSignals);
   };
 
   // Calculate pagination for groups
+  const userGroups = userGroupsQuery.data || [];
+  const displayGroups = useTestData ? TEST_USER_GROUPS : userGroups;
   const groupStartIndex = (groupsCurrentPage - 1) * groupsPageSize;
-  const paginatedGroups = userGroups ? userGroups.slice(groupStartIndex, groupStartIndex + groupsPageSize) : [];
-  const totalGroups = userGroups?.length || 0;
+  const paginatedGroups = displayGroups.slice(groupStartIndex, groupStartIndex + groupsPageSize);
+  const totalGroups = displayGroups.length;
 
   return (
     <div
@@ -141,73 +177,28 @@ export function MySprints() {
           <Title level={2} className="undp-typography margin-top-05 margin-bottom-09">
             My Dashboard
           </Title>
+          
+          {LOAD_TEST_DATA && !useTestData && (
+            <Button 
+              type="primary"
+              onClick={handleLoadTestData}
+              style={{ 
+                backgroundColor: '#2E6EB5', 
+                marginBottom: '1rem' 
+              }}
+            >
+              Load Test Data
+            </Button>
+          )}
         </div>
-
-        {/* My Sprints Section */}
-        <SectionTitle>My Sprints</SectionTitle>
-        <Divider className="margin-top-00 margin-bottom-07" />
         
-        {signalList ? (
-          <div>
-            <div className='flex-div flex-wrap listing'>
-              {signalList.length > 0 ? (
-                <ProjectsCardList />
-              ) : (
-                <h5
-                  className='undp-typography bold'
-                  style={{
-                    backgroundColor: 'var(--gray-200)',
-                    textAlign: 'center',
-                    padding: 'var(--spacing-07)',
-                    width: 'calc(100% - 4rem)',
-                    border: '1px solid var(--gray-400)',
-                  }}
-                >
-                  You don't have any sprints yet
-                </h5>
-              )}
-            </div>
-            {signalList.length > 0 && (
-              <div className='flex-div flex-hor-align-center margin-top-07 margin-bottom-09'>
-                <Pagination
-                  className='undp-pagination'
-                  onChange={e => {
-                    setPaginationValue(e);
-                  }}
-                  defaultCurrent={1}
-                  current={paginationValue}
-                  total={totalNoOfPages * pageSize}
-                  pageSize={pageSize}
-                  showSizeChanger
-                  onShowSizeChange={onShowSizeChange}
-                />
-              </div>
-            )}
-          </div>
-        ) : error ? (
-          <p
-            className='margin-top-00 margin-bottom-09'
-            style={{ color: 'var(--dark-red)' }}
-          >
-            {error}
-          </p>
-        ) : (
-          <div className='undp-loader-container margin-bottom-09'>
-            <div className='undp-loader' />
-          </div>
-        )}
-
-        {/* User Groups Section */}
-        <SectionTitle>User Groups</SectionTitle>
-        <Divider className="margin-top-00 margin-bottom-07" />
-        
-        {groupsLoading ? (
+        {userGroupsQuery.isLoading && !useTestData ? (
           <div className="undp-loader-container margin-bottom-09">
             <div className="undp-loader" />
           </div>
         ) : (
           <>
-            <UserGroupsList onEdit={handleEditGroup} />
+            <UserGroupsList userGroups={paginatedGroups} onEdit={handleEditGroup} />
             
             {totalGroups > groupsPageSize && (
               <div className="flex-div flex-hor-align-center margin-top-07 margin-bottom-09">

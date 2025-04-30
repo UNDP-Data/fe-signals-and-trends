@@ -202,7 +202,7 @@ export function SprintCard(props: Props) {
                 ?.filter(s => s !== data.steep_primary)
                 .map((s, j) => (
                   <ChipEl
-                    key={j}
+                    key={`${s}-${j}-${data.id}`}
                     text={s.split(' – ')[0]}
                     circleColor={
                       !choices
@@ -248,7 +248,10 @@ export function SprintCard(props: Props) {
             <div className='flex-div flex-wrap margin-bottom-07 gap-03'>
               {data.keywords?.map((el, j) =>
                 el !== '' ? (
-                  <div className='undp-chip' key={`chip-${j}`}>
+                  <div
+                    className='undp-chip undp-chip-blue'
+                    key={`${el}-${j}-${data.id}`}
+                  >
                     {el}
                   </div>
                 ) : null,

@@ -21,6 +21,7 @@ import {
 
 import { getChoices, readCurrentUser } from './API';
 import './App.css';
+import './styles/UserGroups.css';
 import { Header } from './Components/HeaderEl';
 import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
 import { signOutClickHandler } from './Utils/AuthStatusHandler';
