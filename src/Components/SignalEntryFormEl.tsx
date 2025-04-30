@@ -20,6 +20,9 @@ import {
 
 import { SignalAutocomplete, SignalSuggestion } from './SignalAutocomplete';
 
+const SHOW_FORM_VALIDATION = true;
+const SHOW_RED_BORDERS = false;
+
 interface Props {
   updateSignal?: SignalDataType;
   draft: boolean;
@@ -143,6 +146,159 @@ export function isSignalInvalid(
   return true;
 }
 
+// New function to get form validation status with detailed messages
+export function getFormValidation(
+  signal: SignalDataType | NewSignalDataType,
+  keyWords: [string | undefined, string | undefined, string | undefined],
+): { isValid: boolean; errorMessages: string[]; invalidFields: string[]; fieldIds: Record<string, string> } {
+  const errorMessages: string[] = [];
+  const invalidFields: string[] = [];
+  const fieldIds: Record<string, string> = {};
+  
+  if (!signal.headline) {
+    errorMessages.push('Signal Title is required');
+    invalidFields.push('headline');
+    fieldIds['headline'] = 'signal-headline';
+  }
+  
+  if (!signal.created_unit) {
+    errorMessages.push('Unit is required');
+    invalidFields.push('created_unit');
+    fieldIds['created_unit'] = 'signal-unit';
+  }
+  
+  if (!signal.description) {
+    errorMessages.push('Signal Description is required');
+    invalidFields.push('description');
+    fieldIds['description'] = 'signal-description';
+  } else if (signal.description.length <= 30) {
+    errorMessages.push('Signal Description must be longer than 30 characters');
+    invalidFields.push('description');
+    fieldIds['description'] = 'signal-description';
+  }
+  
+  if (keyWords.filter(d => d !== undefined && d.trim() !== '').length === 0) {
+    errorMessages.push('At least one Keyword is required');
+    invalidFields.push('keywords');
+    fieldIds['keywords'] = 'signal-keywords';
+  }
+  
+  if (!signal.location) {
+    errorMessages.push('Location is required');
+    invalidFields.push('location');
+    fieldIds['location'] = 'signal-location';
+  }
+  
+  if (!signal.steep_primary) {
+    errorMessages.push('Primary STEEP+V is required');
+    invalidFields.push('steep_primary');
+    fieldIds['steep_primary'] = 'signal-steep-primary';
+  }
+  
+  if (!signal.signature_primary) {
+    errorMessages.push('Primary Signature Solution/Enabler is required');
+    invalidFields.push('signature_primary');
+    fieldIds['signature_primary'] = 'signal-signature-primary';
+  }
+  
+  if (!signal.sdgs || signal.sdgs.length === 0) {
+    errorMessages.push('At least one SDG is required');
+    invalidFields.push('sdgs');
+    fieldIds['sdgs'] = 'signal-sdgs';
+  }
+  
+  if (!signal.relevance) {
+    errorMessages.push('Signal Relevance is required');
+    invalidFields.push('relevance');
+    fieldIds['relevance'] = 'signal-relevance';
+  }
+  
+  if (!signal.url) {
+    errorMessages.push('Signal Source is required');
+    invalidFields.push('url');
+    fieldIds['url'] = 'signal-url';
+  }
+  
+  return {
+    isValid: errorMessages.length === 0,
+    errorMessages,
+    invalidFields,
+    fieldIds,
+  };
+}
+
+// First, update the ValidationMessage component styling
+const ValidationMessage = ({ 
+  signal, 
+  keyWords 
+}: { 
+  signal: SignalDataType | NewSignalDataType;
+  keyWords: [string | undefined, string | undefined, string | undefined];
+}) => {
+  const { isValid, errorMessages, invalidFields, fieldIds } = getFormValidation(signal, keyWords);
+  
+  if (isValid) return null;
+  
+  const handleErrorClick = (fieldId: string) => {
+    const element = document.getElementById(fieldId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Add a brief flash effect to highlight the element
+      element.classList.add('validation-highlight');
+      setTimeout(() => {
+        element.classList.remove('validation-highlight');
+      }, 2000);
+    }
+  };
+  
+  return (
+    <div 
+      className="margin-top-05 margin-bottom-05"
+      style={{ 
+        backgroundColor: '#E3F2FD', 
+        border: '1px solid #90CAF9',
+        borderRadius: '4px',
+        padding: '12px 16px',
+      }}
+    >
+      <p className="undp-typography bold" style={{ color: 'var(--blue-600)', marginBottom: '8px' }}>
+        Please complete the following fields to submit your signal:
+      </p>
+      <ul style={{ margin: 0, paddingLeft: '20px' }}>
+        {errorMessages.map((message, index) => (
+          <li 
+            key={index} 
+            className="undp-typography" 
+            style={{ 
+              color: 'var(--blue-700)',
+              cursor: 'pointer',
+              textDecoration: 'underline'
+            }}
+            onClick={() => handleErrorClick(fieldIds[invalidFields[index]])}
+          >
+            {message}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+// Update the highlighting style to match the new blue theme
+const highlightStyle = document.createElement('style');
+highlightStyle.textContent = `
+  .validation-highlight {
+    animation: highlight-pulse 2s ease-in-out;
+    border: 2px solid var(--blue-600) !important;
+  }
+  
+  @keyframes highlight-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4); }
+    50% { box-shadow: 0 0 0 10px rgba(33, 150, 243, 0); }
+  }
+`;
+document.head.appendChild(highlightStyle);
+
 export function SignalEntryFormEl(props: Props) {
   const navigate = useNavigate();
 
@@ -199,6 +355,8 @@ export function SignalEntryFormEl(props: Props) {
     updateSignal?.keywords ? updateSignal?.keywords[2] || undefined : initialData?.keywords ? initialData.keywords[2] || undefined : undefined,
   );
   const [useFetchedArticles, setUseFetchedArticles] = useState(false);
+  const [showRedBorders, setShowRedBorders] = useState(SHOW_RED_BORDERS);
+ 
 
   // Initialize keywords from initialData if available
   useEffect(() => {
@@ -435,6 +593,12 @@ export function SignalEntryFormEl(props: Props) {
     }
   };
 
+  // Update the validation check function to remove state setting
+  const validateForm = () => {
+    const { isValid } = getFormValidation(signalData, [keyword1, keyword2, keyword3]);
+    return isValid;
+  };
+
   return (
     <div className='undp-container max-width padding-top-00 padding-bottom-00'>
       <p className='undp-typography'>
@@ -456,10 +620,12 @@ export function SignalEntryFormEl(props: Props) {
           </div>
           {!useFetchedArticles ? (
             <Input
+              id="signal-headline"
               className='undp-input'
               placeholder='Enter signal title (max 100 characters)'
               value={signalData.headline}
               maxLength={100}
+              status={showRedBorders && !signalData.headline ? 'error' : ''}
               onChange={d => {
                 updateSignalData({
                   ...signalData,
@@ -488,16 +654,34 @@ export function SignalEntryFormEl(props: Props) {
           <p className='undp-typography margin-bottom-01'>Signal Source*</p>
           <div className='flex-div margin-bottom-00'>
             <div style={{ flexGrow: 1 }}>
-              <LinkExtractor
-                value={signalData.url}
-                onChange={(value) => {
-                  updateSignalData({
-                    ...signalData,
-                    url: value,
-                  });
-                }}
-                onFetch={handleExtractedData}
-              />
+              <div id="signal-url">
+                {SHOW_FORM_VALIDATION && !signalData.url && (
+                  <div style={{ marginBottom: '8px' }}>
+                    <LinkExtractor
+                      value={signalData.url}
+                      onChange={(value) => {
+                        updateSignalData({
+                          ...signalData,
+                          url: value,
+                        });
+                      }}
+                      onFetch={handleExtractedData}
+                    />
+                  </div>
+                )}
+                {(!SHOW_FORM_VALIDATION || signalData.url) && (
+                  <LinkExtractor
+                    value={signalData.url}
+                    onChange={(value) => {
+                      updateSignalData({
+                        ...signalData,
+                        url: value,
+                      });
+                    }}
+                    onFetch={handleExtractedData}
+                  />
+                )}
+              </div>
             </div>
           </div>
           <p className='undp-typography margin-top-02 small-font'>
@@ -545,27 +729,6 @@ export function SignalEntryFormEl(props: Props) {
           </Checkbox>
             */}
 
-          {/* error ? (
-              <p
-                className='undp-typography margin-top-02 small-font margin-bottom-00'
-                style={{ color: 'var(--dark-red)' }}
-              >
-                Unable to fetch data from the URL using AI. Please try again later
-                and make sure that you are using a valid URL.
-              </p>
-            ) : null
-            */}
-          {/* tosError ? (
-            <p
-              className='undp-typography margin-top-02 small-font margin-bottom-00'
-              style={{ color: 'var(--dark-red)' }}
-            >
-              This Website&rsquo;s Terms of Service explicitly prohibits the use
-              of AI or Scraping. Please try again later with a Signal source the
-              allows the use of AI. Alternatively, please process this Signal
-              manually.
-            </p>
-          ) : null */}
           {/* <button
             type='button'
             className={`undp-button button-primary ${
@@ -619,14 +782,15 @@ export function SignalEntryFormEl(props: Props) {
         <div className='margin-bottom-07'>
           <p className='undp-typography margin-bottom-01'>Signal Description*</p>
           <Input.TextArea
+            id="signal-description"
             className='undp-input'
             placeholder='Enter signal description (max 1000 characters)'
             maxLength={1000}
             status={
-              signalData.description
-                ? signalData.description.length > 30
-                  ? ''
-                  : 'error'
+              showRedBorders
+                ? !signalData.description || signalData.description.length <= 30
+                  ? 'error'
+                  : ''
                 : ''
             }
             onChange={e => {
@@ -652,6 +816,7 @@ export function SignalEntryFormEl(props: Props) {
               Location of the signal*
             </p>
             <Select
+              id="signal-location"
               className='undp-select'
               placeholder='Select location'
               onChange={(e: string) => {
@@ -662,6 +827,7 @@ export function SignalEntryFormEl(props: Props) {
               }}
               value={signalData.location}
               showSearch
+              status={showRedBorders && !signalData.location ? 'error' : undefined}
             >
               {choices?.location.map((d, i) => (
                 <Select.Option className='undp-select-option' key={i} value={d}>
@@ -706,6 +872,7 @@ export function SignalEntryFormEl(props: Props) {
         <div className='margin-bottom-07'>
           <p className='undp-typography margin-bottom-01'>Signal Relevance*</p>
           <Input.TextArea
+            id="signal-relevance"
             className='undp-input'
             placeholder='Enter signal relevance'
             onChange={e => {
@@ -715,6 +882,7 @@ export function SignalEntryFormEl(props: Props) {
               });
             }}
             value={signalData.relevance}
+            status={showRedBorders && !signalData.relevance ? 'error' : ''}
           />
           <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
             What is the significance of this Signal to UNDP? Consider both the
@@ -725,6 +893,7 @@ export function SignalEntryFormEl(props: Props) {
           <div style={{ width: '100%' }}>
             <p className='undp-typography margin-bottom-01'>Primary STEEP+V*</p>
             <Select
+              id="signal-steep-primary"
               className='undp-select'
               placeholder='Select STEEP+V'
               onChange={e => {
@@ -734,6 +903,7 @@ export function SignalEntryFormEl(props: Props) {
                 });
               }}
               value={signalData.steep_primary}
+              status={showRedBorders && !signalData.steep_primary ? 'error' : undefined}
             >
               {choices?.steep.map((d, i) => (
                 <Select.Option className='undp-select-option' key={i} value={d}>
@@ -845,7 +1015,7 @@ export function SignalEntryFormEl(props: Props) {
       </div>
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Keywords*</p>
-        <div className='flex-div'>
+        <div id="signal-keywords" className='flex-div'>
           <Input
             className='undp-input'
             placeholder='Enter Keyword#1'
@@ -853,6 +1023,7 @@ export function SignalEntryFormEl(props: Props) {
               setKeyword1(e.target.value);
             }}
             value={keyword1 || ''}
+            status={showRedBorders && ![keyword1, keyword2, keyword3].some(k => k && k.trim() !== '') ? 'error' : ''}
           />
           <Input
             className='undp-input'
@@ -881,6 +1052,7 @@ export function SignalEntryFormEl(props: Props) {
             Primary Signature Solution/Enabler*
           </p>
           <Select
+            id="signal-signature-primary"
             className='undp-select'
             placeholder='Select Signature Solution'
             onChange={e => {
@@ -890,6 +1062,7 @@ export function SignalEntryFormEl(props: Props) {
               });
             }}
             value={signalData.signature_primary}
+            status={showRedBorders && !signalData.signature_primary ? 'error' : undefined}
           >
             {choices?.signature.map((d, i) => (
               <Select.Option className='undp-select-option' key={i} value={d}>
@@ -941,6 +1114,7 @@ export function SignalEntryFormEl(props: Props) {
       <div className='margin-bottom-07' style={{ width: '100%' }}>
         <p className='undp-typography margin-bottom-01'>SDGs*</p>
         <Select
+          id="signal-sdgs"
           className='undp-select'
           mode='multiple'
           placeholder='Select SDG'
@@ -967,6 +1141,7 @@ export function SignalEntryFormEl(props: Props) {
                 : undefined
               : undefined
           }
+          status={showRedBorders && (!signalData.sdgs || signalData.sdgs.length === 0) ? 'error' : undefined}
         >
           {choices?.goal.map((d, i) => (
             <Select.Option className='undp-select-option' key={i} value={d}>
@@ -1083,6 +1258,7 @@ export function SignalEntryFormEl(props: Props) {
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Unit</p>
         <Select
+          id="signal-unit"
           className='undp-select'
           placeholder='Select Unit'
           onChange={e => {
@@ -1092,6 +1268,7 @@ export function SignalEntryFormEl(props: Props) {
             });
           }}
           value={signalData.created_unit}
+          status={showRedBorders && !signalData.created_unit ? 'error' : undefined}
         >
           {choices?.unit_name.map((d, i) => (
             <Select.Option className='undp-select-option' key={i} value={d}>
@@ -1139,24 +1316,21 @@ export function SignalEntryFormEl(props: Props) {
             updateSignal.status === 'Draft' ? (
               <div className='flex-div'>
                 <button
-                  className={`${isSignalInvalid(signalData, [
-                    keyword1,
-                    keyword2,
-                    keyword3,
-                  ]) || buttonDisabled
+                  className={`${!validateForm() || buttonDisabled
                     ? 'disabled'
                     : ''
                     } undp-button button-secondary button-arrow`}
                   type='button'
                   disabled={
-                    isSignalInvalid(signalData, [
-                      keyword1,
-                      keyword2,
-                      keyword3,
-                    ]) || buttonDisabled
+                    !validateForm() || buttonDisabled
                   }
                   onClick={() => {
                     // submit signal
+                    const isValid = validateForm();
+                    if (!isValid) {
+                      setShowRedBorders(true);
+                      return;
+                    }
                     setButtonDisabled(true);
                     setSubmittingError(undefined);
 
@@ -1227,7 +1401,7 @@ export function SignalEntryFormEl(props: Props) {
                   className='undp-button button-secondary button-arrow'
                   type='button'
                   onClick={() => {
-                    // save as draft
+                    // save as draft - no validation needed for drafts
                     console.log(signalData.attachment);
                     setButtonDisabled(true);
                     setSubmittingError(undefined);
@@ -1316,24 +1490,29 @@ export function SignalEntryFormEl(props: Props) {
               </div>
             ) : (
               <button
-                className={`${isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
+                className={`${!validateForm() ||
                   buttonDisabled
                   ? 'disabled'
                   : ''
                   } undp-button button-secondary button-arrow`}
                 type='button'
                 disabled={
-                  isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
+                  !validateForm() ||
                   buttonDisabled
                 }
                 title={
-                  isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
+                  !validateForm() ||
                     buttonDisabled
                     ? 'All fields are required to update a signal. Descriptions should be > 30 letters'
                     : 'Click to update a signal'
                 }
                 onClick={() => {
                   // update signal
+                  const isValid = validateForm();
+                  if (!isValid) {
+                    setShowRedBorders(true);
+                    return;
+                  }
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
 
@@ -1404,21 +1583,26 @@ export function SignalEntryFormEl(props: Props) {
           ) : (
             <div className='flex-div'>
               <button
-                className={`${isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
+                className={`${!validateForm() ||
                   buttonDisabled
                   }undp-button button-secondary button-arrow`}
                 type='button'
                 disabled={
-                  isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
+                  !validateForm() ||
                   buttonDisabled
                 }
                 title={
-                  isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
+                  !validateForm() ||
                     buttonDisabled
                     ? 'All fields are required to submit a signal. Descriptions should be > 30 letters'
                     : 'Click to submit a signal'
                 }
                 onClick={() => {
+                  const isValid = validateForm();
+                  if (!isValid) {
+                    setShowRedBorders(true);
+                    return;
+                  }
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
 
@@ -1486,6 +1670,7 @@ export function SignalEntryFormEl(props: Props) {
                 className='undp-button button-secondary button-arrow'
                 type='button'
                 onClick={() => {
+                  // Saving as a draft - no validation needed
                   console.log('Saving as a draft', signalData.attachment);
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
@@ -1579,6 +1764,15 @@ export function SignalEntryFormEl(props: Props) {
           {buttonDisabled ? <div className='undp-loader' /> : null}
         </div>
       </div>
+      <div>
+        {SHOW_FORM_VALIDATION && (
+          <ValidationMessage 
+            signal={signalData} 
+            keyWords={[keyword1, keyword2, keyword3]} 
+          />
+        )}
+      </div>
+      <div className='margin-top-09'> </div>
       {trendModal ? (
         <AddTrendsModal
           setTrendModal={setTrendModal}
