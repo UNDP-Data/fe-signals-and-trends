@@ -1,12 +1,16 @@
 import { Alert, Button, Input, Spin, Tooltip } from 'antd';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
 // Import antd icons
 import { LinkOutlined } from '@ant-design/icons';
+import type { InputRef } from 'antd';
 
 // Replace any with a specific type or interface
 const extractNewsUtils: { extractNewsFromUrl?: (url: string, apiKey: string, useFallback: boolean, callback: () => void) => Promise<ExtractedNewsData> } = {};
+
+const WORLD_NEWS_API_KEY = import.meta.env.VITE_WORLD_NEWS_API_KEY;
+const JSONLINK_API_KEY = import.meta.env.VITE_JSONLINK_API_KEY;
 
 export interface ExtractedNewsData {
   title: string;
@@ -51,7 +55,7 @@ const InputWrapper = styled.div`
  */
 const extractWithJsonLink = async (url: string): Promise<ExtractedNewsData> => {
   const encodedUrl = encodeURIComponent(url);
-  const apiUrl = `https://jsonlink.io/api/extract?url=${encodedUrl}&api_key=${import.meta.env.VITE_JSONLINK_API_KEY}`;
+  const apiUrl = `https://jsonlink.io/api/extract?url=${encodedUrl}&api_key=${JSONLINK_API_KEY}`;
   
   const response = await fetch(apiUrl);
   
@@ -90,16 +94,17 @@ export function LinkExtractor({
   const [error, setError] = useState<string | null>(null);
   const [usingFallback, setUsingFallback] = useState(false);
   const [extractionStatus, setExtractionStatus] = useState<'idle' | 'api' | 'jsonlink' | 'fallback' | 'success' | 'error'>('idle');
+  const inputRef = useRef<InputRef>(null);
   
   // Only show fallback UI if the utils are available
   const showFallbackUI = extractNewsUtils.extractNewsFromUrl !== undefined && useFallback;
 
-  // Update local state when prop value changes
+  // Update local state when prop value changes, but only if it's different
   useEffect(() => {
-    if (value !== undefined) {
+    if (value !== undefined && value !== url) {
       setUrl(value);
     }
-  }, [value]);
+  }, [value, url]);
 
   const isValidUrl = (urlString: string): boolean => {
     try {
@@ -113,10 +118,16 @@ export function LinkExtractor({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setUrl(newValue);
-    onChange?.(newValue);
-    setError(null);
-    setUsingFallback(false);
-    setExtractionStatus('idle');
+    
+    // Prevent unnecessary re-renders by only calling onChange if the value actually changed
+    if (newValue !== value) {
+      onChange?.(newValue);
+    }
+    
+    // Only reset these states if there's actually a change
+    if (error) setError(null);
+    if (usingFallback) setUsingFallback(false);
+    if (extractionStatus !== 'idle') setExtractionStatus('idle');
   };
 
   // Basic extraction when utils are not available
@@ -177,9 +188,7 @@ export function LinkExtractor({
       
       setExtractionStatus('api');
       
-      const WORLD_NEWS_API_KEY = 
-        import.meta.env.VITE_WORLD_NEWS_API_KEY || 
-        process.env.REACT_APP_WORLD_NEWS_API_KEY;
+      const WORLD_NEWS_API_KEY = import.meta.env.VITE_WORLD_NEWS_API_KEY;
       
       // Use utility function if available, otherwise use basic implementation
       if (extractNewsUtils.extractNewsFromUrl) {
@@ -205,6 +214,10 @@ export function LinkExtractor({
       setExtractionStatus('error');
     } finally {
       setIsLoading(false);
+      // Restore focus to input after extraction completes
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
     }
   };
 
@@ -234,6 +247,7 @@ export function LinkExtractor({
     <div>
       <InputWrapper>
         <Input
+          ref={inputRef}
           className="undp-input"
           placeholder="Enter signal source URL"
           value={url}
@@ -245,7 +259,7 @@ export function LinkExtractor({
         <Tooltip 
           title="Extract article information from this URL" 
           placement="top"
-          overlayClassName="undp-tooltip"
+          classNames={{ root: "undp-tooltip" }}
         >
           <Button
             type="primary"
