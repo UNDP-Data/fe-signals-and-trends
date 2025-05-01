@@ -35,13 +35,10 @@ module.exports = {
   rules: {
     'react/react-in-jsx-scope': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-explicit-any': 'warn',
     'jsx-a11y/click-events-have-key-events': 'warn',
     'jsx-a11y/no-static-element-interactions': 'warn',
-    'react/no-array-index-key': 'off',
-    '@typescript-eslint/no-unused-vars': 'off',
-    'react-hooks/exhaustive-deps': 'off',
-    'react/no-unescaped-entities': 'off'
+    'react/no-array-index-key': 'warn'
   }
 };
 

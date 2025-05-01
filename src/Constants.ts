@@ -328,15 +328,3 @@ export const AUTHORITY = process.env.VITE_AUTHORITY;
 
 
 export const PEXEL_SEARCH_IMG_GET_URL = 'https://api.pexels.com/v1/search'
-
-export const navLinks = {
-  myFavorites: '/my-favorites',
-  myDrafts: '/my-drafts',
-  mySprints: '/my-sprints',
-  myProjects: '/my-projects',
-  mySignals: '/my-signals',
-  myTrends: '/my-trends',
-  adminPanel: '/admin-panel',
-  addNewSignal: '/add-new-signal',
-  addNewTrend: '/add-new-trend',
-}

@@ -1,26 +1,21 @@
+import { Popconfirm } from 'antd';
+import { NavLink, useParams, useNavigate } from 'react-router-dom';
+import { useContext, useEffect, useState } from 'react';
 import {
   AuthenticatedTemplate,
   UnauthenticatedTemplate,
 } from '@azure/msal-react';
-import { Popconfirm } from 'antd';
-import { useContext, useEffect, useState } from 'react';
-import { NavLink, useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import UNDPColorModule from 'undp-viz-colors';
-import {
-  deleteSignal,
-  readSignal,
-  searchTrends
-} from '../../API';
 import Background from '../../assets/UNDP-hero-image.jpg';
-import { ChipEl } from '../../Components/ChipEl';
-import { FavoriteButton } from '../../Components/FavoriteButton';
-import { SignInButton } from '../../Components/SignInButton';
-import { TrendCard } from '../../Components/TrendCard';
-import { MONTHS, SSCOLOR } from '../../Constants';
-import Context from '../../Context/Context';
 import { SignalDataType, TrendDataType } from '../../Types';
+import { MONTHS, SSCOLOR } from '../../Constants';
+import { TrendCard } from '../../Components/TrendCard';
+import { SignInButton } from '../../Components/SignInButton';
+import Context from '../../Context/Context';
+import { ChipEl } from '../../Components/ChipEl';
 import { getSDGIcon } from '../../Utils/GetSDGIcons';
+import { deleteSignal, readSignal, searchTrends } from '../../API';
 
 interface HeroImageProps {
   bgImage?: string;
@@ -57,21 +52,13 @@ export function SignalDetail() {
     choices,
     updateCardsToPrint,
     cardsToPrint,
-    userName,
-    name,
-    userID,
   } = useContext(Context);
   const navigate = useNavigate();
   const [buttonDisabled, setButtonDisabled] = useState(false);
   const [submittingError, setSubmittingError] = useState<undefined | string>(
     undefined,
   );
-
   useEffect(() => {
-    console.log('User Name : ', userName);
-    console.log('Name : ', name);
-    console.log('User ID : ', userID);
-    console.log('Signal ID : ', id);
     readSignal(Number(id)).then(response => {
       setData(response);
       if (response?.connected_trends?.length) {
@@ -87,7 +74,6 @@ export function SignalDetail() {
       }
     });
   }, [id]);
-
   return (
     <div>
       {data ? (
@@ -530,18 +516,6 @@ export function SignalDetail() {
                 ) : (
                   <p className='undp-typography'>{data.url}</p>
                 )}
-              </div>
-              <div className='margin-top-07'>
-                <h6 className='undp-typography margin-top-00 margin-bottom-03'>
-                  Save for Later
-                </h6>
-                <FavoriteButton
-                  signalId={Number(id)}
-                  initialFavoriteStatus={data?.favorite || false}
-                  size="large"
-                  withContainer={false}
-                  iconColor="red"
-                />
               </div>
               <div className='margin-top-07'>
                 <h6 className='undp-typography margin-top-00'>

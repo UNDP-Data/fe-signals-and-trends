@@ -2,16 +2,12 @@ import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
 import UNDPColorModule from 'undp-viz-colors';
 import { useContext } from 'react';
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
-// import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
 import { SignalDataType } from '../Types';
 import Background from '../assets/UNDP-hero-image.jpg';
 import Context from '../Context/Context';
 
 import '../styles.css';
 import { ChipEl } from './ChipEl';
-// import { getfavoriteSignals } from '../API';
 
 interface Props {
   data: SignalDataType;
@@ -22,14 +18,6 @@ interface HeroImageProps {
   bgImage?: string;
 }
 
-// const IconContainer = styled.div`
-//   position: absolute;
-//   top: 1rem;
-//   right: 1rem;
-//   background: rgba(255, 255, 255, 0.85);
-//   border-radius: 0.5rem;
-//   padding: 0.5rem;
-// `;
 const HeroImageEl = styled.div<HeroImageProps>`
   background: ${props =>
       props.bgImage ? `url(${props.bgImage})` : `url(${Background})`}
@@ -76,13 +64,6 @@ export function SignalCard(props: Props) {
   const { data, isDraft } = props;
   const { role, choices, updateCardsToPrint, cardsToPrint } =
     useContext(Context);
-  // const [isFilled, setIsFilled] = useState<boolean>(false);
-  // const myFavBtnClick = () => {
-  //   const signals = getfavoriteSignals();
-  //   console.log(signals);
-  //   setIsFilled(!isFilled);
-  //   console.log(data);
-  // };
   return (
     <div className='signal-card'>
       <CardEl>
@@ -118,28 +99,6 @@ export function SignalCard(props: Props) {
                   {data.status === 'New' ? 'Awaiting Approval' : data.status}
                 </div>
               ) : null}
-              {/* <button
-                type='button'
-                onClick={e => {
-                  e.preventDefault();
-                  myFavBtnClick();
-                }}
-                style={{
-                  border: 'none',
-                  background: 'none',
-                  cursor: 'pointer',
-                }}
-              > */}
-              {/* <IconContainer>
-                  <FontAwesomeIcon
-                    icon={isFilled ? solidHeart : regularHeart}
-                    style={{
-                      color: isFilled ? 'orange' : 'black',
-                      fontSize: '1.5em',
-                    }}
-                  />
-                </IconContainer>
-              </button> */}
             </HeroImageEl>
           </NavLink>
           <div style={{ padding: '1rem 1rem 0 1rem' }}>

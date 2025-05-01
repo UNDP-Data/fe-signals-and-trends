@@ -41,16 +41,8 @@ jobs:
       - name: Install Vitest
         run: npm install vitest --save-dev
 
-      - name: Type Check
-        run: npm run type-check
-        
-      - name: Run Tests 
-        run: npm run test:ci
-        env:
-          CI: true
-          
-      - name: Run Test Coverage
-        run: npm run test:coverage
+      - name: Run validation
+        run: npm run validate
         env:
           CI: true
       
