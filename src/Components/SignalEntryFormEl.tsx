@@ -1,31 +1,32 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import { Input, Select, Popconfirm, Checkbox } from 'antd';
-import '../styles.css';
+import { Checkbox, Input, Popconfirm, Select } from 'antd';
 import sortBy from 'lodash.sortby';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useContext, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import Context from '../Context/Context';
+import '../styles.css';
 import { NewSignalDataType, SignalDataType, TrendDataType } from '../Types';
 import { AddTrendsModal } from './AddTrendsModal';
-import Context from '../Context/Context';
-// import { pexelCall } from '../API/pexelCall';
+import { ExtractedNewsData, LinkExtractor } from './LinkExtractor';
+import { PexelsImagePicker } from './PexelsImagePicker';
 
 import {
   createSignal,
-  updateSignal as updateSignalApi,
   deleteSignal,
-  // generateSignal,
   searchTrends,
+  updateSignal as updateSignalApi,
 } from '../API';
 
 import { SignalAutocomplete, SignalSuggestion } from './SignalAutocomplete';
-import { extractKeywords } from '../Utils/ExtractKeyWords';
-import { PEXEL_SEARCH_IMG_GET_URL } from '../Constants';
+
+const SHOW_FORM_VALIDATION = true;
+const SHOW_RED_BORDERS = false;
 
 interface Props {
   updateSignal?: SignalDataType;
   draft: boolean;
+  initialData?: Partial<NewSignalDataType>;
 }
 
 const UploadEl = styled.div`
@@ -145,10 +146,163 @@ export function isSignalInvalid(
   return true;
 }
 
+// New function to get form validation status with detailed messages
+export function getFormValidation(
+  signal: SignalDataType | NewSignalDataType,
+  keyWords: [string | undefined, string | undefined, string | undefined],
+): { isValid: boolean; errorMessages: string[]; invalidFields: string[]; fieldIds: Record<string, string> } {
+  const errorMessages: string[] = [];
+  const invalidFields: string[] = [];
+  const fieldIds: Record<string, string> = {};
+  
+  if (!signal.headline) {
+    errorMessages.push('Signal Title is required');
+    invalidFields.push('headline');
+    fieldIds['headline'] = 'signal-headline';
+  }
+  
+  if (!signal.created_unit) {
+    errorMessages.push('Unit is required');
+    invalidFields.push('created_unit');
+    fieldIds['created_unit'] = 'signal-unit';
+  }
+  
+  if (!signal.description) {
+    errorMessages.push('Signal Description is required');
+    invalidFields.push('description');
+    fieldIds['description'] = 'signal-description';
+  } else if (signal.description.length <= 30) {
+    errorMessages.push('Signal Description must be longer than 30 characters');
+    invalidFields.push('description');
+    fieldIds['description'] = 'signal-description';
+  }
+  
+  if (keyWords.filter(d => d !== undefined && d.trim() !== '').length === 0) {
+    errorMessages.push('At least one Keyword is required');
+    invalidFields.push('keywords');
+    fieldIds['keywords'] = 'signal-keywords';
+  }
+  
+  if (!signal.location) {
+    errorMessages.push('Location is required');
+    invalidFields.push('location');
+    fieldIds['location'] = 'signal-location';
+  }
+  
+  if (!signal.steep_primary) {
+    errorMessages.push('Primary STEEP+V is required');
+    invalidFields.push('steep_primary');
+    fieldIds['steep_primary'] = 'signal-steep-primary';
+  }
+  
+  if (!signal.signature_primary) {
+    errorMessages.push('Primary Signature Solution/Enabler is required');
+    invalidFields.push('signature_primary');
+    fieldIds['signature_primary'] = 'signal-signature-primary';
+  }
+  
+  if (!signal.sdgs || signal.sdgs.length === 0) {
+    errorMessages.push('At least one SDG is required');
+    invalidFields.push('sdgs');
+    fieldIds['sdgs'] = 'signal-sdgs';
+  }
+  
+  if (!signal.relevance) {
+    errorMessages.push('Signal Relevance is required');
+    invalidFields.push('relevance');
+    fieldIds['relevance'] = 'signal-relevance';
+  }
+  
+  if (!signal.url) {
+    errorMessages.push('Signal Source is required');
+    invalidFields.push('url');
+    fieldIds['url'] = 'signal-url';
+  }
+  
+  return {
+    isValid: errorMessages.length === 0,
+    errorMessages,
+    invalidFields,
+    fieldIds,
+  };
+}
+
+// First, update the ValidationMessage component styling
+const ValidationMessage = ({ 
+  signal, 
+  keyWords 
+}: { 
+  signal: SignalDataType | NewSignalDataType;
+  keyWords: [string | undefined, string | undefined, string | undefined];
+}) => {
+  const { isValid, errorMessages, invalidFields, fieldIds } = getFormValidation(signal, keyWords);
+  
+  if (isValid) return null;
+  
+  const handleErrorClick = (fieldId: string) => {
+    const element = document.getElementById(fieldId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Add a brief flash effect to highlight the element
+      element.classList.add('validation-highlight');
+      setTimeout(() => {
+        element.classList.remove('validation-highlight');
+      }, 2000);
+    }
+  };
+  
+  return (
+    <div 
+      className="margin-top-05 margin-bottom-05"
+      style={{ 
+        backgroundColor: '#E3F2FD', 
+        border: '1px solid #90CAF9',
+        borderRadius: '4px',
+        padding: '12px 16px',
+      }}
+    >
+      <p className="undp-typography bold" style={{ color: 'var(--blue-600)', marginBottom: '8px' }}>
+        Please complete the following fields to submit your signal:
+      </p>
+      <ul style={{ margin: 0, paddingLeft: '20px' }}>
+        {errorMessages.map((message, index) => (
+          <li 
+            key={index} 
+            className="undp-typography" 
+            style={{ 
+              color: 'var(--blue-700)',
+              cursor: 'pointer',
+              textDecoration: 'underline'
+            }}
+            onClick={() => handleErrorClick(fieldIds[invalidFields[index]])}
+          >
+            {message}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+// Update the highlighting style to match the new blue theme
+const highlightStyle = document.createElement('style');
+highlightStyle.textContent = `
+  .validation-highlight {
+    animation: highlight-pulse 2s ease-in-out;
+    border: 2px solid var(--blue-600) !important;
+  }
+  
+  @keyframes highlight-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4); }
+    50% { box-shadow: 0 0 0 10px rgba(33, 150, 243, 0); }
+  }
+`;
+document.head.appendChild(highlightStyle);
+
 export function SignalEntryFormEl(props: Props) {
   const navigate = useNavigate();
 
-  const { updateSignal, draft } = props;
+  const { updateSignal, draft, initialData } = props;
   const { userName, role, updateNotificationText, choices, unit } =
     useContext(Context);
   // const [loading, setLoading] = useState(false);
@@ -160,22 +314,23 @@ export function SignalEntryFormEl(props: Props) {
     updateSignal || {
       status: 'New',
       created_by: userName,
-      headline: undefined,
-      description: undefined,
-      attachment: undefined,
-      steep_primary: undefined,
-      steep_secondary: [],
-      signature_primary: undefined,
-      signature_secondary: [],
-      sdgs: [],
-      created_unit: unit,
-      url: undefined,
-      relevance: undefined,
-      keywords: [],
-      location: undefined,
-      score: undefined,
-      connected_trends: [],
-      created_for: undefined,
+      headline: initialData?.headline || undefined,
+      description: initialData?.description || undefined,
+      attachment: initialData?.attachment || undefined,
+      steep_primary: initialData?.steep_primary || undefined,
+      steep_secondary: initialData?.steep_secondary || [],
+      signature_primary: initialData?.signature_primary || undefined,
+      signature_secondary: initialData?.signature_secondary || [],
+      sdgs: initialData?.sdgs || [],
+      created_unit: initialData?.created_unit || unit,
+      url: initialData?.url || undefined,
+      relevance: initialData?.relevance || undefined,
+      keywords: initialData?.keywords || [],
+      location: initialData?.location || undefined,
+      secondary_location: initialData?.secondary_location || [],
+      score: initialData?.score || undefined,
+      connected_trends: initialData?.connected_trends || [],
+      created_for: initialData?.created_for || undefined,
     },
   );
   const [buttonDisabled, setButtonDisabled] = useState(false);
@@ -191,14 +346,26 @@ export function SignalEntryFormEl(props: Props) {
     undefined,
   );
   const [keyword1, setKeyword1] = useState<string | undefined>(
-    updateSignal?.keywords ? updateSignal?.keywords[0] || undefined : undefined,
+    updateSignal?.keywords ? updateSignal?.keywords[0] || undefined : initialData?.keywords ? initialData.keywords[0] || undefined : undefined,
   );
   const [keyword2, setKeyword2] = useState<string | undefined>(
-    updateSignal?.keywords ? updateSignal?.keywords[1] || undefined : undefined,
+    updateSignal?.keywords ? updateSignal?.keywords[1] || undefined : initialData?.keywords ? initialData.keywords[1] || undefined : undefined,
   );
   const [keyword3, setKeyword3] = useState<string | undefined>(
-    updateSignal?.keywords ? updateSignal?.keywords[2] || undefined : undefined,
+    updateSignal?.keywords ? updateSignal?.keywords[2] || undefined : initialData?.keywords ? initialData.keywords[2] || undefined : undefined,
   );
+  const [useFetchedArticles, setUseFetchedArticles] = useState(false);
+  const [showRedBorders, setShowRedBorders] = useState(SHOW_RED_BORDERS);
+ 
+
+  // Initialize keywords from initialData if available
+  useEffect(() => {
+    if (initialData?.keywords?.length) {
+      setKeyword1(initialData.keywords[0]);
+      if (initialData.keywords.length > 1) setKeyword2(initialData.keywords[1]);
+      if (initialData.keywords.length > 2) setKeyword3(initialData.keywords[2]);
+    }
+  }, [initialData]);
 
   const confirmDelete = (id: number, navigatePath: string) => {
     setButtonDisabled(true);
@@ -211,8 +378,7 @@ export function SignalEntryFormEl(props: Props) {
       .catch(err => {
         setButtonDisabled(false);
         setSubmittingError(
-          `${err}. ${
-            err.response?.status === 500 ? 'Please try again in some time' : ''
+          `${err}. ${err.response?.status === 500 ? 'Please try again in some time' : ''
           }`,
         );
       });
@@ -232,10 +398,9 @@ export function SignalEntryFormEl(props: Props) {
         })
         .catch(err => {
           setSubmittingError(
-            `${err}. ${
-              err.response?.status === 500
-                ? 'Please try again in some time'
-                : ''
+            `${err}. ${err.response?.status === 500
+              ? 'Please try again in some time'
+              : ''
             }`,
           );
         });
@@ -252,23 +417,9 @@ export function SignalEntryFormEl(props: Props) {
   }, [signalData.attachment, signalData.headline, query]);
 
   const [imageUrl, setImageUrl] = useState<string>('');
-  const [pexelImages, setPexelImages] = useState<any[]>([]);
-  const [noPexelImagesAvailable, setNoPexelImagesAvailable] =
-    useState<boolean>(false);
-  const [isVisible, setIsVisible] = useState(true);
   const fileInputRef = useRef<any>(null);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
-  const [pageNo, setPageNo] = useState<number>(1);
-  const [, setPexelImgLoading] = useState<boolean>(false);
-  const [enterSignalManually, setEnterSignalManually] = useState(false);
 
-  const toggleVisibility = () => {
-    setIsVisible(!isVisible);
-  };
-  // const targetDiv = document.getElementById('target-div');
-  // if (targetDiv) {
-  //   targetDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  // }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleFileSelect = (event: any) => {
     if (event.target.files) {
@@ -287,68 +438,30 @@ export function SignalEntryFormEl(props: Props) {
       setSelectedFileName(event.target.files[0].name);
     }
   };
-  async function urlToFile(url: string, filename: string, mimeType: string) {
-    const response = await fetch(url);
-    const buffer = await response.arrayBuffer();
-    return new File([buffer], filename, { type: mimeType });
-  }
-  const getPexelImages = async () => {
-    console.log('Pexel | Query : ', query);
-    setPexelImgLoading(true);
-    const PEXEL_API_KEY = import.meta.env.VITE_PEXEL_API_KEY || process.env.REACT_APP_PEXEL_API_KEY;
-    console.log(PEXEL_API_KEY);
-    try {
-      const refinedQuery = extractKeywords(query);
-      const response = await axios.get(PEXEL_SEARCH_IMG_GET_URL, {
-        params: { query: refinedQuery, per_page: 12, page: pageNo },
-        headers: {
-          Authorization: PEXEL_API_KEY,
-        },
-      });
-      if (response.data.photos.length === 0) {
-        console.log(response.data.photos.length);
-        setPageNo(1);
-        setNoPexelImagesAvailable(true);
-      }
-      console.log(response);
-      setPexelImages(response.data.photos);
-      setTimeout(() => {
-        setPexelImgLoading(false);
-      }, 500);
-    } catch (err) {
-      if (err instanceof Error) {
-        throw new Error(err.message);
-      } else {
-        throw new Error('An unexpected error occurred');
-      }
-    }
+
+  const handlePexelsImageSelect = (imageUrl: string, file: File) => {
+    setSelectedFileName(file.name);
+    setImageUrl(imageUrl);
+    updateSignalData({
+      ...signalData,
+      attachment: imageUrl,
+    });
+    handleFileSelect({ target: { files: [file] } });
   };
-  const refreshPexelImages = async () => {
-    setPexelImgLoading(true);
-    setPageNo(pageNo + 1);
-    setPexelImgLoading(false);
-  };
-  const isFirstRender = useRef(true);
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    getPexelImages();
-  }, [pageNo]);
 
   useEffect(() => {
-    if (enterSignalManually) {
+    if (useFetchedArticles) {
       updateSignalData({
         ...signalData,
         headline: '',
       });
     }
-  }, [enterSignalManually]);
+  }, [useFetchedArticles]);
 
   // Signal Auto Complete
   const handleSuggestionSelect = (suggestion: SignalSuggestion) => {
-    console.log('Selected Suggestion:', suggestion);
+    // console.log('Selected Suggestion:', suggestion);
+
     updateSignalData({
       ...signalData,
       headline: suggestion.headline,
@@ -424,6 +537,68 @@ export function SignalEntryFormEl(props: Props) {
   };
   */
 
+  // Handler for extracted data from LinkExtractor
+  const handleExtractedData = (data: ExtractedNewsData) => {
+    // Set headline from title (truncate if too long)
+    const headline = data.title.length > 100 ? data.title.substring(0, 97) + '...' : data.title;
+    
+    // Set description from text (truncate if too long)
+    const description = data.text.length > 1000 ? data.text.substring(0, 997) + '...' : data.text;
+    
+    // Set keywords
+    if (data.keywords && data.keywords.length > 0) {
+      setKeyword1(data.keywords[0]);
+      if (data.keywords.length > 1) setKeyword2(data.keywords[1]);
+      if (data.keywords.length > 2) setKeyword3(data.keywords[2]);
+    }
+    
+    // Set location from source_country if available
+    const location = data.source_country ? data.source_country.toUpperCase() : signalData.location;
+    
+    // Update signal data first without the image
+    updateSignalData({
+      ...signalData,
+      headline,
+      description,
+      url: data.url,
+      location: location || signalData.location,
+    });
+    
+    // Handle image if available
+    if (data.image) {
+      setImageUrl(data.image);
+      
+      // Fetch the image and convert to base64
+      fetch(data.image)
+        .then(res => res.blob())
+        .then(blob => {
+          const fileName = "extracted-image.jpg";
+          const file = new File([blob], fileName, { type: "image/jpeg" });
+          setSelectedFileName(fileName);
+          
+          // Create a FileReader to convert the blob to base64
+          const reader = new FileReader();
+          reader.readAsBinaryString(file);
+          reader.onloadend = (e: any) => {
+            const base64String = btoa(e.target.result);
+            updateSignalData(prevData => ({
+              ...prevData,
+              attachment: `${file.type};base64,${base64String}`,
+            }));
+          };
+        })
+        .catch(err => {
+          console.error("Error fetching image:", err);
+        });
+    }
+  };
+
+  // Update the validation check function to remove state setting
+  const validateForm = () => {
+    const { isValid } = getFormValidation(signalData, [keyword1, keyword2, keyword3]);
+    return isValid;
+  };
+
   return (
     <div className='undp-container max-width padding-top-00 padding-bottom-00'>
       <p className='undp-typography'>
@@ -437,32 +612,32 @@ export function SignalEntryFormEl(props: Props) {
           <div className='signal-title-grid' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <p className='undp-typography margin-bottom-01'>Signal Title*</p>
             <Checkbox
-                checked={enterSignalManually}
-                onChange={e => setEnterSignalManually(e.target.checked)}
-              >
-                Enter Signal Title Manually
+              checked={useFetchedArticles}
+              onChange={e => setUseFetchedArticles(e.target.checked)}
+            >
+              Use Article Suggestions
             </Checkbox>
           </div>
-          {signalData.headline || enterSignalManually ? (
+          {!useFetchedArticles ? (
             <Input
+              id="signal-headline"
               className='undp-input'
               placeholder='Enter signal title (max 100 characters)'
               value={signalData.headline}
               maxLength={100}
+              status={showRedBorders && !signalData.headline ? 'error' : ''}
               onChange={d => {
                 updateSignalData({
                   ...signalData,
                   headline: d.target.value,
                 });
                 setQuery(d.target.value);
-                setPageNo(1);
               }}
             />
           ) : (
             <SignalAutocomplete
               onChange={d => {
                 setQuery(d);
-                setPageNo(1);
               }}
               onSuggestionSelect={handleSuggestionSelect}
               value={signalData.headline}
@@ -479,17 +654,34 @@ export function SignalEntryFormEl(props: Props) {
           <p className='undp-typography margin-bottom-01'>Signal Source*</p>
           <div className='flex-div margin-bottom-00'>
             <div style={{ flexGrow: 1 }}>
-              <Input
-                className='undp-input'
-                placeholder='Enter signal source'
-                onChange={d => {
-                  updateSignalData({
-                    ...signalData,
-                    url: d.target.value,
-                  });
-                }}
-                value={signalData.url}
-              />
+              <div id="signal-url">
+                {SHOW_FORM_VALIDATION && !signalData.url && (
+                  <div style={{ marginBottom: '8px' }}>
+                    <LinkExtractor
+                      value={signalData.url}
+                      onChange={(value) => {
+                        updateSignalData({
+                          ...signalData,
+                          url: value,
+                        });
+                      }}
+                      onFetch={handleExtractedData}
+                    />
+                  </div>
+                )}
+                {(!SHOW_FORM_VALIDATION || signalData.url) && (
+                  <LinkExtractor
+                    value={signalData.url}
+                    onChange={(value) => {
+                      updateSignalData({
+                        ...signalData,
+                        url: value,
+                      });
+                    }}
+                    onFetch={handleExtractedData}
+                  />
+                )}
+              </div>
             </div>
           </div>
           <p className='undp-typography margin-top-02 small-font'>
@@ -537,27 +729,6 @@ export function SignalEntryFormEl(props: Props) {
           </Checkbox>
             */}
 
-          {/* error ? (
-              <p
-                className='undp-typography margin-top-02 small-font margin-bottom-00'
-                style={{ color: 'var(--dark-red)' }}
-              >
-                Unable to fetch data from the URL using AI. Please try again later
-                and make sure that you are using a valid URL.
-              </p>
-            ) : null
-            */}
-          {/* tosError ? (
-            <p
-              className='undp-typography margin-top-02 small-font margin-bottom-00'
-              style={{ color: 'var(--dark-red)' }}
-            >
-              This Website&rsquo;s Terms of Service explicitly prohibits the use
-              of AI or Scraping. Please try again later with a Signal source the
-              allows the use of AI. Alternatively, please process this Signal
-              manually.
-            </p>
-          ) : null */}
           {/* <button
             type='button'
             className={`undp-button button-primary ${
@@ -608,96 +779,172 @@ export function SignalEntryFormEl(props: Props) {
           </button>
             */}
         </div>
-      </div>
-      <div className='margin-bottom-07'>
-        <p className='undp-typography margin-bottom-01'>Signal Description*</p>
-        <Input.TextArea
-          className='undp-input'
-          placeholder='Enter signal description (max 1000 characters)'
-          maxLength={1000}
-          status={
-            signalData.description
-              ? signalData.description.length > 30
-                ? ''
-                : 'error'
-              : ''
-          }
-          onChange={e => {
-            updateSignalData({
-              ...signalData,
-              description: e.target.value,
-            });
-          }}
-          value={signalData.description}
-        />
-        <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
-          What is the Signal about? Keep this description concise and think
-          about using commonly used terms and clear language. This should be
-          your summarised description, not cut-and-paste from article. Min 30
-          characters required.{' '}
-          {signalData.description ? 1000 - signalData.description.length : 1000}{' '}
-          characters left
-        </p>
-      </div>
-      <div className='flex-div'>
-        <div className='margin-bottom-07' style={{ width: '100%' }}>
-          <p className='undp-typography margin-bottom-01'>
-            Location of the signal*
-          </p>
-          <Select
-            className='undp-select'
-            placeholder='Select location'
-            onChange={(e: string) => {
-              updateSignalData({
-                ...signalData,
-                location: e,
-              });
-            }}
-            value={signalData.location}
-            showSearch
-          >
-            {choices?.location.map((d, i) => (
-              <Select.Option className='undp-select-option' key={i} value={d}>
-                {d}
-              </Select.Option>
-            ))}
-          </Select>
-          <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
-            Region and/or country for which this signal has greatest relevance
-          </p>
-        </div>
-      </div>
-      <div className='margin-bottom-07'>
-        <p className='undp-typography margin-bottom-01'>Signal Relevance*</p>
-        <Input.TextArea
-          className='undp-input'
-          placeholder='Enter signal relevance'
-          onChange={e => {
-            updateSignalData({
-              ...signalData,
-              relevance: e.target.value,
-            });
-          }}
-          value={signalData.relevance}
-        />
-        <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
-          What is the significance of this Signal to UNDP? Consider both the
-          near term and longer term futures of development.
-        </p>
-      </div>
-      <div className='margin-bottom-07'>
-        <div style={{ width: '100%' }}>
-          <p className='undp-typography margin-bottom-01'>Primary STEEP+V*</p>
-          <Select
-            className='undp-select'
-            placeholder='Select STEEP+V'
+        <div className='margin-bottom-07'>
+          <p className='undp-typography margin-bottom-01'>Signal Description*</p>
+          <Input.TextArea
+            id="signal-description"
+            className='undp-input'
+            placeholder='Enter signal description (max 1000 characters)'
+            maxLength={1000}
+            status={
+              showRedBorders
+                ? !signalData.description || signalData.description.length <= 30
+                  ? 'error'
+                  : ''
+                : ''
+            }
             onChange={e => {
               updateSignalData({
                 ...signalData,
-                steep_primary: e,
+                description: e.target.value,
               });
             }}
-            value={signalData.steep_primary}
+            value={signalData.description}
+          />
+          <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
+            What is the Signal about? Keep this description concise and think
+            about using commonly used terms and clear language. This should be
+            your summarised description, not cut-and-paste from article. Min 30
+            characters required.{' '}
+            {signalData.description ? 1000 - signalData.description.length : 1000}{' '}
+            characters left
+          </p>
+        </div>
+        <div className='flex-div' style={{ gap: '1rem', marginBottom: 'var(--spacing-07)' }}>
+          <div className='margin-bottom-00' style={{ width: '50%' }}>
+            <p className='undp-typography margin-bottom-01'>
+              Location of the signal*
+            </p>
+            <Select
+              id="signal-location"
+              className='undp-select'
+              placeholder='Select location'
+              onChange={(e: string) => {
+                updateSignalData({
+                  ...signalData,
+                  location: e,
+                });
+              }}
+              value={signalData.location}
+              showSearch
+              status={showRedBorders && !signalData.location ? 'error' : undefined}
+            >
+              {choices?.location.map((d, i) => (
+                <Select.Option className='undp-select-option' key={i} value={d}>
+                  {d}
+                </Select.Option>
+              ))}
+            </Select>
+            <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
+              Region and/or country for which this signal has greatest relevance
+            </p>
+          </div>
+
+          <div className='margin-bottom-00' style={{ width: '50%' }}>
+            <p className='undp-typography margin-bottom-01'>
+              Secondary Locations
+            </p>
+            <Select
+              className='undp-select'
+              placeholder='Select secondary locations'
+              mode='multiple'
+              maxTagCount='responsive'
+              onChange={(e: string[]) => {
+                updateSignalData({
+                  ...signalData,
+                  secondary_location: e.length === 0 ? [] : e,
+                });
+              }}
+              value={signalData.secondary_location || []}
+              showSearch
+            >
+              {choices?.location.map((d, i) => (
+                <Select.Option className='undp-select-option' key={i} value={d}>
+                  {d}
+                </Select.Option>
+              ))}
+            </Select>
+            <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
+              Additional regions and/or countries for which this signal has relevance
+            </p>
+          </div>
+        </div>
+        <div className='margin-bottom-07'>
+          <p className='undp-typography margin-bottom-01'>Signal Relevance*</p>
+          <Input.TextArea
+            id="signal-relevance"
+            className='undp-input'
+            placeholder='Enter signal relevance'
+            onChange={e => {
+              updateSignalData({
+                ...signalData,
+                relevance: e.target.value,
+              });
+            }}
+            value={signalData.relevance}
+            status={showRedBorders && !signalData.relevance ? 'error' : ''}
+          />
+          <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
+            What is the significance of this Signal to UNDP? Consider both the
+            near term and longer term futures of development.
+          </p>
+        </div>
+        <div className='margin-bottom-07'>
+          <div style={{ width: '100%' }}>
+            <p className='undp-typography margin-bottom-01'>Primary STEEP+V*</p>
+            <Select
+              id="signal-steep-primary"
+              className='undp-select'
+              placeholder='Select STEEP+V'
+              onChange={e => {
+                updateSignalData({
+                  ...signalData,
+                  steep_primary: e,
+                });
+              }}
+              value={signalData.steep_primary}
+              status={showRedBorders && !signalData.steep_primary ? 'error' : undefined}
+            >
+              {choices?.steep.map((d, i) => (
+                <Select.Option className='undp-select-option' key={i} value={d}>
+                  {d}
+                </Select.Option>
+              ))}
+            </Select>
+          </div>
+          <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
+            STEEP+V analysis methodology stands for Social, Technological,
+            Economic, Environmental (or Ecological), Political and Values
+          </p>
+        </div>
+        <div style={{ width: '100%' }} className='margin-bottom-07'>
+          <p className='undp-typography margin-bottom-01'>Secondary STEEP+V</p>
+          <Select
+            className='undp-select'
+            placeholder='Select STEEP+V'
+            mode='multiple'
+            maxTagCount='responsive'
+            onChange={e => {
+              if (e.length > 1) {
+                updateSignalData({
+                  ...signalData,
+                  steep_secondary: [e[0], e[e.length - 1]],
+                });
+              } else {
+                updateSignalData({
+                  ...signalData,
+                  steep_secondary: e.length === 0 || !e ? [] : e,
+                });
+              }
+            }}
+            value={
+              signalData.steep_secondary
+                ? signalData.steep_secondary?.length > 0 &&
+                  signalData.steep_secondary
+                  ? signalData.steep_secondary
+                  : undefined
+                : undefined
+            }
           >
             {choices?.steep.map((d, i) => (
               <Select.Option className='undp-select-option' key={i} value={d}>
@@ -706,230 +953,77 @@ export function SignalEntryFormEl(props: Props) {
             ))}
           </Select>
         </div>
-        <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
-          STEEP+V analysis methodology stands for Social, Technological,
-          Economic, Environmental (or Ecological), Political and Values
-        </p>
-      </div>
-      <div style={{ width: '100%' }} className='margin-bottom-07'>
-        <p className='undp-typography margin-bottom-01'>Secondary STEEP+V</p>
-        <Select
-          className='undp-select'
-          placeholder='Select STEEP+V'
-          mode='multiple'
-          maxTagCount='responsive'
-          onChange={e => {
-            if (e.length > 1) {
-              updateSignalData({
-                ...signalData,
-                steep_secondary: [e[0], e[e.length - 1]],
-              });
-            } else {
-              updateSignalData({
-                ...signalData,
-                steep_secondary: e.length === 0 || !e ? [] : e,
-              });
-            }
-          }}
-          value={
-            signalData.steep_secondary
-              ? signalData.steep_secondary?.length > 0 &&
-                signalData.steep_secondary
-                ? signalData.steep_secondary
-                : undefined
-              : undefined
-          }
-        >
-          {choices?.steep.map((d, i) => (
-            <Select.Option className='undp-select-option' key={i} value={d}>
-              {d}
-            </Select.Option>
-          ))}
-        </Select>
-      </div>
-      <div className='margin-bottom-07' id='target-div'>
-        <p className='undp-typography margin-bottom-01'>Cover Image</p>
-        {signalData.attachment ? (
-          <div className='flex-div padding-bottom-05'>
-            <UploadedImgEl bgImage={imageUrl} />
-            <button
-              type='button'
-              className='undp-button button-tertiary flex'
-              onClick={() => {
-                setSelectedFileName('');
-                updateSignalData({
-                  ...signalData,
-                  attachment: undefined,
-                });
-              }}
-              style={{
-                backgroundColor: 'var(--gray-300)',
-                padding: 'var(--spacing-05)',
-                alignSelf: 'flex-end',
-              }}
-            >
-              Remove Image
-            </button>
-          </div>
-        ) : null}
-        <UploadEl>
-          <label htmlFor='file-upload-analyze' className='custom-file-upload'>
-            <UploadButtonEl style={{ width: '177.55px' }}>
-              Upload a Image
-            </UploadButtonEl>
-          </label>
-          {selectedFileName !== '' ? (
-            <SelectedEl>
-              Selected <span className='bold'>{selectedFileName}</span>
-            </SelectedEl>
-          ) : (
-            <SelectedEl style={{ opacity: '0.6' }}>No file selected</SelectedEl>
-          )}
-          <FileAttachmentButton
-            ref={fileInputRef}
-            id='file-upload-analyze'
-            accept='image/png, image/jpeg, image/jpg, image/gif, image/svg'
-            type='file'
-            onChange={handleFileSelect}
-          />
-        </UploadEl>
-        <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
-          {signalData.attachment
-            ? 'Uploading file with replace the already uploaded image shown above. '
-            : ''}
-          Attach an image here to illustrate this Signal, if available. Use only
-          images that are non-copyright or license-free/Creative Commons. File
-          must be maximum 1 MBs. Compress larger images, if applicable.
-        </p>
-      </div>
-      <div>
-        {signalData.headline ? (
-          <>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
+        <div className='margin-bottom-07' id='target-div'>
+          <p className='undp-typography margin-bottom-01'>Cover Image</p>
+          {signalData.attachment ? (
+            <div className='flex-div padding-bottom-05'>
+              <UploadedImgEl bgImage={imageUrl} />
               <button
                 type='button'
                 className='undp-button button-tertiary flex'
-                onClick={() => getPexelImages()}
+                onClick={() => {
+                  setSelectedFileName('');
+                  updateSignalData({
+                    ...signalData,
+                    attachment: undefined,
+                  });
+                }}
                 style={{
                   backgroundColor: 'var(--gray-300)',
                   padding: 'var(--spacing-05)',
                   alignSelf: 'flex-end',
                 }}
               >
-                Generate Image
+                Remove Image
               </button>
-              {pexelImages && (
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button
-                    type='button'
-                    className='undp-button button-tertiary flex'
-                    onClick={toggleVisibility}
-                  >
-                    {isVisible ? '▲ Hide' : '▼ Show'}
-                  </button>
-                </div>
-              )}
             </div>
-            <div className='margin-top-09 margin-bottom-09 generate-img-div'>
-              {isVisible && pexelImages && pexelImages.length > 0 ? (
-                pexelImages.map((image, index) => (
-                  <button
-                    key={index}
-                    type='button'
-                    onClick={async () => {
-                      const file = await urlToFile(
-                        image.src.medium,
-                        `${query} pexel-image.jpg`,
-                        'image/jpeg',
-                      );
-                      setSelectedFileName(file.name);
-                      setImageUrl(image.src.medium);
-                      updateSignalData({
-                        ...signalData,
-                        attachment: image.src.medium,
-                      });
-                      handleFileSelect({ target: { files: [file] } });
-                      setIsVisible(false);
-                    }}
-                    style={{
-                      border: 'none',
-                      background: 'none',
-                      padding: 2,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <img
-                      key={index}
-                      className='hover-scale-shadow'
-                      src={image.src.medium}
-                      alt='No preview available'
-                      height='200px'
-                      width='200px'
-                      style={{
-                        objectFit: 'cover',
-                        transition: 'box-shadow 0.4s ease-in-out',
-                      }}
-                    />
-                  </button>
-                ))
-              ) : noPexelImagesAvailable && pageNo === 1 ? (
-                <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-                  <p>
-                    No related images found. Please change the Signal Title for
-                    a better image generation.
-                  </p>
-                </div>
-              ) : null}
-            </div>
-            {isVisible && (
-              <button
-                type='button'
-                className='undp-button button-tertiary flex margin-bottom-05'
-                onClick={refreshPexelImages}
-                style={{
-                  backgroundColor: 'var(--gray-300)',
-                  padding: 'var(--spacing-05)',
-                  alignSelf: 'flex-end',
-                }}
-              >
-                Refresh
-              </button>
+          ) : null}
+          <UploadEl>
+            <label htmlFor='file-upload-analyze' className='custom-file-upload'>
+              <UploadButtonEl style={{ width: '177.55px' }}>
+                Upload a Image
+              </UploadButtonEl>
+            </label>
+            {selectedFileName !== '' ? (
+              <SelectedEl>
+                Selected <span className='bold'>{selectedFileName}</span>
+              </SelectedEl>
+            ) : (
+              <SelectedEl style={{ opacity: '0.6' }}>No file selected</SelectedEl>
             )}
-          </>
-        ) : (
-          <button
-            type='button'
-            className='undp-button button-tertiary flex margin-bottom-05'
-            onClick={() => getPexelImages()}
-            style={{
-              backgroundColor: 'var(--gray-200)',
-              color: 'var(--gray-500)',
-              padding: 'var(--spacing-05)',
-              alignSelf: 'flex-end',
-              cursor: 'not-allowed',
-              opacity: '0.6',
-            }}
-          >
-            Generate Image
-          </button>
-        )}
+            <FileAttachmentButton
+              ref={fileInputRef}
+              id='file-upload-analyze'
+              accept='image/png, image/jpeg, image/jpg, image/gif, image/svg'
+              type='file'
+              onChange={handleFileSelect}
+            />
+          </UploadEl>
+          <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
+            {signalData.attachment
+              ? 'Uploading file with replace the already uploaded image shown above. '
+              : ''}
+            Attach an image here to illustrate this Signal, if available. Use only
+            images that are non-copyright or license-free/Creative Commons. File
+            must be maximum 1 MBs. Compress larger images, if applicable.
+          </p>
+        </div>
+        <PexelsImagePicker 
+          query={query} 
+          onImageSelect={handlePexelsImageSelect} 
+        />
       </div>
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Keywords*</p>
-        <div className='flex-div'>
+        <div id="signal-keywords" className='flex-div'>
           <Input
             className='undp-input'
             placeholder='Enter Keyword#1'
             onChange={e => {
               setKeyword1(e.target.value);
             }}
-            value={keyword1 || undefined || signalData.keywords[0] || ''}
+            value={keyword1 || ''}
+            status={showRedBorders && ![keyword1, keyword2, keyword3].some(k => k && k.trim() !== '') ? 'error' : ''}
           />
           <Input
             className='undp-input'
@@ -937,7 +1031,7 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword2(e.target.value);
             }}
-            value={keyword2 || undefined || signalData.keywords[1] || ''}
+            value={keyword2 || ''}
           />
           <Input
             className='undp-input'
@@ -945,7 +1039,7 @@ export function SignalEntryFormEl(props: Props) {
             onChange={e => {
               setKeyword3(e.target.value);
             }}
-            value={keyword3 || undefined || signalData.keywords[2] || ''}
+            value={keyword3 || ''}
           />
         </div>
         <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
@@ -958,6 +1052,7 @@ export function SignalEntryFormEl(props: Props) {
             Primary Signature Solution/Enabler*
           </p>
           <Select
+            id="signal-signature-primary"
             className='undp-select'
             placeholder='Select Signature Solution'
             onChange={e => {
@@ -967,6 +1062,7 @@ export function SignalEntryFormEl(props: Props) {
               });
             }}
             value={signalData.signature_primary}
+            status={showRedBorders && !signalData.signature_primary ? 'error' : undefined}
           >
             {choices?.signature.map((d, i) => (
               <Select.Option className='undp-select-option' key={i} value={d}>
@@ -1018,6 +1114,7 @@ export function SignalEntryFormEl(props: Props) {
       <div className='margin-bottom-07' style={{ width: '100%' }}>
         <p className='undp-typography margin-bottom-01'>SDGs*</p>
         <Select
+          id="signal-sdgs"
           className='undp-select'
           mode='multiple'
           placeholder='Select SDG'
@@ -1044,6 +1141,7 @@ export function SignalEntryFormEl(props: Props) {
                 : undefined
               : undefined
           }
+          status={showRedBorders && (!signalData.sdgs || signalData.sdgs.length === 0) ? 'error' : undefined}
         >
           {choices?.goal.map((d, i) => (
             <Select.Option className='undp-select-option' key={i} value={d}>
@@ -1160,6 +1258,7 @@ export function SignalEntryFormEl(props: Props) {
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Unit</p>
         <Select
+          id="signal-unit"
           className='undp-select'
           placeholder='Select Unit'
           onChange={e => {
@@ -1169,6 +1268,7 @@ export function SignalEntryFormEl(props: Props) {
             });
           }}
           value={signalData.created_unit}
+          status={showRedBorders && !signalData.created_unit ? 'error' : undefined}
         >
           {choices?.unit_name.map((d, i) => (
             <Select.Option className='undp-select-option' key={i} value={d}>
@@ -1216,27 +1316,42 @@ export function SignalEntryFormEl(props: Props) {
             updateSignal.status === 'Draft' ? (
               <div className='flex-div'>
                 <button
-                  className={`${
-                    isSignalInvalid(signalData, [
-                      keyword1,
-                      keyword2,
-                      keyword3,
-                    ]) || buttonDisabled
-                      ? 'disabled'
-                      : ''
-                  } undp-button button-secondary button-arrow`}
+                  className={`${!validateForm() || buttonDisabled
+                    ? 'disabled'
+                    : ''
+                    } undp-button button-secondary button-arrow`}
                   type='button'
                   disabled={
-                    isSignalInvalid(signalData, [
-                      keyword1,
-                      keyword2,
-                      keyword3,
-                    ]) || buttonDisabled
+                    !validateForm() || buttonDisabled
                   }
                   onClick={() => {
                     // submit signal
+                    const isValid = validateForm();
+                    if (!isValid) {
+                      setShowRedBorders(true);
+                      return;
+                    }
                     setButtonDisabled(true);
                     setSubmittingError(undefined);
+
+                    // Make sure steep_primary is in the correct format if it's a simple string
+                    let steep_primary = signalData.steep_primary || '';
+                    if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
+                      const fullSteep = choices.steep.find(s => s.startsWith(steep_primary as string));
+                      if (fullSteep) {
+                        steep_primary = fullSteep;
+                      }
+                    }
+
+                    // Make sure sdgs are in the correct format
+                    let sdgs = signalData.sdgs || [];
+                    if (sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
+                      sdgs = sdgs.map(sdg => {
+                        const fullSdg = choices.goal.find(g => g.includes(sdg));
+                        return fullSdg || sdg;
+                      });
+                    }
+
                     if (signalData.id)
                       updateSignalApi(updateSignal.id, {
                         // ...signalData,
@@ -1244,14 +1359,15 @@ export function SignalEntryFormEl(props: Props) {
                         headline: signalData.headline || '',
                         description: signalData.description || '',
                         attachment: signalData.attachment || '',
-                        steep_primary: signalData.steep_primary || '',
+                        steep_primary: steep_primary,
                         signature_primary: signalData.signature_primary || '',
                         signature_secondary:
                           signalData.signature_secondary || [],
-                        sdgs: signalData.sdgs || [],
+                        sdgs: sdgs,
                         url: signalData.url || '',
                         relevance: signalData.relevance || '',
                         location: signalData.location || '',
+                        secondary_location: signalData.secondary_location || [],
                         created_by: signalData.created_by || '',
                         created_for: signalData.created_for,
                         score: signalData.score,
@@ -1271,10 +1387,9 @@ export function SignalEntryFormEl(props: Props) {
                         .catch(err => {
                           setButtonDisabled(false);
                           setSubmittingError(
-                            `${err}. ${
-                              err.response?.status === 500
-                                ? 'Please try again in some time'
-                                : ''
+                            `${err}. ${err.response?.status === 500
+                              ? 'Please try again in some time'
+                              : ''
                             }`,
                           );
                         });
@@ -1286,10 +1401,29 @@ export function SignalEntryFormEl(props: Props) {
                   className='undp-button button-secondary button-arrow'
                   type='button'
                   onClick={() => {
-                    // save as draft
+                    // save as draft - no validation needed for drafts
                     console.log(signalData.attachment);
                     setButtonDisabled(true);
                     setSubmittingError(undefined);
+
+                    // Make sure steep_primary is in the correct format if it's not null and doesn't have the full format
+                    let steep_primary = signalData.steep_primary || null;
+                    if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
+                      const fullSteep = choices.steep.find(s => s.startsWith(steep_primary as string));
+                      if (fullSteep) {
+                        steep_primary = fullSteep;
+                      }
+                    }
+
+                    // Make sure sdgs are in the correct format if not null
+                    let sdgs = signalData.sdgs || null;
+                    if (sdgs && sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
+                      sdgs = sdgs.map(sdg => {
+                        const fullSdg = choices.goal.find(g => g.includes(sdg));
+                        return fullSdg || sdg;
+                      });
+                    }
+
                     if (signalData.id)
                       updateSignalApi(updateSignal.id, {
                         // ...signalData,
@@ -1297,15 +1431,16 @@ export function SignalEntryFormEl(props: Props) {
                         headline: signalData.headline || null,
                         description: signalData.description || null,
                         attachment: signalData.attachment || null,
-                        steep_primary: signalData.steep_primary || null,
+                        steep_primary: steep_primary,
                         steep_secondary: signalData.steep_secondary || null,
                         signature_primary: signalData.signature_primary || null,
                         signature_secondary:
                           signalData.signature_secondary || null,
-                        sdgs: signalData.sdgs || null,
+                        sdgs: sdgs,
                         url: signalData.url || null,
                         relevance: signalData.relevance || null,
                         location: signalData.location || null,
+                        secondary_location: signalData.secondary_location || null,
                         score: signalData.score || null,
                         created_by: signalData.created_by || null,
                         created_for: signalData.created_for || null,
@@ -1325,10 +1460,9 @@ export function SignalEntryFormEl(props: Props) {
                         .catch(err => {
                           setButtonDisabled(false);
                           setSubmittingError(
-                            `${err}. ${
-                              err.response?.status === 500
-                                ? 'Please try again in some time'
-                                : ''
+                            `${err}. ${err.response?.status === 500
+                              ? 'Please try again in some time'
+                              : ''
                             }`,
                           );
                         });
@@ -1356,27 +1490,50 @@ export function SignalEntryFormEl(props: Props) {
               </div>
             ) : (
               <button
-                className={`${
-                  isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
+                className={`${!validateForm() ||
                   buttonDisabled
-                    ? 'disabled'
-                    : ''
-                } undp-button button-secondary button-arrow`}
+                  ? 'disabled'
+                  : ''
+                  } undp-button button-secondary button-arrow`}
                 type='button'
                 disabled={
-                  isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
+                  !validateForm() ||
                   buttonDisabled
                 }
                 title={
-                  isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                  buttonDisabled
+                  !validateForm() ||
+                    buttonDisabled
                     ? 'All fields are required to update a signal. Descriptions should be > 30 letters'
                     : 'Click to update a signal'
                 }
                 onClick={() => {
                   // update signal
+                  const isValid = validateForm();
+                  if (!isValid) {
+                    setShowRedBorders(true);
+                    return;
+                  }
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
+
+                  // Make sure steep_primary is in the correct format if it's a simple string
+                  let steep_primary = signalData.steep_primary || '';
+                  if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
+                    const fullSteep = choices.steep.find(s => s.startsWith(steep_primary as string));
+                    if (fullSteep) {
+                      steep_primary = fullSteep;
+                    }
+                  }
+
+                  // Make sure sdgs are in the correct format
+                  let sdgs = signalData.sdgs || [];
+                  if (sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
+                    sdgs = sdgs.map(sdg => {
+                      const fullSdg = choices.goal.find(g => g.includes(sdg));
+                      return fullSdg || sdg;
+                    });
+                  }
+
                   if (signalData.id)
                     updateSignalApi(updateSignal.id, {
                       // ...signalData,
@@ -1384,13 +1541,14 @@ export function SignalEntryFormEl(props: Props) {
                       headline: signalData.headline || '',
                       description: signalData.description || '',
                       attachment: signalData.attachment || undefined,
-                      steep_primary: signalData.steep_primary || '',
+                      steep_primary: steep_primary,
                       signature_primary: signalData.signature_primary || '',
                       signature_secondary: signalData.signature_secondary || [],
-                      sdgs: signalData.sdgs || [],
+                      sdgs: sdgs,
                       url: signalData.url || '',
                       relevance: signalData.relevance || '',
                       location: signalData.location || '',
+                      secondary_location: signalData.secondary_location || [],
                       status: signalData.status || '',
                       created_by: signalData.created_by || '',
                       created_for: signalData.created_for || '',
@@ -1411,10 +1569,9 @@ export function SignalEntryFormEl(props: Props) {
                       .catch(err => {
                         setButtonDisabled(false);
                         setSubmittingError(
-                          `${err}. ${
-                            err.response?.status === 500
-                              ? 'Please try again in some time'
-                              : ''
+                          `${err}. ${err.response?.status === 500
+                            ? 'Please try again in some time'
+                            : ''
                           }`,
                         );
                       });
@@ -1426,38 +1583,62 @@ export function SignalEntryFormEl(props: Props) {
           ) : (
             <div className='flex-div'>
               <button
-                className={`${
-                  isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
+                className={`${!validateForm() ||
                   buttonDisabled
-                }undp-button button-secondary button-arrow`}
+                  }undp-button button-secondary button-arrow`}
                 type='button'
                 disabled={
-                  isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
+                  !validateForm() ||
                   buttonDisabled
                 }
                 title={
-                  isSignalInvalid(signalData, [keyword1, keyword2, keyword3]) ||
-                  buttonDisabled
+                  !validateForm() ||
+                    buttonDisabled
                     ? 'All fields are required to submit a signal. Descriptions should be > 30 letters'
                     : 'Click to submit a signal'
                 }
                 onClick={() => {
+                  const isValid = validateForm();
+                  if (!isValid) {
+                    setShowRedBorders(true);
+                    return;
+                  }
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
+
+                  // Make sure steep_primary is in the correct format if it's a simple string
+                  let steep_primary = signalData.steep_primary || '';
+                  if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
+                    const fullSteep = choices.steep.find(s => s.startsWith(steep_primary as string));
+                    if (fullSteep) {
+                      steep_primary = fullSteep;
+                    }
+                  }
+
+                  // Make sure sdgs are in the correct format
+                  let sdgs = signalData.sdgs || [];
+                  if (sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
+                    sdgs = sdgs.map(sdg => {
+                      const fullSdg = choices.goal.find(g => g.includes(sdg));
+                      return fullSdg || sdg;
+                    });
+                  }
+
                   createSignal({
                     headline: signalData.headline || '',
                     description: signalData.description || '',
                     attachment: signalData.attachment || '',
-                    steep_primary: signalData.steep_primary || '',
+                    steep_primary: steep_primary,
                     steep_secondary: signalData.steep_secondary || undefined,
                     signature_primary: signalData.signature_primary || '',
                     signature_secondary: signalData.signature_secondary || [],
-                    sdgs: signalData.sdgs || [],
+                    sdgs: sdgs,
                     created_unit: signalData.created_unit || '',
                     url: signalData.url || '',
                     relevance: signalData.relevance || '',
                     created_for: signalData.created_for || '',
                     location: signalData.location || '',
+                    secondary_location: signalData.secondary_location || [],
                     score: signalData.score,
                     connected_trends: selectedTrendsList,
                     status: 'New',
@@ -1475,10 +1656,9 @@ export function SignalEntryFormEl(props: Props) {
                     .catch(err => {
                       setButtonDisabled(false);
                       setSubmittingError(
-                        `${err}. ${
-                          err.response?.status === 500
-                            ? 'Please try again in some time'
-                            : ''
+                        `${err}. ${err.response?.status === 500
+                          ? 'Please try again in some time'
+                          : ''
                         }`,
                       );
                     });
@@ -1490,23 +1670,44 @@ export function SignalEntryFormEl(props: Props) {
                 className='undp-button button-secondary button-arrow'
                 type='button'
                 onClick={() => {
+                  // Saving as a draft - no validation needed
                   console.log('Saving as a draft', signalData.attachment);
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
+
+                  // Make sure steep_primary is in the correct format if it's not null and doesn't have the full format
+                  let steep_primary = signalData.steep_primary || null;
+                  if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
+                    const fullSteep = choices.steep.find(s => s.startsWith(steep_primary as string));
+                    if (fullSteep) {
+                      steep_primary = fullSteep;
+                    }
+                  }
+
+                  // Make sure sdgs are in the correct format if not null
+                  let sdgs = signalData.sdgs || null;
+                  if (sdgs && sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
+                    sdgs = sdgs.map(sdg => {
+                      const fullSdg = choices.goal.find(g => g.includes(sdg));
+                      return fullSdg || sdg;
+                    });
+                  }
+
                   // console.log(signalData);
                   createSignal({
                     headline: signalData.headline || null,
                     description: signalData.description || null,
                     attachment: signalData.attachment || null,
-                    steep_primary: signalData.steep_primary || null,
+                    steep_primary: steep_primary,
                     steep_secondary: signalData.steep_secondary || null,
                     signature_primary: signalData.signature_primary || null,
                     signature_secondary: signalData.signature_secondary || null,
-                    sdgs: signalData.sdgs || null,
+                    sdgs: sdgs,
                     created_unit: signalData.created_unit || null,
                     url: signalData.url || null,
                     relevance: signalData.relevance || null,
                     created_for: signalData.created_for || null,
+                    secondary_location: signalData.secondary_location || null,
                     score: signalData.score || null,
                     location: signalData.location || null,
                     connected_trends: selectedTrendsList,
@@ -1525,10 +1726,9 @@ export function SignalEntryFormEl(props: Props) {
                     .catch(err => {
                       setButtonDisabled(false);
                       setSubmittingError(
-                        `${err}. ${
-                          err.response?.status === 500
-                            ? 'Please try again in some time'
-                            : ''
+                        `${err}. ${err.response?.status === 500
+                          ? 'Please try again in some time'
+                          : ''
                         }`,
                       );
                     });
@@ -1539,8 +1739,8 @@ export function SignalEntryFormEl(props: Props) {
             </div>
           )}
           {updateSignal &&
-          updateSignal.status === 'Archived' &&
-          (role === 'Curator' || role === 'Admin') ? (
+            updateSignal.status === 'Archived' &&
+            (role === 'Curator' || role === 'Admin') ? (
             <Popconfirm
               title='Delete Signal'
               description='Are you sure to delete this signal?'
@@ -1564,6 +1764,15 @@ export function SignalEntryFormEl(props: Props) {
           {buttonDisabled ? <div className='undp-loader' /> : null}
         </div>
       </div>
+      <div>
+        {SHOW_FORM_VALIDATION && (
+          <ValidationMessage 
+            signal={signalData} 
+            keyWords={[keyword1, keyword2, keyword3]} 
+          />
+        )}
+      </div>
+      <div className='margin-top-09'> </div>
       {trendModal ? (
         <AddTrendsModal
           setTrendModal={setTrendModal}

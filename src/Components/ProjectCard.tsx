@@ -1,17 +1,19 @@
 import styled from 'styled-components';
+import { Modal } from 'antd';
 import { NavLink } from 'react-router-dom';
 import UNDPColorModule from 'undp-viz-colors';
-import { useContext } from 'react';
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
-// import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
+import { useContext, useEffect, useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
 import { SignalDataType } from '../Types';
 import Background from '../assets/UNDP-hero-image.jpg';
 import Context from '../Context/Context';
 
 import '../styles.css';
 import { ChipEl } from './ChipEl';
-// import { getfavoriteSignals } from '../API';
+import { getfavoriteSignals, searchUsers } from '../API';
+import { Collaborator } from './Collaborator';
 
 interface Props {
   data: SignalDataType;
@@ -22,14 +24,14 @@ interface HeroImageProps {
   bgImage?: string;
 }
 
-// const IconContainer = styled.div`
-//   position: absolute;
-//   top: 1rem;
-//   right: 1rem;
-//   background: rgba(255, 255, 255, 0.85);
-//   border-radius: 0.5rem;
-//   padding: 0.5rem;
-// `;
+const IconContainer = styled.div`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+`;
 const HeroImageEl = styled.div<HeroImageProps>`
   background: ${props =>
       props.bgImage ? `url(${props.bgImage})` : `url(${Background})`}
@@ -72,17 +74,51 @@ const LinkP = styled.p`
   }
 `;
 
-export function SignalCard(props: Props) {
+export function ProjectsCard(props: Props) {
   const { data, isDraft } = props;
   const { role, choices, updateCardsToPrint, cardsToPrint } =
     useContext(Context);
-  // const [isFilled, setIsFilled] = useState<boolean>(false);
-  // const myFavBtnClick = () => {
-  //   const signals = getfavoriteSignals();
-  //   console.log(signals);
-  //   setIsFilled(!isFilled);
-  //   console.log(data);
-  // };
+  const [isFilled, setIsFilled] = useState<boolean>(false);
+  //   Need to remove this?
+  const myFavBtnClick = () => {
+    const signals = getfavoriteSignals();
+    console.log(signals);
+    setIsFilled(!isFilled);
+    console.log(data);
+  };
+  //   const [users, setUsers] = useState<UserSearchResponseDataType[]>([]);
+  //   const [loading, setLoading] = useState(false);
+  //   const [error, setError] = useState<string | null>(null);
+  const fetchUsers = async () => {
+    const userData = await searchUsers();
+    console.log(userData);
+    // setLoading(true);
+    // setError(null);
+    // try {
+    //   const userData = await searchUsers();
+    //   //   setUsers(userData);
+    //   console.log(userData);
+    // } catch (err) {
+    //   setError('Failed to fetch users. Please try again later.');
+    // } finally {
+    //   setLoading(false);
+    // }
+  };
+  const [openModal, setOpenModal] = useState(false);
+  //   const [collaborators, setCollaborators] = useState<string[]>(['Alpha', 'Beta', 'Charlie']);
+  const [collaborators] = useState<string[]>(['Alpha', 'Beta', 'Charlie']);
+  const addCollaborator = () => {
+    setOpenModal(true);
+    // const newCollaboratorInitial = prompt('Enter new collaborator initial:');
+    // if (newCollaboratorInitial) {
+    //   setCollaborators([...collaborators, newCollaboratorInitial]);
+    // }
+  };
+  useEffect(() => {
+    if (openModal) {
+      fetchUsers();
+    }
+  }, [openModal]);
   return (
     <div className='signal-card'>
       <CardEl>
@@ -118,7 +154,7 @@ export function SignalCard(props: Props) {
                   {data.status === 'New' ? 'Awaiting Approval' : data.status}
                 </div>
               ) : null}
-              {/* <button
+              <button
                 type='button'
                 onClick={e => {
                   e.preventDefault();
@@ -129,8 +165,8 @@ export function SignalCard(props: Props) {
                   background: 'none',
                   cursor: 'pointer',
                 }}
-              > */}
-              {/* <IconContainer>
+              >
+                <IconContainer>
                   <FontAwesomeIcon
                     icon={isFilled ? solidHeart : regularHeart}
                     style={{
@@ -139,7 +175,7 @@ export function SignalCard(props: Props) {
                     }}
                   />
                 </IconContainer>
-              </button> */}
+              </button>
             </HeroImageEl>
           </NavLink>
           <div style={{ padding: '1rem 1rem 0 1rem' }}>
@@ -217,6 +253,32 @@ export function SignalCard(props: Props) {
                   </div>
                 ) : null,
               )}
+            </div>
+            <p className='small-font undp-typography bold margin-bottom-03 margin-top-03'>
+              Collaborators
+            </p>
+            <div className='collaborator-card'>
+              {collaborators.map((name, index) => (
+                <Collaborator key={index} name={name} />
+              ))}
+              <div
+                className='collaborator-circle add-collaborator'
+                role='button'
+                tabIndex={0}
+                onClick={addCollaborator}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    addCollaborator();
+                  }
+                }}
+                title='Add Collaborator'
+              >
+                +
+              </div>
+              <Modal open={openModal} onCancel={() => setOpenModal(false)}>
+                {' '}
+                <h2>Add Collaborator</h2>{' '}
+              </Modal>
             </div>
           </div>
         </div>

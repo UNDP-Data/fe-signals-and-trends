@@ -1,7 +1,8 @@
 import { AuthenticationResult } from '@azure/msal-browser';
 import { useIsAuthenticated, useMsal } from '@azure/msal-react';
 import { Modal, Select, Switch } from 'antd';
-import { useEffect, useReducer, useMemo, useState } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
+import { ChatBubble } from './Components/ChatBubble';
 import { Footer } from './Components/FooterEl';
 import { SignUpButton } from './Components/SignUpButton';
 import { CHOICES, CLIENT_ID } from './Constants';
@@ -9,19 +10,19 @@ import Context from './Context/Context';
 import Reducer from './Context/Reducer';
 import MainBody from './MainBody';
 import {
-  AllowedRolesDataType,
-  CardsToPrintDataType,
-  ChoicesDataType,
-  CurrentUserResponseDataType,
-  SignalFiltersDataType,
-  TrendFiltersDataType,
+    AllowedRolesDataType,
+    CardsToPrintDataType,
+    ChoicesDataType,
+    CurrentUserResponseDataType,
+    SignalFiltersDataType,
+    TrendFiltersDataType,
 } from './Types';
 
+import { getChoices, readCurrentUser } from './API';
 import './App.css';
 import { Header } from './Components/HeaderEl';
 import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
 import { signOutClickHandler } from './Utils/AuthStatusHandler';
-import { getChoices, readCurrentUser } from './API';
 import { setLocalStorage } from './Utils/UpdateLocalStrage';
 
 function App() {
@@ -245,7 +246,7 @@ function App() {
               })
               .catch(err => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if ((err.response?.data as any).detail === 'User not found.') {
+                if (err.response?.data && (err.response.data as any).detail === 'User not found.') {
                   setOpenModal(true);
                 }
               });
@@ -318,6 +319,7 @@ function App() {
         >
           <MainBody />
           <Footer />
+          {isAuthenticated && <ChatBubble />}
         </div>
       ) : (
         <div
@@ -367,7 +369,7 @@ function App() {
         <p className='undp-typography italics small-font margin-top-07 margin-bottom-05'>
           The Future Trends and Signals System is internal to UNDP staff only.
           If you submit a signal, you are consenting that UNDP staff will be
-          able to view the information you provide in the “Add signal” form,
+          able to view the information you provide in the "Add signal" form,
           including your email address. The signals you submit may also be
           printed by a staff member and shared with external partners. This
           print view will include all signal information, with the exception of

@@ -1,0 +1,12 @@
+# Build outputs
+build/
+dist/
+coverage/
+
+# Dependencies
+node_modules/
+
+# Misc
+.vscode/
+*.log
+*.lock 

@@ -1,4 +1,10 @@
-export type StatusDataType = 'New' | 'Approved' | 'Archived' | 'Draft';
+export type StatusDataType =
+  | 'New'
+  | 'Approved'
+  | 'Archived'
+  | 'Draft'
+  | 'Created'
+  | 'Deleted';
 
 export interface SignalDataType {
   id: number;
@@ -20,9 +26,11 @@ export interface SignalDataType {
   relevance: string;
   keywords: string[];
   location: string;
+  secondary_location?: string[];
   score?: string;
   connected_trends: number[];
   created_for?: string;
+  favorite?: boolean;
 }
 
 export interface NewSignalDataType {
@@ -45,6 +53,7 @@ export interface NewSignalDataType {
   relevance?: string;
   keywords: string[];
   location?: string;
+  secondary_location?: string[];
   score?: string;
   connected_trends?: number[];
   created_for?: string;
@@ -271,4 +280,16 @@ export interface CurrentUserResponseDataType {
   name: string;
   role: AllowedRolesDataType;
   unit: string;
+}
+
+export interface AutoTaggingNewsDataType {
+  headline: string;
+  url: string;
+  description: string;
+  relevance: number | null;
+  keywords: string[];
+  location: string;
+  created_unit: string | null;
+  score: { sentiment: number };
+  connected_trends: string[] | null;
 }

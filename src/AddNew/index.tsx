@@ -1,16 +1,60 @@
-import { useNavigate } from 'react-router-dom';
 import {
   AuthenticatedTemplate,
   UnauthenticatedTemplate,
 } from '@azure/msal-react';
 import { useContext } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SignalEntryFormEl } from '../Components/SignalEntryFormEl';
-import { TrendEntryFormEl } from '../Components/TrendEntryFormEl';
 import { SignInButton } from '../Components/SignInButton';
+import { TrendEntryFormEl } from '../Components/TrendEntryFormEl';
 import Context from '../Context/Context';
+
+// Helper function to map short STEEP+V names to full format
+const mapSteepToFullFormat = (shortName: string | null, steepOptions: string[] | undefined) => {
+  if (!shortName || !steepOptions) return undefined;
+  
+  return steepOptions.find(option => option.startsWith(shortName));
+};
+
+// Helper function to map short SDG names to full format
+const mapSDGToFullFormat = (shortNames: string[] | undefined, sdgOptions: string[] | undefined) => {
+  if (!shortNames || !sdgOptions) return [];
+  
+  return shortNames.map(shortName => 
+    sdgOptions.find(option => option.includes(shortName)) || ''
+  ).filter(Boolean);
+};
 
 export function AddNewSignalEl() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { choices } = useContext(Context);
+  
+  // Parse query parameters for initial form data
+  const initialFormData = {
+    headline: searchParams.get('headline') || undefined,
+    description: searchParams.get('description') || undefined,
+    url: searchParams.get('url') || undefined,
+    location: searchParams.get('location') || undefined,
+    secondary_location: searchParams.get('secondary_location') 
+      ? [searchParams.get('secondary_location')].filter(Boolean) as string[] 
+      : [],  
+    steep_primary: mapSteepToFullFormat(searchParams.get('steep_primary'), choices?.steep),
+    signature_primary: searchParams.get('signature_primary') || undefined,
+    relevance: searchParams.get('relevance') || undefined,
+    created_unit: searchParams.get('created_unit') || undefined,
+    keywords: [
+      searchParams.get('keyword1'),
+      searchParams.get('keyword2'),
+      searchParams.get('keyword3'),
+    ].filter(Boolean) as string[],
+    sdgs: mapSDGToFullFormat(
+      searchParams.get('sdgs')?.split(',').filter(Boolean),
+      choices?.goal
+    ),
+  };
+
+
   return (
     <div
       className='undp-container flex-wrap margin-bottom-09'
@@ -27,7 +71,7 @@ export function AddNewSignalEl() {
           ← Back
         </button>
         <h3 className='undp-typography margin-top-05'>Add New Signal</h3>
-        <SignalEntryFormEl draft={false} />
+        <SignalEntryFormEl draft={false} initialData={initialFormData} />
       </AuthenticatedTemplate>
       <UnauthenticatedTemplate>
         <div

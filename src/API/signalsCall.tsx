@@ -1,7 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { isAxiosError } from 'axios';
+import {
+  AutoTaggingNewsDataType,
+  SignalDataType,
+  StatusDataType,
+} from '../Types';
 import { axiosInstance } from './apiConfig';
-import { SignalDataType, StatusDataType } from '../Types';
+
 
 interface BaseSignalsParamsDataType {
   page?: number;
@@ -50,6 +55,7 @@ export interface CreateSignalParamsDataType {
   relevance: string | null;
   keywords: string[] | null;
   location: string | null;
+  secondary_location?: string[] | null;
   score?: string | null;
   created_for?: string | null;
   status: string | null;
@@ -63,6 +69,7 @@ interface UpdateSignalParamsDataType {
   headline: string | null;
   keywords: string[] | null;
   location?: string | null;
+  secondary_location?: string[] | null;
   relevance?: string | null;
   sdgs: string[] | null;
   signature_primary?: string | null;
@@ -79,6 +86,15 @@ interface UpdateSignalParamsDataType {
   created_by: string | null;
   created_unit?: string | null;
   score?: string | null;
+}
+
+interface makeSignalFavoriteDataType {
+  status: string | null;
+}
+
+export interface GetFavoriteSignalsParamsDataType {
+  page?: number;
+  per_page?: number;
 }
 
 export function searchSignals(params: BaseSignalsParamsDataType = {}) {
@@ -130,12 +146,20 @@ export function searchSignals(params: BaseSignalsParamsDataType = {}) {
     .get<SignalsSearchResponseDataType>('/signals/search', {
       params: queryParams,
     })
-    .then(response => response.data)
+    .then(response => {
+      console.log(
+        'API Call URL ',
+        axiosInstance.defaults.baseURL,
+        '/signals/search',
+        queryParams,
+      );
+      console.log(response.data);
+      return response.data;
+    })
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to search signals at the moment, try again later. ${
-            error.response?.data?.message || error.message
+          `Unable to search signals at the moment, try again later. ${error.response?.data?.message || error.message
           } `,
         );
       } else {
@@ -198,8 +222,7 @@ export function exportSignals(params: BaseSignalsParamsDataType = {}) {
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to export signals at the moment, try again later. ${
-            error.response?.data?.message || error.message
+          `Unable to export signals at the moment, try again later. ${error.response?.data?.message || error.message
           } `,
         );
       } else {
@@ -221,8 +244,7 @@ export function generateSignal(params: { url: string }) {
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to generate signal at the moment, try again later. ${
-            error.response?.data?.message || error.message
+          `Unable to generate signal at the moment, try again later. ${error.response?.data?.message || error.message
           } `,
         );
       } else {
@@ -238,8 +260,7 @@ export function readSignal(uid: number) {
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to retrieve the signal at the moment, try again later. ${
-            error.response?.data?.message || error.message
+          `Unable to retrieve the signal at the moment, try again later. ${error.response?.data?.message || error.message
           } `,
         );
       } else {
@@ -261,8 +282,7 @@ export function readMySignals(params: ReadMySignalsParamsDataType) {
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to retrieve your signals at the moment, try again later. ${
-            error.response?.data?.message || error.message
+          `Unable to retrieve your signals at the moment, try again later. ${error.response?.data?.message || error.message
           } `,
         );
       } else {
@@ -278,12 +298,71 @@ export function createSignal(params: CreateSignalParamsDataType) {
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to create signal at the moment, try again later. ${
-            error.response?.data?.message || error.message
+          `Unable to create signal at the moment, try again later. ${error.response?.data?.message || error.message
           } `,
         );
       } else {
         throw new Error(`An unknown error occurred. ${error.message}`);
+      }
+    });
+}
+
+export function makeSignalFavorite(
+  signal_id: number,
+  params: makeSignalFavoriteDataType,
+) {
+  return axiosInstance
+    .post<makeSignalFavoriteDataType>(`/favourites/${signal_id}`, params)
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to make the signal a favorite. ${error.response?.data?.message || error.message
+          }`,
+        );
+      } else {
+        // throw new Error(`An unknown error occurred. ${error.message}`);
+      }
+    });
+}
+
+export async function getfavoriteSignals(params: GetFavoriteSignalsParamsDataType = {}) {
+  const {
+    page = 1,
+    per_page = 20,
+  } = params;
+
+  const queryParams: Record<string, unknown> = {
+    page,
+    per_page
+  };
+
+  try {
+    const response = await axiosInstance.get<SignalDataType[]>('/favourites/', { params: queryParams });
+    return response.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      throw new Error(
+        `Unable to retrieve your favorite signals at the moment, try again later. ${error.response?.data?.message || error.message
+        } `,
+      );
+    } else if (error instanceof Error) {
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    } else {
+      throw new Error('An unexpected error occurred while fetching favorites');
+    }
+  }
+}
+
+export function autoTaggingFetchNewsAPI() {
+  return axiosInstance
+    .get<AutoTaggingNewsDataType[]>('/signals/autocomplete')
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error('Unable to fetch news article');
+      } else {
+        throw new Error(`An unknown error occured. ${error.message}`);
       }
     });
 }
@@ -295,8 +374,7 @@ export function updateSignal(uid: number, params: UpdateSignalParamsDataType) {
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to update signal at the moment, try again later. ${
-            error.response?.data?.message || error.message
+          `Unable to update signal at the moment, try again later. ${error.response?.data?.message || error.message
           } `,
         );
       } else {
@@ -312,8 +390,7 @@ export function deleteSignal(uid: number) {
     .catch(error => {
       if (isAxiosError(error)) {
         throw new Error(
-          `Unable to delete the signal at the moment, try again later. ${
-            error.response?.data?.message || error.message
+          `Unable to delete the signal at the moment, try again later. ${error.response?.data?.message || error.message
           } `,
         );
       } else {

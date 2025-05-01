@@ -1,9 +1,10 @@
-import { Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
-import { NavLink } from 'react-router-dom';
+import { Dropdown } from 'antd';
 import { useContext, useState } from 'react';
-import { SignOutButton } from '../SignOutButton';
+import { NavLink } from 'react-router-dom';
+import { navLinks } from '../../Constants';
 import Context from '../../Context/Context';
+import { SignOutButton } from '../SignOutButton';
 
 interface Props {
   signOutClickHandler: () => void;
@@ -13,6 +14,8 @@ export function LoggedInHeader(props: Props) {
   const { signOutClickHandler } = props;
   const { role } = useContext(Context);
   const [showMenu, setShowMenu] = useState(false);
+  const isAdmin = role === 'Admin' || role === 'Curator';
+
   const items: MenuProps['items'] = [
     {
       key: '1',
@@ -110,48 +113,45 @@ export function LoggedInHeader(props: Props) {
             >
               All Signals
             </NavLink>
-            <NavLink
-              to='./trends'
-              className={({ isActive }) =>
-                isActive ? 'header-link-active' : 'header-link'
-              }
-            >
-              All Trends
-            </NavLink>
-            {role === 'Admin' || role === 'Curator' ? (
-              <>
-                <NavLink
-                  to='./archived-signals'
-                  className={({ isActive }) =>
-                    isActive ? 'header-link-active' : 'header-link'
-                  }
-                >
-                  Archived Signals
-                </NavLink>
-                <NavLink
-                  to='./archived-trends'
-                  className={({ isActive }) =>
-                    isActive ? 'header-link-active' : 'header-link'
-                  }
-                >
-                  Archived Trends
-                </NavLink>
-              </>
-            ) : null}
-          </div>
-          <div>
-            <div className='flex-div flex-vert-align-center'>
-              <Dropdown
-                menu={{ items }}
-                placement='bottomRight'
-                className='undp-button-dropdown'
-                overlayClassName='undp-dropdown-menu'
+            {isAdmin && (
+              <NavLink
+                to='./trends'
+                className={({ isActive }) =>
+                  isActive ? 'header-link-active' : 'header-link'
+                }
               >
-                <div className='small-font'>Add A New</div>
-              </Dropdown>
-              <SignOutButton signOutClickHandler={signOutClickHandler} />
-            </div>
+                All Trends
+              </NavLink>
+            )}
+            {!isAdmin && (
+              <NavLink
+                to={navLinks.addNewSignal}
+                className={({ isActive }) =>
+                  isActive ? 'header-link-active' : 'header-link'
+                }
+              >
+                Add Signal
+              </NavLink>  
+            )}
           </div>
+          {isAdmin && (
+            <div>
+              <div className='flex-div flex-vert-align-center'>
+                <Dropdown
+                  menu={{ items }}
+                  placement='bottomRight'
+                  className='undp-button-dropdown'
+                  overlayClassName='undp-dropdown-menu'
+                >
+                  <div className='small-font'>Add A New</div>
+                </Dropdown>
+                <SignOutButton signOutClickHandler={signOutClickHandler} />
+              </div>
+            </div>
+          )}
+          {!isAdmin && (
+            <SignOutButton signOutClickHandler={signOutClickHandler} />
+          )}
         </div>
         <button
           type='button'
@@ -174,62 +174,6 @@ export function LoggedInHeader(props: Props) {
           showMenu ? 'undp-mobile-nav mobile-nav-show' : 'undp-mobile-nav'
         }
       >
-        <div>
-          <NavLink
-            to='./signals'
-            className={({ isActive }) =>
-              isActive ? 'header-link-active' : 'header-link'
-            }
-            onClick={() => {
-              setShowMenu(false);
-            }}
-          >
-            All Signals
-          </NavLink>
-        </div>
-        <div>
-          <NavLink
-            to='./trends'
-            className={({ isActive }) =>
-              isActive ? 'header-link-active' : 'header-link'
-            }
-            onClick={() => {
-              setShowMenu(false);
-            }}
-          >
-            All Trends
-          </NavLink>
-        </div>
-        {role === 'Admin' || role === 'Curator' ? (
-          <div>
-            <NavLink
-              to='./archived-signals'
-              className={({ isActive }) =>
-                isActive ? 'header-link-active' : 'header-link'
-              }
-              onClick={() => {
-                setShowMenu(false);
-              }}
-            >
-              Archived Signals
-            </NavLink>
-          </div>
-        ) : null}
-        {role === 'Admin' || role === 'Curator' ? (
-          <div>
-            <NavLink
-              to='./archived-trends'
-              className={({ isActive }) =>
-                isActive ? 'header-link-active' : 'header-link'
-              }
-              onClick={() => {
-                setShowMenu(false);
-              }}
-            >
-              Archived Trends
-            </NavLink>
-          </div>
-        ) : null}
         <div>
           <NavLink
             to='/add-new-signal'
