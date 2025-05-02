@@ -188,7 +188,7 @@ export const UserGroupsList = ({ onEdit, userGroups: propUserGroups }: UserGroup
           if (userGroups) {
             const updatedGroups = 
               Array.isArray(userGroups) ? 
-                userGroups.filter(g => g.id !== group.id) : 
+                (userGroups as Array<UserGroupDataType | ExtendedUserGroupDataType>).filter((g: UserGroupDataType | ExtendedUserGroupDataType) => g.id !== group.id) : 
                 [];
                 
             // Convert to standard format if we're using extended user groups

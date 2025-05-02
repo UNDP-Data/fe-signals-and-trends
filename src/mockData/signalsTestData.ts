@@ -340,7 +340,7 @@ export const getSignalsByGroupId = (groupId: number): SignalDataType[] => {
   if (!group) return [];
 
   return mockSignals.filter(signal => 
-    group.users.includes(signal.created_by)
+    group.users.some(user => typeof user === 'string' ? user === signal.created_by : user.email === signal.created_by)
   );
 };
 
