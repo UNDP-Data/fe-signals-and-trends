@@ -2,29 +2,30 @@ import {
   AuthenticatedTemplate,
   UnauthenticatedTemplate,
 } from '@azure/msal-react';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { Modal, notification } from 'antd';
 import { useContext, useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { Modal, notification } from 'antd';
-import { PDFDownloadLink } from '@react-pdf/renderer';
 import { AddNewSignalEl, AddNewTrendEl } from './AddNew';
 import { AdminPanel } from './AdminPanel';
-import Context from './Context/Context';
-import { EditSignal } from './Signals/EditSignal';
-import { EditTrend } from './Trends/EditTrend';
-import { HomePage } from './HomePage';
-import { SignalDetail } from './Signals/SignalDetail';
-import { ArchivedSignalsListing, SignalsListing } from './Signals';
-import { TrendDetail } from './Trends/TrendDetail';
-import { ArchivedTrendsListing, TrendsListing } from './Trends';
-import { MyDrafts } from './MyDrafts';
-import { SignalDataType, TrendDataType } from './Types';
-import { PDFDocument } from './PDFGenerator';
-import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
-import { signOutClickHandler } from './Utils/AuthStatusHandler';
-import { Header } from './Components/HeaderEl';
 import { searchSignals, searchTrends } from './API';
+import { Header } from './Components/HeaderEl';
+import Context from './Context/Context';
+import { HomePage } from './HomePage';
+import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
+import { MyDrafts } from './MyDrafts';
 import { MyFavorites } from './MyFavorites';
 import { MyProjects } from './MyProjects';
+import { MySprints } from './MySprints';
+import { PDFDocument } from './PDFGenerator';
+import { ArchivedSignalsListing, SignalsListing } from './Signals';
+import { EditSignal } from './Signals/EditSignal';
+import { SignalDetail } from './Signals/SignalDetail';
+import { ArchivedTrendsListing, TrendsListing } from './Trends';
+import { EditTrend } from './Trends/EditTrend';
+import { TrendDetail } from './Trends/TrendDetail';
+import { SignalDataType, TrendDataType } from './Types';
+import { signOutClickHandler } from './Utils/AuthStatusHandler';
 
 function MainBody() {
   const {
@@ -201,6 +202,7 @@ function MainBody() {
               <Route path='/add-new-trend' element={<AddNewTrendEl />} />
               <Route path='/admin-panel' element={<AdminPanel />} />
               <Route path='/my-drafts' element={<MyDrafts />} />
+              <Route path='/my-sprints' element={<MySprints />} />
               <Route path='/my-favorites' element={<MyFavorites />} />
               <Route path='/my-projects' element={<MyProjects />} />
             </Routes>
