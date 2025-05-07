@@ -1,9 +1,16 @@
 import { useContext, useState, useEffect } from 'react';
 import { Form, Input, Button, Select, message } from 'antd';
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined } from '@ant-design/icons';
 import Context from '../../Context/Context';
-import type { UserGroupDataType } from '../../Types';
+import type { UserDataType, UserGroupDataType } from '../../Types';
 import { createUserGroup, updateUserGroup, searchUsers } from '../../API/userCalls';
+import type { UserGroupResponseDataType } from '../../API/userCalls';
+
+interface UserOption {
+  label: string;
+  value: string;
+  email: string;
+}
 
 interface UserGroupFormProps {
   group?: UserGroupDataType;
@@ -14,51 +21,137 @@ export const UserGroupForm = ({ group, onSuccess }: UserGroupFormProps) => {
   const [form] = Form.useForm();
   const { userGroups, updateUserGroups } = useContext(Context);
   const [loading, setLoading] = useState(false);
-  const [userOptions, setUserOptions] = useState<{ label: string; value: string }[]>([]);
-  const [searchValue, setSearchValue] = useState('');
-
+  const [fetching, setFetching] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(false);
+  const [userOptions, setUserOptions] = useState<UserOption[]>([]);
+  
+  // Fetch user details for existing group members on initial load
   useEffect(() => {
-    if (group) {
-      form.setFieldsValue({
-        name: group.name,
-        users: group.users,
-      });
-    }
-  }, [group, form]);
-
-  useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchInitialUsers = async () => {
+      if (!group || !group.user_ids || group.user_ids.length === 0) return;
+      
+      setInitialLoading(true);
       try {
+        // Fetch all users at once with a larger page size
         const response = await searchUsers({ per_page: 100 });
-        const options = response.data.map(user => ({
-          label: `${user.name} (${user.email})`,
-          value: user.email,
-        }));
-        setUserOptions(options);
+        const allUsers = response.data;
+        
+        // Filter the users that are in the group
+        const groupUsers = allUsers.filter((user: UserDataType) => 
+          group.user_ids.includes(user.id)
+        );
+        
+        if (groupUsers.length > 0) {
+          // Create options for the select with proper labels and values
+          const options = groupUsers.map((user: UserDataType) => ({
+            label: user.name,
+            value: user.email,
+            // Keep email in a searchable property for filtering
+            email: user.email
+          }));
+          
+          setUserOptions(options);
+          
+          // Set form values with emails instead of IDs
+          form.setFieldsValue({
+            name: group.name,
+            users: groupUsers.map((user: UserDataType) => user.email),
+          });
+        } else {
+          // If no matching users are found, just set the name
+          form.setFieldsValue({
+            name: group.name,
+            users: [],
+          });
+        }
       } catch (error) {
-        console.error('Failed to fetch users:', error);
+        console.error('Failed to fetch initial users:', error);
+        form.setFieldsValue({
+          name: group.name,
+          users: [],
+        });
+      } finally {
+        setInitialLoading(false);
       }
     };
 
-    fetchUsers();
-  }, []);
+    fetchInitialUsers();
+  }, [group, form]);
 
-  const handleSubmit = async (values: { name: string; users: string[] }) => {
+  const handleSearch = async (value: string) => {
+    if (!value) {
+      // Don't clear options if we have initial values loaded
+      if (!group || userOptions.length === 0) {
+        setUserOptions([]);
+      }
+      return;
+    }
+    
+    setFetching(true);
+    try {
+      const response = await searchUsers({ 
+        per_page: 20,
+        query: value 
+      });
+      
+      const options = response.data.map((user: UserDataType) => ({
+        label: user.name,
+        value: user.email,
+        // Keep email in a searchable property for filtering
+        email: user.email
+      }));
+      
+      setUserOptions(options);
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    } finally {
+      setFetching(false);
+    }
+  };
+
+  const handleSubmit = async (values: { name: string; users?: string[] }) => {
     setLoading(true);
     try {
+      const submitData = {
+        name: values.name,
+        users: values.users || [],
+      };
+      
       if (group) {
         // Update existing group
-        const updatedGroup = await updateUserGroup(group.id, values);
+        const updatedGroupData: UserGroupResponseDataType = {
+          id: group.id,
+          name: submitData.name,
+          users: submitData.users,
+        };
+        const updatedGroup = await updateUserGroup(group.id, updatedGroupData);
         if (userGroups) {
-          updateUserGroups(
-            userGroups.map(g => (g.id === group.id ? updatedGroup : g))
-          );
+          const mappedUserGroups = userGroups.map(g => {
+            if (g.id === group.id) {
+              return {
+                ...g, 
+                ...updatedGroup,
+                user_ids: updatedGroup.user_ids || g.user_ids
+              };
+            }
+            return g;
+          });
+          updateUserGroups(mappedUserGroups);
         }
         message.success(`Group "${values.name}" has been updated.`);
       } else {
         // Create new group
-        const newGroup = await createUserGroup(values);
-        updateUserGroups(userGroups ? [...userGroups, newGroup] : [newGroup]);
+        const newGroup = await createUserGroup(submitData);
+        
+        // Convert to UserGroupDataType format for compatibility
+        const newGroupData: UserGroupDataType = {
+          ...newGroup,
+          user_ids: newGroup.user_ids || [],
+          signal_ids: [],
+          collaborator_map: {},
+        };
+        
+        updateUserGroups(userGroups ? [...userGroups, newGroupData] : [newGroupData]);
         message.success(`Group "${values.name}" has been created.`);
         form.resetFields();
       }
@@ -73,17 +166,6 @@ export const UserGroupForm = ({ group, onSuccess }: UserGroupFormProps) => {
       setLoading(false);
     }
   };
-
-  // Handle search input changes
-  const handleSearchChange = (value: string) => {
-    setSearchValue(value);
-  };
-
-  // Filter options based on search value
-  const filteredOptions = searchValue
-    ? userOptions.filter(option => 
-        option.label.toLowerCase().includes(searchValue.toLowerCase()))
-    : userOptions;
 
   return (
     <Form
@@ -113,37 +195,43 @@ export const UserGroupForm = ({ group, onSuccess }: UserGroupFormProps) => {
       <Form.Item
         name="users"
         label={<span className="undp-form-label">Add Members*</span>}
-        rules={[{ required: true, message: 'Please select at least one member' }]}
+        rules={[
+          { 
+            required: false,
+            message: 'Please select at least one member'
+          }
+        ]}
       >
-        <div className="undp-select-container">
-          <Input
-            placeholder="Type a name or UNDP email to search"
-            value={searchValue}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            style={{ 
-              border: '2px solid #000', 
-              borderRadius: 0, 
-              padding: '8px 12px',
-              marginBottom: '12px',
-              fontSize: '16px'
-            }}
-            suffix={<SearchOutlined />}
-          />
-          <Select
-            mode="multiple"
-            placeholder="Select users"
-            style={{ 
-              width: '100%',
-              fontSize: '16px'
-            }}
-            options={filteredOptions}
-            optionFilterProp="label"
-            showSearch
-            className="undp-select"
-            listHeight={280}
-            listItemHeight={40}
-          />
-        </div>
+        <Select
+          mode="multiple"
+          placeholder="Type a name or UNDP email to search"
+          style={{ 
+            width: '100%',
+            fontSize: '16px'
+          }}
+          options={userOptions}
+          showSearch
+          className="undp-select"
+          filterOption={false}
+          onSearch={handleSearch}
+          notFoundContent={
+            initialLoading || fetching 
+              ? "Loading..." 
+              : userOptions.length === 0 
+                ? "Type to search users" 
+                : "No users found"
+          }
+          suffixIcon={<SearchOutlined />}
+          listHeight={280}
+          listItemHeight={40}
+          loading={initialLoading || fetching}
+          optionRender={(option) => (
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span>{option.label}</span>
+              <span style={{ fontSize: '12px', color: '#666' }}>{option.data.email}</span>
+            </div>
+          )}
+        />
       </Form.Item>
 
       <Form.Item>

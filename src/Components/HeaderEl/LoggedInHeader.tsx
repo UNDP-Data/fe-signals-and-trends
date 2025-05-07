@@ -10,6 +10,8 @@ interface Props {
   signOutClickHandler: () => void;
 }
 
+
+
 export function LoggedInHeader(props: Props) {
   const { signOutClickHandler } = props;
   const { role } = useContext(Context);
@@ -106,12 +108,12 @@ export function LoggedInHeader(props: Props) {
             style={{ flexGrow: 1, justifyContent: 'center' }}
           >
             <NavLink
-              to='/my-sprints'
+              to='/all-signals'
               className={({ isActive }) =>
                 isActive ? 'header-link-active' : 'header-link'
               }
             >
-              My Sprints & Groups
+              All Signals
             </NavLink>
             {isAdmin && (
               <NavLink

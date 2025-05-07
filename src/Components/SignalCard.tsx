@@ -1,17 +1,19 @@
 import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
 import UNDPColorModule from 'undp-viz-colors';
-import { useContext } from 'react';
-// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-// import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
-// import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
-import { SignalDataType } from '../Types';
+import { useContext, useState, useEffect } from 'react';
+import { Dropdown, notification } from 'antd';
+import type { MenuProps } from 'antd';
+import { EllipsisOutlined } from '@ant-design/icons';
+import type { SignalDataType } from '../Types';
 import Background from '../assets/UNDP-hero-image.jpg';
 import Context from '../Context/Context';
+import { FavoriteButton } from './FavoriteButton';
+import { addSignalToUserGroup } from '../API';
 
 import '../styles.css';
 import { ChipEl } from './ChipEl';
-// import { getfavoriteSignals } from '../API';
+import { SignalCardActions } from './SignalCardActions';
 
 interface Props {
   data: SignalDataType;
@@ -72,17 +74,117 @@ const LinkP = styled.p`
   }
 `;
 
+const MenuButton = styled.div`
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  margin-left: auto;
+  
+  &:hover {
+    background-color: #f0f0f0;
+  }
+`;
+
 export function SignalCard(props: Props) {
   const { data, isDraft } = props;
-  const { role, choices, updateCardsToPrint, cardsToPrint } =
+  const { role, choices, updateCardsToPrint, cardsToPrint, userGroups } =
     useContext(Context);
-  // const [isFilled, setIsFilled] = useState<boolean>(false);
-  // const myFavBtnClick = () => {
-  //   const signals = getfavoriteSignals();
-  //   console.log(signals);
-  //   setIsFilled(!isFilled);
-  //   console.log(data);
-  // };
+  const [groupsWithSignal, setGroupsWithSignal] = useState<number[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Check if the signal is already in any groups
+  useEffect(() => {
+    if (userGroups && userGroups.length > 0) {
+      const signalGroups = userGroups.filter(group => 
+        group.signal_ids?.includes(data.id)
+      ).map(group => group.id);
+      
+      setGroupsWithSignal(signalGroups);
+    }
+  }, [userGroups, data.id]);
+  
+  const handleAddToUserGroup = (groupId: number) => {
+    // If the signal is already in the group, don't do anything
+    if (groupsWithSignal.includes(groupId)) {
+      notification.info({
+        message: 'Information',
+        description: 'This signal is already in the selected group',
+        placement: 'top',
+        className: 'undp-notification',
+      });
+      return;
+    }
+    
+    setLoading(true);
+    addSignalToUserGroup(data.id, groupId)
+      .then(() => {
+        notification.success({
+          message: 'Success',
+          description: 'Signal added to user group successfully',
+          placement: 'top',
+          className: 'undp-notification',
+        });
+        
+        // Update the list of groups containing this signal
+        setGroupsWithSignal([...groupsWithSignal, groupId]);
+      })
+      .catch(error => {
+        notification.error({
+          message: 'Error',
+          description: error.message || 'An error occurred while adding signal to user group',
+          placement: 'top',
+          className: 'undp-notification',
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  // Create menu items for the dropdown
+  const menuItems: MenuProps['items'] = [
+    {
+      key: 'favorite',
+      label: (
+        <FavoriteButton 
+          signalId={data.id} 
+          initialFavoriteStatus={data.favorite || false}
+          size="small"
+          inDropdown
+        />
+      ),
+    },
+    {
+      type: 'divider',
+    },
+  ];
+
+  // Add user groups to menu items
+  if (userGroups && userGroups.length > 0) {
+    const userGroupsSubmenu = userGroups.map(group => ({
+      key: `group-${group.id}`,
+      label: (
+        <span>
+          {group.name} {groupsWithSignal.includes(group.id) && '✓'}
+        </span>
+      ),
+      disabled: groupsWithSignal.includes(group.id) || loading,
+      onClick: () => handleAddToUserGroup(group.id),
+    }));
+
+    menuItems.push({
+      key: 'user-groups',
+      label: 'Add to Group',
+      children: userGroupsSubmenu,
+    });
+  } else {
+    menuItems.push({
+      key: 'no-groups',
+      label: 'No Groups Available',
+      disabled: true,
+    });
+  }
+
   return (
     <div className='signal-card'>
       <CardEl>
@@ -118,66 +220,56 @@ export function SignalCard(props: Props) {
                   {data.status === 'New' ? 'Awaiting Approval' : data.status}
                 </div>
               ) : null}
-              {/* <button
-                type='button'
-                onClick={e => {
-                  e.preventDefault();
-                  myFavBtnClick();
-                }}
-                style={{
-                  border: 'none',
-                  background: 'none',
-                  cursor: 'pointer',
-                }}
-              > */}
-              {/* <IconContainer>
-                  <FontAwesomeIcon
-                    icon={isFilled ? solidHeart : regularHeart}
-                    style={{
-                      color: isFilled ? 'orange' : 'black',
-                      fontSize: '1.5em',
-                    }}
-                  />
-                </IconContainer>
-              </button> */}
             </HeroImageEl>
           </NavLink>
+          
           <div style={{ padding: '1rem 1rem 0 1rem' }}>
-            <div className='flex-div flex-wrap'>
-              <ChipEl
-                text={
-                  data.steep_primary
-                    ? data.steep_primary.split(' – ')[0]
-                    : 'No tags'
-                }
-                circleColor={
-                  data.steep_primary
-                    ? !choices
-                      ? 'var(--black)'
-                      : UNDPColorModule.categoricalColors.colors[
-                          choices?.steep.findIndex(
-                            el => el === data.steep_primary,
-                          )
-                        ]
-                    : 'var(--gray-600)'
-                }
-              />
-              {data.steep_secondary
-                ?.filter(s => s !== data.steep_primary)
-                .map((s, j) => (
-                  <ChipEl
-                    key={j}
-                    text={s.split(' – ')[0]}
-                    circleColor={
-                      !choices
+            <div className='flex-div flex-wrap' style={{ alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', flexGrow: 1 }}>
+                <ChipEl
+                  text={
+                    data.steep_primary
+                      ? data.steep_primary.split(' – ')[0]
+                      : 'No tags'
+                  }
+                  circleColor={
+                    data.steep_primary
+                      ? !choices
                         ? 'var(--black)'
                         : UNDPColorModule.categoricalColors.colors[
-                            choices?.steep.findIndex(el => el === s)
+                            choices?.steep.findIndex(
+                              el => el === data.steep_primary,
+                            )
                           ]
-                    }
-                  />
-                ))}
+                      : 'var(--gray-600)'
+                  }
+                />
+                {data.steep_secondary
+                  ?.filter(s => s !== data.steep_primary)
+                  .map((s, index) => (
+                    <ChipEl
+                      key={`steep-${data.id}-${index}-${s}`}
+                      text={s.split(' – ')[0]}
+                      circleColor={
+                        !choices
+                          ? 'var(--black)'
+                          : UNDPColorModule.categoricalColors.colors[
+                              choices?.steep.findIndex(el => el === s)
+                            ]
+                      }
+                    />
+                  ))}
+              </div>
+
+              <Dropdown menu={{ items: menuItems }} trigger={['click']}>
+                <MenuButton
+                  onClick={e => e.preventDefault()}
+                >
+                  <EllipsisOutlined style={{ fontSize: '24px' }} />
+                </MenuButton>
+              </Dropdown>
             </div>
+
             <NavLink
               to={
                 isDraft
@@ -210,9 +302,9 @@ export function SignalCard(props: Props) {
               Keywords
             </p>
             <div className='flex-div flex-wrap margin-bottom-07 gap-03'>
-              {data.keywords?.map((el, j) =>
+              {data.keywords?.map((el, index) =>
                 el !== '' ? (
-                  <div className='undp-chip' key={`chip-${j}`}>
+                  <div className='undp-chip' key={`keyword-${data.id}-${index}-${el}`}>
                     {el}
                   </div>
                 ) : null,
@@ -220,117 +312,12 @@ export function SignalCard(props: Props) {
             </div>
           </div>
         </div>
-        <div>
-          <div
-            className='flex-div gap-00'
-            style={{
-              justifyContent: 'space-between',
-              borderTop: '1px solid var(--gray-400)',
-              margin: '1.5rem 0 0 0',
-              padding: '0',
-            }}
-          >
-            <NavLink
-              to={
-                isDraft
-                  ? `/signals/${data.id}/edit`
-                  : data.status === 'Archived'
-                  ? `/archived-signals/${data.id}`
-                  : `/signals/${data.id}`
-              }
-              style={{
-                textDecoration: 'none',
-                borderRight: '1px solid var(--gray-400)',
-                flexGrow: 1,
-                marginBottom: '-1rem',
-                paddingBottom: 0,
-                justifyContent: 'center',
-                display: 'flex',
-              }}
-            >
-              <button
-                className='undp-button button-tertiary button-arrow'
-                type='button'
-              >
-                {isDraft ? 'Edit Draft' : 'Read More'}
-              </button>
-            </NavLink>
-            {isDraft ? null : (
-              <button
-                className={`undp-button button-tertiary button-arrow${
-                  cardsToPrint.findIndex(
-                    el =>
-                      el.id === `${data.id}` &&
-                      el.mode === 'card' &&
-                      el.type === 'signal',
-                  ) !== -1
-                    ? 'disabled'
-                    : ''
-                }`}
-                disabled={
-                  cardsToPrint.findIndex(
-                    el =>
-                      el.id === `${data.id}` &&
-                      el.mode === 'card' &&
-                      el.type === 'signal',
-                  ) !== -1
-                }
-                style={{
-                  opacity:
-                    cardsToPrint.findIndex(
-                      el =>
-                        el.id === `${data.id}` &&
-                        el.mode === 'card' &&
-                        el.type === 'signal',
-                    ) !== -1
-                      ? 0.4
-                      : 1,
-                  cursor:
-                    cardsToPrint.findIndex(
-                      el =>
-                        el.id === `${data.id}` &&
-                        el.mode === 'card' &&
-                        el.type === 'signal',
-                    ) !== -1
-                      ? 'not-allowed'
-                      : 'pointer',
-                  flexGrow: 1,
-                  marginBottom: '-1rem',
-                  paddingBottom: 0,
-                }}
-                type='button'
-                onClick={e => {
-                  e.stopPropagation();
-                  if (
-                    cardsToPrint.findIndex(
-                      el =>
-                        el.id === `${data.id}` &&
-                        el.mode === 'card' &&
-                        el.type === 'signal',
-                    ) === -1
-                  ) {
-                    const cardToPrintTemp = [...cardsToPrint];
-                    cardToPrintTemp.push({
-                      type: 'signal',
-                      mode: 'card',
-                      id: `${data.id}`,
-                    });
-                    updateCardsToPrint(cardToPrintTemp);
-                  }
-                }}
-              >
-                {cardsToPrint.findIndex(
-                  el =>
-                    el.id === `${data.id}` &&
-                    el.mode === 'card' &&
-                    el.type === 'signal',
-                ) === -1
-                  ? 'Download'
-                  : 'Added to PDF'}
-              </button>
-            )}
-          </div>
-        </div>
+        <SignalCardActions 
+          data={data}
+          isDraft={isDraft}
+          cardsToPrint={cardsToPrint}
+          updateCardsToPrint={updateCardsToPrint}
+        />
       </CardEl>
     </div>
   );

@@ -13,6 +13,7 @@ interface FavoriteButtonProps {
   size?: 'small' | 'medium' | 'large';
   withContainer?: boolean;
   iconColor?: string;
+  inDropdown?: boolean;
 }
 
 const IconContainer = styled.div`
@@ -30,6 +31,7 @@ export function FavoriteButton({
   size = 'medium',
   withContainer = false,
   iconColor = 'orange',
+  inDropdown = false,
 }: FavoriteButtonProps) {
   const { isFavorite, openModal, handleFavoriteClick, closeModal } =
     useFavoriteToggle({
@@ -43,7 +45,6 @@ export function FavoriteButton({
         return '1em';
       case 'large':
         return '2em';
-      case 'medium':
       default:
         return '1.5em';
     }
@@ -54,13 +55,15 @@ export function FavoriteButton({
     : "Add to favorites - Save this signal for easy access later";
 
   const button = (
-    <Tooltip title={tooltipTitle} placement="top">
+    <Tooltip title={inDropdown ? undefined : tooltipTitle} placement="top">
       <button
         type="button"
         onClick={(e) => {
           e.preventDefault();
+          e.stopPropagation();
           handleFavoriteClick();
         }}
+        className={size === 'small' && !inDropdown ? 'undp-button button-tertiary' : ''}
         style={{
           border: 'none',
           background: 'none',
@@ -68,6 +71,10 @@ export function FavoriteButton({
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem',
+          padding: inDropdown ? '0' : (size === 'small' ? '0.25rem 0.5rem' : undefined),
+          fontSize: inDropdown ? '0.9em' : (size === 'small' ? '0.875rem' : undefined),
+          width: inDropdown ? '100%' : undefined,
+          justifyContent: inDropdown ? 'flex-start' : undefined,
         }}
         aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
       >
@@ -87,11 +94,14 @@ export function FavoriteButton({
               icon={isFavorite ? solidHeart : regularHeart}
               style={{
                 color: isFavorite ? iconColor : 'black',
-                fontSize: getFontSize(),
+                fontSize: inDropdown ? '1em' : getFontSize(),
+                marginRight: inDropdown ? '8px' : undefined,
               }}
             />
             <span className="undp-typography small-font">
-              {isFavorite ? "Saved to favorites" : "Save to favorites"}
+              {inDropdown ? (isFavorite ? "Remove from favorites" : "Add to favorites") : 
+               (size === 'small' ? (isFavorite ? "Saved" : "Favorite") : 
+               (isFavorite ? "Saved to favorites" : "Save to favorites"))}
             </span>
           </>
         )}
@@ -112,12 +122,13 @@ export function FavoriteButton({
             key="close" 
             onClick={closeModal} 
             className="undp-button button-secondary"
+            type="button"
           >
             Close
           </button>,
           isFavorite && (
             <NavLink key="view-favorites" to="/my-favorites">
-              <button className="undp-button button-primary">
+              <button className="undp-button button-primary" type="button">
                 View My Favorites
               </button>
             </NavLink>

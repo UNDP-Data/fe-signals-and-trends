@@ -4,7 +4,7 @@ import {
 } from '@azure/msal-react';
 import { Pagination, PaginationProps } from 'antd';
 import { useContext, useState } from 'react';
-import { FavoriteCard } from '../Components/FavoriteCard';
+import { SignalCard } from '../Components/SignalCard';
 import { SignInButton } from '../Components/SignInButton';
 import Context from '../Context/Context';
 import { useFavorites } from '../Hooks/useFavorites';
@@ -14,7 +14,7 @@ const FavoritesList = ({ signals }: { signals: SignalDataType[] }) => {
   return (
     <>
       {signals.map((signal, index) => (
-        <FavoriteCard key={`favorite-${signal.id}-${index}`} data={signal} />
+        <SignalCard key={`favorite-${signal.id}-${index}`} data={signal} />
       ))}
     </>
   );

@@ -1,6 +1,15 @@
 import { useContext, useState } from 'react';
-import { Modal, message, Empty, Typography, Avatar, Badge, Tooltip } from 'antd';
-import { DeleteOutlined, EditOutlined, ExclamationCircleOutlined, UserOutlined } from '@ant-design/icons';
+import { Modal, message, Empty, Typography, Avatar, Tooltip, Dropdown, Badge, Button } from 'antd';
+import { 
+  DeleteOutlined, 
+  EditOutlined, 
+  ExclamationCircleOutlined, 
+  UserOutlined, 
+  PlusCircleOutlined,
+  EllipsisOutlined,
+  FileTextOutlined,
+  PlusOutlined
+} from '@ant-design/icons';
 import styled from 'styled-components';
 import Context from '../../Context/Context';
 import type { UserGroupDataType } from '../../Types';
@@ -8,13 +17,15 @@ import { deleteUserGroup } from '../../API/userCalls';
 import { CreateGroupModal } from './CreateGroupModal';
 import { SignalCard } from '../SignalCard';
 import type { SignalDataType } from '../../Types';
+import type { MenuProps } from 'antd';
+import { SignalSearch } from '../SignalSearch';
 
 interface UserWithNameAndEmail {
   name: string;
   email: string;
 }
 
-interface ExtendedUserGroupDataType extends Omit<UserGroupDataType, 'users'> {
+interface ExtendedUserGroupDataType extends UserGroupDataType {
   users: UserWithNameAndEmail[];
   signals?: SignalDataType[];
 }
@@ -25,34 +36,6 @@ interface UserGroupsListProps {
 }
 
 const { Title, Text } = Typography;
-
-const HeaderContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-`;
-
-const PageTitle = styled(Title)`
-  margin: 0 !important;
-`;
-
-const CreateButton = styled.button`
-  background-color: #006EB5;
-  color: white;
-  border: none;
-  padding: 12px 20px;
-  font-weight: bold;
-  text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  
-  &:hover {
-    background-color: #005A8F;
-  }
-`;
 
 const GroupCard = styled.div`
   margin-bottom: 30px;
@@ -80,6 +63,7 @@ const GroupContent = styled.div`
 const ActionButtons = styled.div`
   display: flex;
   gap: 12px;
+  align-items: center;
 `;
 
 const ActionButton = styled.button`
@@ -95,7 +79,19 @@ const ActionButton = styled.button`
 const UserAvatarGroup = styled.div`
   display: flex;
   align-items: center;
-  margin: 15px 0;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 16px;
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background-color: rgba(0, 110, 181, 0.1);
+  }
+`;
+
+const SignalAvatarGroup = styled(UserAvatarGroup)`
+  margin: 0;
+  height: 100%;
 `;
 
 const UserAvatar = styled(Avatar)`
@@ -109,8 +105,28 @@ const MoreUsers = styled(Avatar)`
   cursor: pointer;
 `;
 
-const BadgeCount = styled(Badge)`
-  margin-left: 15px;
+const AddUserButton = styled(PlusCircleOutlined)`
+  color: #006EB5;
+  font-size: 16px;
+  margin-left: 6px;
+  cursor: pointer;
+`;
+
+const GroupHeaderContent = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+`;
+
+const MenuButton = styled.div`
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 4px;
+  
+  &:hover {
+    background-color: #f0f0f0;
+  }
 `;
 
 const SignalsContainer = styled.div`
@@ -126,6 +142,10 @@ const CompactSignalCard = styled.div`
   width: 300px;
   min-width: 300px;
   border: 1px solid #e8e8e8;
+`;
+
+const SignalBadge = styled(Badge)`
+  margin-left: 5px;
 `;
 
 // Helper function to get initials from a name
@@ -160,7 +180,23 @@ const convertToStandardFormat = (
   return groups.map(group => ({
     id: group.id,
     name: group.name,
-    users: group.users.map(user => user.email)
+    user_ids: group.user_ids,
+    signal_ids: group.signal_ids,
+    collaborator_map: group.collaborator_map,
+    // Keep any other required fields from UserGroupDataType
+    created_at: group.created_at,
+    created_by: group.created_by,
+    modified_at: group.modified_at,
+    modified_by: group.modified_by,
+    status: group.status,
+    headline: group.headline,
+    description: group.description,
+    attachment: group.attachment,
+    steep_primary: group.steep_primary,
+    steep_secondary: group.steep_secondary,
+    signature_primary: group.signature_primary,
+    signature_secondary: group.signature_secondary,
+    sdgs: group.sdgs
   }));
 };
 
@@ -168,6 +204,8 @@ export const UserGroupsList = ({ onEdit, userGroups: propUserGroups }: UserGroup
   const { userGroups: contextUserGroups, updateUserGroups } = useContext(Context);
   const { confirm } = Modal;
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isSignalSearchVisible, setIsSignalSearchVisible] = useState(false);
+  const [currentGroup, setCurrentGroup] = useState<UserGroupDataType | ExtendedUserGroupDataType | null>(null);
   
   // Use prop userGroups if provided, otherwise fall back to context
   const userGroups = propUserGroups || contextUserGroups;
@@ -214,8 +252,8 @@ export const UserGroupsList = ({ onEdit, userGroups: propUserGroups }: UserGroup
   ): arr is ExtendedUserGroupDataType[] => {
     return (
       arr.length > 0 &&
-      arr[0].users.length > 0 &&
-      typeof arr[0].users[0] !== 'string'
+      'users' in arr[0] &&
+      Array.isArray(arr[0].users)
     );
   };
 
@@ -223,76 +261,124 @@ export const UserGroupsList = ({ onEdit, userGroups: propUserGroups }: UserGroup
     message.success('Group created successfully!');
   };
 
-  const renderUserAvatars = (group: UserGroupDataType | ExtendedUserGroupDataType) => {
-    const users = 'users' in group && Array.isArray(group.users)
-      ? group.users
-      : [];
+  const handleAddSignals = (group: UserGroupDataType | ExtendedUserGroupDataType) => {
+    setCurrentGroup(group);
+    setIsSignalSearchVisible(true);
+  };
+
+  const handleSignalSelect = (signals: SignalDataType[]) => {
+    // Here you would update the group with the selected signals
+    // This would typically involve an API call
+    message.success(`${signals.length} signals added to ${currentGroup?.name}`);
+    
+    // This is a placeholder - in a real implementation, you would need to update the group
+    // with the selected signals and update the context or prop
+  };
+
+  const renderUserAvatars = (group: UserGroupDataType | ExtendedUserGroupDataType, compact = false) => {
+    // For ExtendedUserGroupDataType, we have users as UserWithNameAndEmail[]
+    // For UserGroupDataType, we need to use user_ids since it doesn't have a users property
+    const isExtendedGroup = 'users' in group && Array.isArray(group.users);
+    
+    // Get users data from the appropriate place
+    const users = isExtendedGroup
+      ? (group as ExtendedUserGroupDataType).users
+      : []; // If it's a standard UserGroupDataType, we don't have user data, just IDs
       
     const totalUsers = users.length;
-    const displayedUsers = users.slice(0, 3);
+    const displayedUsers = compact ? users.slice(0, 2) : users.slice(0, 3);
     const remainingCount = totalUsers - displayedUsers.length;
     
-    // Check if we're dealing with the extended user group type
-    const isExtendedGroup = displayedUsers.length > 0 && 
-      typeof displayedUsers[0] !== 'string';
+    // Convert to standard format if needed before passing to onEdit
+    const handleClick = () => {
+      const standardGroup = isExtendedGroup
+        ? {
+            id: group.id,
+            name: group.name,
+            user_ids: group.user_ids,
+            signal_ids: group.signal_ids,
+            collaborator_map: group.collaborator_map,
+          } as UserGroupDataType
+        : group as UserGroupDataType;
+      
+      onEdit?.(standardGroup);
+    };
     
     return (
-      <UserAvatarGroup>
-        <Text style={{ marginRight: '15px' }}><UserOutlined /> Collaborators:</Text>
+      <UserAvatarGroup onClick={handleClick}>
+        {!compact && <Text style={{ marginRight: '15px' }}><UserOutlined /> Collaborators:</Text>}
         
         {isExtendedGroup ? (
           // Render avatars for extended user groups
-          (displayedUsers as UserWithNameAndEmail[]).map((user) => (
+          displayedUsers.map((user) => (
             <Tooltip title={user.name} key={user.email}>
               <UserAvatar 
                 style={{ backgroundColor: getAvatarColor(user.name) }}
+                size={compact ? "small" : "default"}
               >
                 {getInitials(user.name)}
               </UserAvatar>
             </Tooltip>
           ))
         ) : (
-          // Render avatars for standard user groups
-          (displayedUsers as string[]).map((user) => (
-            <Tooltip title={user} key={user}>
-              <UserAvatar 
-                style={{ backgroundColor: getAvatarColor(user) }}
-              >
-                {user.substring(0, 2).toUpperCase()}
-              </UserAvatar>
-            </Tooltip>
-          ))
+          // For standard UserGroupDataType, we don't have user details
+          // This is a placeholder rendering when we only have user_ids
+          <Text type="secondary">No user details available</Text>
         )}
         
         {remainingCount > 0 && (
           <Tooltip title={`${remainingCount} more collaborators`}>
-            <MoreUsers>+{remainingCount}</MoreUsers>
+            <MoreUsers size={compact ? "small" : "default"}>+{remainingCount}</MoreUsers>
           </Tooltip>
         )}
         
-        <BadgeCount count={totalUsers} color="#006EB5" />
+        <Tooltip title="Edit collaborators">
+          <AddUserButton />
+        </Tooltip>
       </UserAvatarGroup>
     );
   };
 
-  const renderGroupSignals = (group: UserGroupDataType | ExtendedUserGroupDataType) => {
+  const renderSignalAvatars = (group: UserGroupDataType | ExtendedUserGroupDataType) => {
     // Use signals property if it exists on the group (for ExtendedUserGroupDataType)
+    const signals = 'signals' in group ? group.signals : undefined;
+    const signalCount = signals?.length || 0;
+    
+    return (
+      <SignalAvatarGroup onClick={() => handleAddSignals(group)}>
+        <Text style={{ marginRight: '15px' }}><FileTextOutlined /> Signals:</Text>
+        
+        {signalCount > 0 ? (
+          <>
+            <Text strong style={{ marginRight: '8px' }}>{signalCount}</Text>
+            <SignalBadge count={signalCount} color="#006EB5" />
+          </>
+        ) : (
+          <Text type="secondary">No signals</Text>
+        )}
+        
+        <Tooltip title="Add signals">
+          <AddUserButton />
+        </Tooltip>
+      </SignalAvatarGroup>
+    );
+  };
+
+  const renderGroupSignals = (group: UserGroupDataType | ExtendedUserGroupDataType) => {
     const signals = 'signals' in group ? group.signals : undefined;
     
     if (!signals || signals.length === 0) {
-      return <Text type="secondary">No signals found for this group</Text>;
+      return null;
     }
     
     return (
-      <>
-        <SignalsContainer>
-          {signals.slice(0, 3).map(signal => (
-            <CompactSignalCard key={signal.id}>
-              <SignalCard data={signal} />
-            </CompactSignalCard>
-          ))}
-        </SignalsContainer>
-      </>
+      <SignalsContainer>
+        {signals.slice(0, 3).map(signal => (
+          <CompactSignalCard key={signal.id}>
+            <SignalCard data={signal} />
+          </CompactSignalCard>
+        ))}
+      </SignalsContainer>
     );
   };
 
@@ -306,54 +392,59 @@ export const UserGroupsList = ({ onEdit, userGroups: propUserGroups }: UserGroup
       );
     }
 
-    return userGroups.map(group => (
-      <GroupCard key={group.id}>
-        <GroupHeader>
-          <GroupTitle level={3}>{group.name}</GroupTitle>
-          <ActionButtons>
-            <ActionButton 
-              onClick={() => {
-                // Convert to standard format if needed before passing to onEdit
-                const standardGroup = 'users' in group && 
-                  typeof group.users[0] !== 'string' ?
-                  {
-                    id: group.id,
-                    name: group.name,
-                    users: (group.users as UserWithNameAndEmail[]).map(u => u.email)
-                  } : 
-                  group as UserGroupDataType;
-                
-                onEdit?.(standardGroup);
-              }}
-              title="Edit Group"
-            >
-              <EditOutlined style={{ color: '#006EB5' }} />
-            </ActionButton>
-            <ActionButton 
-              onClick={() => handleDelete(group)}
-              title="Delete Group"
-            >
-              <DeleteOutlined style={{ color: '#FF4D4F' }} />
-            </ActionButton>
-          </ActionButtons>
-        </GroupHeader>
-        <GroupContent>
-          {renderUserAvatars(group)}
-          {renderGroupSignals(group)}
-        </GroupContent>
-      </GroupCard>
-    ));
+    return userGroups.map(group => {
+      // Convert to standard format if needed before passing to onEdit
+      const isExtendedGroup = 'users' in group;
+      const standardGroup = isExtendedGroup
+        ? {
+            id: group.id,
+            name: group.name,
+            user_ids: group.user_ids,
+            signal_ids: group.signal_ids,
+            collaborator_map: group.collaborator_map,
+          } as UserGroupDataType
+        : group as UserGroupDataType;
+      
+      const menuItems: MenuProps['items'] = [
+        {
+          key: 'edit',
+          label: 'Edit Group',
+          icon: <EditOutlined />,
+          onClick: () => onEdit?.(standardGroup)
+        },
+        {
+          key: 'delete',
+          label: 'Delete Group',
+          icon: <DeleteOutlined style={{ color: '#FF4D4F' }} />,
+          onClick: () => handleDelete(group),
+          danger: true
+        }
+      ];
+      
+      return (
+        <GroupCard key={group.id}>
+          <GroupHeader>
+            <GroupHeaderContent>
+              <GroupTitle level={3}>{group.name}</GroupTitle>
+              {renderUserAvatars(group, true)}
+              {renderSignalAvatars(group)}
+            </GroupHeaderContent>
+            <Dropdown menu={{ items: menuItems }} trigger={['click']}>
+              <MenuButton>
+                <EllipsisOutlined style={{ fontSize: '24px' }} />
+              </MenuButton>
+            </Dropdown>
+          </GroupHeader>
+          <GroupContent>
+            {renderGroupSignals(group)}
+          </GroupContent>
+        </GroupCard>
+      );
+    });
   };
 
   return (
     <>
-      <HeaderContainer>
-        <PageTitle level={2}>User Groups</PageTitle>
-        <CreateButton onClick={() => setIsModalVisible(true)}>
-          <span>+</span> Create Group
-        </CreateButton>
-      </HeaderContainer>
-
       {renderGroups()}
 
       <CreateGroupModal 
@@ -361,6 +452,16 @@ export const UserGroupsList = ({ onEdit, userGroups: propUserGroups }: UserGroup
         onClose={() => setIsModalVisible(false)}
         onSuccess={handleModalSuccess}
       />
+
+      {currentGroup && (
+        <SignalSearch
+          visible={isSignalSearchVisible}
+          onClose={() => setIsSignalSearchVisible(false)}
+          onSelect={handleSignalSelect}
+          selectedSignals={'signals' in currentGroup ? currentGroup.signals : []}
+          title={`Add Signals to ${currentGroup.name}`}
+        />
+      )}
     </>
   );
 }; 

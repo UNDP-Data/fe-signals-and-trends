@@ -203,6 +203,7 @@ function MainBody() {
               <Route path='/admin-panel' element={<AdminPanel />} />
               <Route path='/my-drafts' element={<MyDrafts />} />
               <Route path='/my-sprints' element={<MySprints />} />
+              {/* <Route path='/my-sprints/:id  ' element={<MySprints />} /> */}
               <Route path='/my-favorites' element={<MyFavorites />} />
               <Route path='/my-projects' element={<MyProjects />} />
             </Routes>

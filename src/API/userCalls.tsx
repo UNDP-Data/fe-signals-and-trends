@@ -59,6 +59,9 @@ export interface UserGroupResponseDataType {
   id: number;
   name: string;
   users: string[];
+  signal_ids?: number[];
+  user_ids?: number[];
+  collaborator_map?: Record<string, number[]>;
 }
 
 export function readCurrentUser() {
@@ -161,13 +164,28 @@ export function listUserGroups() {
             error.response?.data?.message || error.message
           } `,
         );
-      } else {
-        throw new Error(`An unknown error occurred. ${error.message}`);
       }
+      throw new Error(`An unknown error occurred. ${error.message}`);
     });
 }
 
-export function createUserGroup(group: { name: string; users: string[] }) {
+export function getUserGroupsWithSignals() {
+  return axiosInstance
+    .get<UserGroupResponseDataType[]>('/user-groups/me/with-signals')
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to retrieve user groups with signals at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function createUserGroup(group: { name: string; users?: string[] }) {
   return axiosInstance
     .post<UserGroupResponseDataType>('/user-groups', group)
     .then(response => response.data)
@@ -178,9 +196,8 @@ export function createUserGroup(group: { name: string; users: string[] }) {
             error.response?.data?.message || error.message
           } `,
         );
-      } else {
-        throw new Error(`An unknown error occurred. ${error.message}`);
       }
+      throw new Error(`An unknown error occurred. ${error.message}`);
     });
 }
 
@@ -195,15 +212,14 @@ export function getUserGroup(groupId: number) {
             error.response?.data?.message || error.message
           } `,
         );
-      } else {
-        throw new Error(`An unknown error occurred. ${error.message}`);
       }
+      throw new Error(`An unknown error occurred. ${error.message}`);
     });
 }
 
-export function updateUserGroup(groupId: number, group: { name: string; users: string[] }) {
+export function updateUserGroup(groupId: number, group: UserGroupResponseDataType) {
   return axiosInstance
-    .put<UserGroupResponseDataType>(`/user-groups/${groupId}`, { ...group, id: groupId })
+    .put<UserGroupResponseDataType>(`/user-groups/${groupId}`, group)
     .then(response => response.data)
     .catch(error => {
       if (isAxiosError(error)) {
@@ -212,9 +228,8 @@ export function updateUserGroup(groupId: number, group: { name: string; users: s
             error.response?.data?.message || error.message
           } `,
         );
-      } else {
-        throw new Error(`An unknown error occurred. ${error.message}`);
       }
+      throw new Error(`An unknown error occurred. ${error.message}`);
     });
 }
 
@@ -229,15 +244,14 @@ export function deleteUserGroup(groupId: number) {
             error.response?.data?.message || error.message
           } `,
         );
-      } else {
-        throw new Error(`An unknown error occurred. ${error.message}`);
       }
+      throw new Error(`An unknown error occurred. ${error.message}`);
     });
 }
 
-export function addUserToGroup(groupId: number, email: string) {
+export function addUserToGroup(groupId: number, userIdOrEmail: string) {
   return axiosInstance
-    .post<boolean>(`/user-groups/${groupId}/users/${email}`)
+    .post<boolean>(`/user-groups/${groupId}/users/${userIdOrEmail}`)
     .then(response => response.data)
     .catch(error => {
       if (isAxiosError(error)) {
@@ -246,15 +260,30 @@ export function addUserToGroup(groupId: number, email: string) {
             error.response?.data?.message || error.message
           } `,
         );
-      } else {
-        throw new Error(`An unknown error occurred. ${error.message}`);
       }
+      throw new Error(`An unknown error occurred. ${error.message}`);
     });
 }
 
-export function removeUserFromGroup(groupId: number, email: string) {
+export function addUserToGroupByEmail(groupId: number, email: string) {
   return axiosInstance
-    .delete<boolean>(`/user-groups/${groupId}/users/${email}`)
+    .post<boolean>(`/user-groups/${groupId}/users`, { email })
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to add user to group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function removeUserFromGroup(groupId: number, userIdOrEmail: string) {
+  return axiosInstance
+    .delete<boolean>(`/user-groups/${groupId}/users/${userIdOrEmail}`)
     .then(response => response.data)
     .catch(error => {
       if (isAxiosError(error)) {
@@ -263,8 +292,87 @@ export function removeUserFromGroup(groupId: number, email: string) {
             error.response?.data?.message || error.message
           } `,
         );
-      } else {
-        throw new Error(`An unknown error occurred. ${error.message}`);
       }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function addSignalToUserGroup(signalId: number, groupId: number) {
+  return axiosInstance
+    .post<boolean>(`/user-groups/${groupId}/signals/${signalId}`)
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to add signal to user group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function removeSignalFromUserGroup(signalId: number, groupId: number) {
+  return axiosInstance
+    .delete<boolean>(`/user-groups/${groupId}/signals/${signalId}`)
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to remove signal from user group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function addCollaboratorToSignalInGroup(groupId: number, signalId: number, userIdOrEmail: string) {
+  return axiosInstance
+    .post<boolean>(`/user-groups/${groupId}/signals/${signalId}/collaborators/${userIdOrEmail}`)
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to add collaborator to signal at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function addCollaboratorToSignalByEmail(groupId: number, signalId: number, email: string) {
+  return axiosInstance
+    .post<boolean>(`/user-groups/${groupId}/${signalId}/collaborators`, { email })
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to add collaborator to signal at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function removeCollaboratorFromSignalInGroup(groupId: number, signalId: number, userIdOrEmail: string) {
+  return axiosInstance
+    .delete<boolean>(`/user-groups/${groupId}/signals/${signalId}/collaborators/${userIdOrEmail}`)
+    .then(response => response.data)
+    .catch(error => {
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to remove collaborator from signal at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
     });
 }

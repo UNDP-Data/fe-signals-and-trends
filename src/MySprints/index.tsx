@@ -18,6 +18,25 @@ import TEST_USER_GROUPS, {
   ExtendedUserGroupDataType,
   convertToStandardFormat 
 } from '../mockData/userGroupsTestData';
+import styled from 'styled-components';
+
+
+const CreateButton = styled.button`
+  background-color: #006EB5;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #005A8F;
+  }
+`;
 
 const { Title } = Typography;
 
@@ -92,7 +111,15 @@ export function MySprints() {
       try {
         // Use the endpoint from the OpenAPI spec for user groups
         const groups = await listUserGroups();
-        return groups;
+        
+        // Make sure we return a valid UserGroupDataType[] by ensuring required fields
+        return groups.map(group => ({
+          ...group,
+          // Ensure required fields have default values
+          user_ids: group.user_ids || [],
+          signal_ids: group.signal_ids || [],
+          collaborator_map: group.collaborator_map || {}
+        })) as UserGroupDataType[];
       } catch (error) {
         console.error('Failed to fetch user groups:', error);
         return [];
@@ -175,21 +202,26 @@ export function MySprints() {
       <AuthenticatedTemplate>
         <div className="flex-div flex-space-between flex-vert-align-center">
           <Title level={2} className="undp-typography margin-top-05 margin-bottom-09">
-            My Dashboard
+            My Sprints
           </Title>
           
-          {LOAD_TEST_DATA && !useTestData && (
-            <Button 
-              type="primary"
-              onClick={handleLoadTestData}
-              style={{ 
-                backgroundColor: '#2E6EB5', 
-                marginBottom: '1rem' 
-              }}
-            >
-              Load Test Data
-            </Button>
-          )}
+          <div style={{ display: 'flex', gap: '12px' }}>
+            {LOAD_TEST_DATA && !useTestData && (
+              <Button 
+                type="primary"
+                onClick={handleLoadTestData}
+                style={{ 
+                  backgroundColor: '#2E6EB5', 
+                  marginBottom: '1rem' 
+                }}
+              >
+                Load Test Data
+              </Button>
+            )}
+            <CreateButton onClick={() => setGroupModalVisible(true)}>
+              <span>+</span> Create Group
+            </CreateButton>
+          </div>
         </div>
         
         {userGroupsQuery.isLoading && !useTestData ? (

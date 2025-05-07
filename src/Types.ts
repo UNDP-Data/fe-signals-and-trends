@@ -122,7 +122,23 @@ export interface UserDataType {
 export interface UserGroupDataType {
   id: number;
   name: string;
-  users: string[];
+  created_at?: string;
+  created_by?: string;
+  modified_at?: string;
+  modified_by?: string;
+  status?: string;
+  headline?: string;
+  description?: string;
+  attachment?: string;
+  steep_primary?: string;
+  steep_secondary?: string[];
+  signature_primary?: string;
+  signature_secondary?: string[];
+  sdgs?: string[];
+  user_ids: number[];
+  signal_ids: number[];
+  collaborator_map: Record<string, number[]>;
+  signals?: SignalDataType[];
 }
 
 export interface SignalFiltersDataType {
