@@ -23,7 +23,7 @@ export function LoggedInHeader(props: Props) {
       key: '1',
       label: (
         <NavLink
-          to='/add-new-signal'
+          to={navLinks.addNewSignal}
           style={{
             fontFamily: 'var(--fontFamily)',
             fontSize: '1.25rem',
@@ -40,7 +40,7 @@ export function LoggedInHeader(props: Props) {
       disabled: role === 'User',
       label: (
         <NavLink
-          to='/add-new-trend'
+          to={navLinks.addNewTrend}
           style={{
             fontFamily: 'var(--fontFamily)',
             fontSize: '1.25rem',
@@ -108,7 +108,7 @@ export function LoggedInHeader(props: Props) {
             style={{ flexGrow: 1, justifyContent: 'center' }}
           >
             <NavLink
-              to='/all-signals'
+              to='/signals'
               className={({ isActive }) =>
                 isActive ? 'header-link-active' : 'header-link'
               }
@@ -178,7 +178,7 @@ export function LoggedInHeader(props: Props) {
       >
         <div>
           <NavLink
-            to='/my-sprints'
+            to={navLinks.mySprints}
             className={({ isActive }) =>
               isActive ? 'header-link-active' : 'header-link'
             }
@@ -191,7 +191,7 @@ export function LoggedInHeader(props: Props) {
         </div>
         <div>
           <NavLink
-            to='/add-new-signal'
+            to={navLinks.addNewSignal}
             className={({ isActive }) =>
               isActive ? 'header-link-active' : 'header-link'
             }
@@ -205,7 +205,7 @@ export function LoggedInHeader(props: Props) {
         {role === 'User' ? null : (
           <div>
             <NavLink
-              to='/add-new-trend'
+              to={navLinks.addNewTrend}
               className={({ isActive }) =>
                 isActive ? 'header-link-active' : 'header-link'
               }
