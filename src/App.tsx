@@ -358,7 +358,7 @@ function App() {
         >
           <MainBody />
           <Footer />
-          {isAuthenticated && <ChatBubble />}
+          {/* {isAuthenticated && <ChatBubble />} */}
         </div>
       ) : (
         <div
