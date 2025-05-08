@@ -135,9 +135,9 @@ export interface UserGroupDataType {
   signature_primary?: string;
   signature_secondary?: string[];
   sdgs?: string[];
-  user_ids: number[];
-  signal_ids: number[];
-  collaborator_map: Record<string, number[]>;
+  user_ids?: number[];
+  signal_ids?: number[];
+  collaborator_map?: Record<string, number[]>;
   signals?: SignalDataType[];
 }
 

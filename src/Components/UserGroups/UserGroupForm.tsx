@@ -38,7 +38,7 @@ export const UserGroupForm = ({ group, onSuccess }: UserGroupFormProps) => {
         
         // Filter the users that are in the group
         const groupUsers = allUsers.filter((user: UserDataType) => 
-          group.user_ids.includes(user.id)
+          group.user_ids?.includes(user.id)
         );
         
         if (groupUsers.length > 0) {
