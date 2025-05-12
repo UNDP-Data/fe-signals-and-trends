@@ -7,6 +7,7 @@ import {
   UnauthenticatedTemplate,
 } from '@azure/msal-react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { SignInButton } from '../Components/SignInButton';
 import Context from '../Context/Context';
 import { searchSignals } from '../API';
@@ -53,6 +54,7 @@ export function MySprints() {
   const { userName, updateSignalList, updateUserGroups } = useContext(Context);
   const [paginationValue, setPaginationValue] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const navigate = useNavigate();
   
   // User Groups state
   const [groupModalVisible, setGroupModalVisible] = useState(false);
@@ -154,6 +156,24 @@ export function MySprints() {
     setGroupModalVisible(true);
   };
 
+  const handleViewGroup = (groupId: number) => {
+    // Find the group to get its name
+    const group = userGroups.find(g => g.id === groupId);
+    if (group) {
+      // Create a URL-friendly slug from the group name
+      const slug = group.name.toLowerCase()
+        .replace(/[^\w\s-]/g, '') // Remove special characters
+        .replace(/\s+/g, '-')     // Replace spaces with hyphens
+        .trim();
+      
+      // Navigate to the sprint page with name and ID in the URL
+      navigate(`/sprint/${slug}-${groupId}`);
+    } else {
+      // Fallback if group not found
+      navigate(`/sprint/${groupId}`);
+    }
+  };
+
   const handleGroupModalClose = () => {
     setGroupModalVisible(false);
     setSelectedGroup(undefined);
@@ -230,7 +250,11 @@ export function MySprints() {
           </div>
         ) : (
           <>
-            <UserGroupsList userGroups={paginatedGroups} onEdit={handleEditGroup} />
+            <UserGroupsList 
+              userGroups={paginatedGroups} 
+              onEdit={handleEditGroup} 
+              onView={handleViewGroup} 
+            />
             
             {totalGroups > groupsPageSize && (
               <div className="flex-div flex-hor-align-center margin-top-07 margin-bottom-09">

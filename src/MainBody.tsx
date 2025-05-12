@@ -17,6 +17,7 @@ import { MyDrafts } from './MyDrafts';
 import { MyFavorites } from './MyFavorites';
 import { MyProjects } from './MyProjects';
 import { MySprints } from './MySprints';
+import { SprintPage } from './SprintPage';
 import { PDFDocument } from './PDFGenerator';
 import { ArchivedSignalsListing, SignalsListing } from './Signals';
 import { EditSignal } from './Signals/EditSignal';
@@ -203,6 +204,8 @@ function MainBody() {
               <Route path='/admin-panel' element={<AdminPanel />} />
               <Route path='/my-drafts' element={<MyDrafts />} />
               <Route path='/my-sprints' element={<MySprints />} />
+              <Route path='/sprint/:id' element={<SprintPage />} />
+              <Route path='/sprint/:id/edit' element={<MySprints />} />
               <Route path='/my-favorites' element={<MyFavorites />} />
               <Route path='/my-projects' element={<MyProjects />} />
             </Routes>

@@ -32,6 +32,7 @@ interface ExtendedUserGroupDataType extends UserGroupDataType {
 
 interface UserGroupsListProps {
   onEdit?: (group: UserGroupDataType) => void;
+  onView?: (groupId: number) => void;
   userGroups?: UserGroupDataType[] | ExtendedUserGroupDataType[];
 }
 
@@ -200,7 +201,7 @@ const convertToStandardFormat = (
   }));
 };
 
-export const UserGroupsList = ({ onEdit, userGroups: propUserGroups }: UserGroupsListProps) => {
+export const UserGroupsList = ({ onEdit, onView, userGroups: propUserGroups }: UserGroupsListProps) => {
   const { userGroups: contextUserGroups, updateUserGroups } = useContext(Context);
   const { confirm } = Modal;
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -420,9 +421,15 @@ export const UserGroupsList = ({ onEdit, userGroups: propUserGroups }: UserGroup
           danger: true
         }
       ];
+
+      const handleGroupClick = () => {
+        if (onView) {
+          onView(group.id);
+        }
+      };
       
       return (
-        <GroupCard key={group.id}>
+        <GroupCard key={group.id} style={{ cursor: onView ? 'pointer' : 'default' }} onClick={onView ? handleGroupClick : undefined}>
           <GroupHeader>
             <GroupHeaderContent>
               <GroupTitle level={3}>{group.name}</GroupTitle>
@@ -430,7 +437,7 @@ export const UserGroupsList = ({ onEdit, userGroups: propUserGroups }: UserGroup
               {renderSignalAvatars(group)}
             </GroupHeaderContent>
             <Dropdown menu={{ items: menuItems }} trigger={['click']}>
-              <MenuButton>
+              <MenuButton onClick={(e) => e.stopPropagation()}>
                 <EllipsisOutlined style={{ fontSize: '24px' }} />
               </MenuButton>
             </Dropdown>
