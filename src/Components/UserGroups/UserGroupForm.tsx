@@ -5,6 +5,7 @@ import Context from '../../Context/Context';
 import type { UserDataType, UserGroupDataType } from '../../Types';
 import { createUserGroup, updateUserGroup, searchUsers } from '../../API/userCalls';
 import type { UserGroupResponseDataType } from '../../API/userCalls';
+import { logger } from '../../logger';
 
 interface UserOption {
   label: string;
@@ -65,7 +66,7 @@ export const UserGroupForm = ({ group, onSuccess }: UserGroupFormProps) => {
           });
         }
       } catch (error) {
-        console.error('Failed to fetch initial users:', error);
+        logger.error('Failed to fetch initial users:', error);
         form.setFieldsValue({
           name: group.name,
           users: [],
@@ -103,7 +104,7 @@ export const UserGroupForm = ({ group, onSuccess }: UserGroupFormProps) => {
       
       setUserOptions(options);
     } catch (error) {
-      console.error('Failed to fetch users:', error);
+      logger.error('Failed to fetch users:', error);
     } finally {
       setFetching(false);
     }
@@ -123,6 +124,10 @@ export const UserGroupForm = ({ group, onSuccess }: UserGroupFormProps) => {
           id: group.id,
           name: submitData.name,
           users: submitData.users,
+          // Include other properties that may be needed for the API
+          user_ids: group.user_ids,
+          signal_ids: group.signal_ids,
+          collaborator_map: group.collaborator_map
         };
         const updatedGroup = await updateUserGroup(group.id, updatedGroupData);
         if (userGroups) {
@@ -164,7 +169,7 @@ export const UserGroupForm = ({ group, onSuccess }: UserGroupFormProps) => {
       }
     } catch (error) {
       message.error(`Failed to ${group ? 'update' : 'create'} the group. Please try again.`);
-      console.error(error);
+      logger.error('Failed to create/update group:', error);
     } finally {
       setLoading(false);
     }

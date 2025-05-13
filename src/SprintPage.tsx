@@ -131,9 +131,11 @@ export function SprintPage() {
   const { id: urlParam } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { userName } = useContext(Context);
+  const { userName, userID, isAdmin } = useContext(Context);
   const [messageApi, contextHolder] = message.useMessage();
   const queryClient = useQueryClient();
+  const [isSprintAdmin, setIsSprintAdmin] = useState(false);
+  const [hasEditPermission, setHasEditPermission] = useState(false);
   
   // Parse the ID from the URL parameter (last part after hyphen)
   const getSprintId = () => {
@@ -217,10 +219,40 @@ export function SprintPage() {
       setSprintName(sprintQuery.data.name);
     }
   }, [sprintQuery.data]);
+  
+  // Check if current user has edit permissions for this sprint
+  useEffect(() => {
+    if (sprintQuery.data && userID) {
+      // Check if current user is the creator (admin) of the sprint
+      const isCreatorAdmin = sprintQuery.data.created_by === userName;
+      
+      // Also check if they're in the user_ids array and are the first user (typically the admin)
+      const isFirstUser = Array.isArray(sprintQuery.data.user_ids) && 
+                         sprintQuery.data.user_ids.length > 0 && 
+                         sprintQuery.data.user_ids[0] === userID;
+      
+      // Set sprint admin status based on creator or first user
+      const sprintAdminStatus = isCreatorAdmin || isFirstUser;
+      setIsSprintAdmin(sprintAdminStatus);
+      
+      // User has edit permission if they're either a sprint admin or an application admin
+      setHasEditPermission(sprintAdminStatus || !!isAdmin);
+    }
+  }, [sprintQuery.data, userID, userName, isAdmin]);
 
   // Handle sprint name update
   const handleNameUpdate = async () => {
     if (!sprintId || !sprintQuery.data) return;
+    
+    // Verify user has permission before allowing name update
+    if (!hasEditPermission) {
+      messageApi.error('Permission denied: Only sprint or application admins can modify sprint details');
+      setIsEditingName(false);
+      if (sprintQuery.data?.name) {
+        setSprintName(sprintQuery.data.name);
+      }
+      return;
+    }
 
     try {
       // Don't update if name is empty or unchanged
@@ -266,6 +298,13 @@ export function SprintPage() {
   // Handle sprint deletion
   const handleDeleteSprint = async () => {
     if (!sprintId) return;
+    
+    // Additional verification that user has permission before allowing deletion
+    if (!hasEditPermission) {
+      messageApi.error('Permission denied: Only sprint or application admins can delete sprints');
+      setIsDeleteModalVisible(false);
+      return;
+    }
 
     try {
       messageApi.loading('Deleting sprint...');
@@ -334,11 +373,13 @@ export function SprintPage() {
                   <Title level={2} className="undp-typography margin-top-05 margin-bottom-02 inline">
                     {sprintQuery.data?.name || 'Sprint Details'}
                   </Title>
-                  <Button
-                    type="text"
-                    icon={<EditOutlined />}
-                    onClick={() => setIsEditingName(true)}
-                  />
+                  {hasEditPermission ? (
+                    <Button
+                      type="text"
+                      icon={<EditOutlined />}
+                      onClick={() => setIsEditingName(true)}
+                    />
+                  ) : null}
                 </div>
               )}
             </div>
@@ -350,26 +391,37 @@ export function SprintPage() {
                 loading={sprintQuery.isLoading}
                 expanded={isCollaboratorsExpanded}
                 onToggle={() => setIsCollaboratorsExpanded(!isCollaboratorsExpanded)}
-                onAdd={() => setIsCollaboratorModalVisible(true)}
+                onAdd={hasEditPermission ? () => setIsCollaboratorModalVisible(true) : undefined}
               />
 
               {/* Action buttons */}
               <div>
-               
-                <Button
-                  type="primary"
-                  style={{ backgroundColor: '#006EB5' }}
-                  onClick={() => setIsCollaboratorModalVisible(true)}>
-                  Edit Sprint
-                </Button>
-                <Button
-                  danger
-                  style={{ marginRight: '10px' }}
-                  icon={<DeleteOutlined />}
-                  onClick={() => setIsDeleteModalVisible(true)}
-                >
-                  Delete
-                </Button>
+                {hasEditPermission ? (
+                  <>
+                    <Button
+                      type="primary"
+                      style={{ backgroundColor: '#006EB5' }}
+                      onClick={() => setIsCollaboratorModalVisible(true)}>
+                      Edit Sprint
+                    </Button>
+                    <Button
+                      danger
+                      style={{ marginRight: '10px' }}
+                      icon={<DeleteOutlined />}
+                      onClick={() => setIsDeleteModalVisible(true)}
+                    >
+                      Delete
+                    </Button>
+                  </>
+                ) : (
+                  <Tooltip title="Only sprint admins or application admins can edit or delete this sprint">
+                    <Button
+                      type="default"
+                      onClick={() => messageApi.info('You need to be a sprint admin or application admin to edit this sprint')}>
+                      View Sprint Details
+                    </Button>
+                  </Tooltip>
+                )}
               </div>
             </div>
           </HeaderContent>
@@ -458,7 +510,7 @@ export function SprintPage() {
         )}
 
         {/* Collaborator Edit Modal */}
-        {sprintId && sprintQuery.data && (
+        {sprintId && sprintQuery.data && hasEditPermission && (
           <EditGroupModal
             visible={isCollaboratorModalVisible}
             onClose={() => setIsCollaboratorModalVisible(false)}
@@ -473,6 +525,22 @@ export function SprintPage() {
               users: sprintQuery.data.users || []
             }}
           />
+        )}
+        
+        {/* Non-admin message if they somehow trigger the modal */}
+        {sprintId && sprintQuery.data && !hasEditPermission && isCollaboratorModalVisible && (
+          <Modal
+            open={isCollaboratorModalVisible}
+            title="Permission Denied"
+            onCancel={() => setIsCollaboratorModalVisible(false)}
+            footer={[
+              <Button key="close" onClick={() => setIsCollaboratorModalVisible(false)}>
+                Close
+              </Button>
+            ]}
+          >
+            <p>Only sprint admins or application admins can edit sprint details and manage collaborators.</p>
+          </Modal>
         )}
       </AuthenticatedTemplate>
       <UnauthenticatedTemplate>

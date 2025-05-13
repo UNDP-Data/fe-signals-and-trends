@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Form, Input, Select, message } from 'antd';
 import { searchUsers } from '../API/userCalls';
 import './MemberSelect.css';
+import { logger } from '../logger';
 
 interface User {
   id: number;
@@ -17,12 +18,16 @@ interface MemberSelectProps {
   value?: string[] | User[];
   onChange?: (value: string[]) => void;
   placeholder?: string;
+  isAdminSelect?: boolean;
+  label?: string;
 }
 
 const MemberSelect: React.FC<MemberSelectProps> = ({
   value = [],
   onChange,
-  placeholder = "Type a name or UNDP email to search and select users"
+  placeholder = "Type a name or UNDP email to search and select users",
+  isAdminSelect = false,
+  label
 }) => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [userOptions, setUserOptions] = useState<{ label: string; value: string }[]>([]);
@@ -54,7 +59,7 @@ const MemberSelect: React.FC<MemberSelectProps> = ({
 
       setUserOptions(options);
     } catch (error) {
-      console.error('Failed to fetch users:', error);
+      logger.error('Failed to fetch users:', error);
       message.error('Failed to fetch users. Please try again.');
     } finally {
       setSearchLoading(false);
@@ -78,12 +83,18 @@ const MemberSelect: React.FC<MemberSelectProps> = ({
   };
 
   return (
-    <div className="member-select-container">
+    <div className={`member-select-container ${isAdminSelect ? 'admin-select' : ''}`}>
+      {label && (
+        <div className="member-select-label">
+          {label}
+          {isAdminSelect && <span className="admin-indicator"> (Admin)</span>}
+        </div>
+      )}
       <Form.Item
-        className="member-select-form-item"
+        className={`member-select-form-item ${isAdminSelect ? 'admin-select-form-item' : ''}`}
       >
         <Select
-          className="member-select"
+          className={`member-select ${isAdminSelect ? 'admin-select-input' : ''}`}
           mode="multiple"
           placeholder={placeholder}
           options={userOptions}
@@ -96,6 +107,7 @@ const MemberSelect: React.FC<MemberSelectProps> = ({
           listHeight={280}
           value={formattedValue}
           onChange={handleChange}
+          maxTagCount={isAdminSelect ? 1 : undefined}
         />
       </Form.Item>
     </div>

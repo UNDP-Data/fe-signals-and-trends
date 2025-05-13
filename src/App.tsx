@@ -18,6 +18,7 @@ import {
     TrendFiltersDataType,
     UserGroupDataType,
 } from './Types';
+import { UserGroupResponseDataType } from './API/userCalls';
 
 import { getChoices, getUserGroupsWithSignals, listUserGroups, readCurrentUser } from './API';
 import './App.css';
@@ -44,6 +45,7 @@ function App() {
     name: undefined,
     unit: undefined,
     role: undefined,
+    isAdmin: false,
     notificationText: undefined,
     choices: undefined,
     isAcceleratorLab: undefined,
@@ -132,6 +134,20 @@ function App() {
   const updateRole = (d?: AllowedRolesDataType) => {
     dispatch({
       type: 'UPDATE_ROLE',
+      payload: d,
+    });
+    
+    // Automatically update isAdmin based on role
+    if (d === 'Admin') {
+      updateIsAdmin(true);
+    } else {
+      updateIsAdmin(false);
+    }
+  };
+  
+  const updateIsAdmin = (d: boolean) => {
+    dispatch({
+      type: 'UPDATE_IS_ADMIN',
       payload: d,
     });
   };
@@ -228,75 +244,125 @@ function App() {
                 accessTokenResponse.expiresOn.toISOString(),
               );
             }
+            return accessTokenResponse; // Return the response to chain promises
           })
           .then(() => {
-            getChoices()
+            // Fetch choices data first
+            return getChoices()
               .then(data => {
                 updateChoices(data);
               })
               .catch(err => {
                 // eslint-disable-next-line no-console
-                console.warn(err);
-              });
-
-            readCurrentUser()
-              .then((data: CurrentUserResponseDataType) => {
-                updateUserName(data.email);
-                updateName(data.name);
-                updateUnit(data.unit);
-                updateRole(data.role);
-                setUserRoleTemp(data.role);
-                updateUserID(data.id);
-                updateIsAcceleratorLab(data.acclab !== null);
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if (!data.unit) {
-                  setOpenModal(true);
-                }
-              })
-              .catch(err => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if (err.response?.data && (err.response.data as any).detail === 'User not found.') {
-                  setOpenModal(true);
-                }
+                console.warn('Error fetching choices:', err);
+                // Continue the chain even if getChoices fails
+                return null;
               });
           })
-          .catch(_error => {
+          .then(() => {
+            // After getting choices (or if it failed), fetch user data
+            try {
+              return readCurrentUser()
+                .then((data: CurrentUserResponseDataType) => {
+                  try {
+                    updateUserName(data.email);
+                    updateName(data.name);
+                    updateUnit(data.unit);
+                    updateRole(data.role);
+                    setUserRoleTemp(data.role);
+                    updateUserID(data.id);
+                    updateIsAcceleratorLab(data.acclab !== null);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    if (!data.unit) {
+                      setOpenModal(true);
+                    }
+                    setLoginError(false); // Explicitly set login error to false when user data is successfully retrieved
+                  } catch (updateError) {
+                    console.error('Error updating user data:', updateError);
+                    // Continue without failing the authentication if context updates fail
+                  }
+                })
+                .catch(err => {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  console.warn('Error fetching user data:', err);
+                  if (err.response?.data && (err.response.data as any).detail === 'User not found.') {
+                    setOpenModal(true);
+                    // Don't set loginError to true if we just need to complete the user profile
+                    return;
+                  }
+                  // Only set login error to true for errors other than 'User not found'
+                  setLoginError(true);
+                });
+            } catch (error) {
+              console.error('Unexpected error during user data fetch:', error);
+              // Don't fail the entire authentication because of this error
+              return null;
+            }
+          })
+          .catch(error => {
+            console.error('Token acquisition error:', error);
             setLoginError(true);
           });
       } catch (error) {
+        console.error('Authentication error:', error);
         setLoginError(true);
       }
     } else {
-      setLoginError(true);
+      setLoginError(false); // Reset login error state when not authenticated
     }
   }, [isAuthenticated, instance]);
 
-  // useEffect(() => {
-  //   if (isAuthenticated) {
-  //     // Get basic user group information
-  //     listUserGroups()
-  //       .then((data: UserGroupDataType[]) => {
-  //         updateUserGroups(data);
-  //       })
-  //       .catch(err => {
-  //         // eslint-disable-next-line no-console
-  //         console.warn(err);
-  //       });
+  useEffect(() => {
+    if (isAuthenticated) {
+      // Get basic user group information
+      listUserGroups()
+        .then((data: UserGroupResponseDataType[]) => {
+          // Convert UserGroupResponseDataType to UserGroupDataType
+          const convertedData = data.map(group => ({
+            ...group,
+            // Convert string[] to UserDataType[]
+            users: group.users.map(email => ({
+              created_at: '',
+              email,
+              name: email,
+              role: 'User' as const,
+              unit: '',
+              id: 0
+            }))
+          })) as UserGroupDataType[];
+          
+          updateUserGroups(convertedData);
+        })
+        .catch(err => {
+          // eslint-disable-next-line no-console
+          console.warn(err);
+        });
       
-  //     // Get detailed user groups with signals
-  //     getUserGroupsWithSignals()
-  //       .then((data: UserGroupDataType[]) => {
-  //         // We can store this in another state if needed,
-  //         // or use it to update the userGroups state with more information
-  //         // For now, we're updating the same state
-  //         updateUserGroups(data);
-  //       })
-  //       .catch(err => {
-  //         // eslint-disable-next-line no-console
-  //         console.warn(err);
-  //       });
-  //   }
-  // }, [isAuthenticated]);
+      // Get detailed user groups with signals
+      getUserGroupsWithSignals()
+        .then((data: UserGroupResponseDataType[]) => {
+          // Convert UserGroupResponseDataType to UserGroupDataType
+          const convertedData = data.map(group => ({
+            ...group,
+            // Convert string[] to UserDataType[]
+            users: group.users.map(email => ({
+              created_at: '',
+              email,
+              name: email,
+              role: 'User' as const,
+              unit: '',
+              id: 0
+            }))
+          })) as UserGroupDataType[];
+          
+          updateUserGroups(convertedData);
+        })
+        .catch(err => {
+          // eslint-disable-next-line no-console
+          console.warn(err);
+        });
+    }
+  }, [isAuthenticated]);
 
   const contextValue = useMemo(
     () => ({
@@ -311,6 +377,7 @@ function App() {
       updateNotificationText,
       updateCardsToPrint,
       updateIsAcceleratorLab,
+      updateIsAdmin,
       updateSignalFilters,
       updateTrendFilters,
       updateNoOfTrendsFiltersActive,
@@ -333,6 +400,7 @@ function App() {
       updateNotificationText,
       updateCardsToPrint,
       updateIsAcceleratorLab,
+      updateIsAdmin,
       updateSignalFilters,
       updateTrendFilters,
       updateNoOfTrendsFiltersActive,

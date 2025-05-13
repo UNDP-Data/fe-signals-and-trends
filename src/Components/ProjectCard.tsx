@@ -1,18 +1,19 @@
 import styled from 'styled-components';
-import { Modal } from 'antd';
-import { NavLink } from 'react-router-dom';
+import { Modal, message, Popconfirm, Tooltip } from 'antd';
+import { NavLink, useNavigate } from 'react-router-dom';
 import UNDPColorModule from 'undp-viz-colors';
 import { useContext, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
 import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
+import { DeleteOutlined } from '@ant-design/icons';
 import { SignalDataType } from '../Types';
 import Background from '../assets/UNDP-hero-image.jpg';
 import Context from '../Context/Context';
 
 import '../styles.css';
 import { ChipEl } from './ChipEl';
-import { getfavoriteSignals, searchUsers } from '../API';
+import { getfavoriteSignals, searchUsers, deleteSignal } from '../API';
 import { Collaborator } from './Collaborator';
 
 interface Props {
@@ -76,9 +77,39 @@ const LinkP = styled.p`
 
 export function ProjectsCard(props: Props) {
   const { data, isDraft } = props;
-  const { role, choices, updateCardsToPrint, cardsToPrint } =
+  const { role, choices, updateCardsToPrint, cardsToPrint, userID, userName } =
     useContext(Context);
   const [isFilled, setIsFilled] = useState<boolean>(false);
+  const [messageApi, contextHolder] = message.useMessage();
+  const navigate = useNavigate();
+  
+  // Check if current user is the admin (creator) of this signal
+  const isAdmin = 
+    // Check if user is admin role
+    role === 'Admin' || 
+    // Check if user is the creator of the signal
+    (data.created_by === userName);
+  
+  // Function to handle signal deletion
+  const handleDeleteSignal = async () => {
+    if (!isAdmin) {
+      messageApi.error("Permission denied: Only signal creators or admins can delete signals");
+      return;
+    }
+    
+    try {
+      messageApi.loading("Deleting signal...");
+      await deleteSignal(data.id);
+      messageApi.success("Signal deleted successfully");
+      
+      // Refresh the page to update the list
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to delete signal:", error);
+      messageApi.error("Failed to delete signal");
+    }
+  };
+  
   //   Need to remove this?
   const myFavBtnClick = () => {
     const signals = getfavoriteSignals();
@@ -121,6 +152,7 @@ export function ProjectsCard(props: Props) {
   }, [openModal]);
   return (
     <div className='signal-card'>
+      {contextHolder} {/* Add message API contextHolder */}
       <CardEl>
         <div>
           <NavLink
@@ -154,28 +186,60 @@ export function ProjectsCard(props: Props) {
                   {data.status === 'New' ? 'Awaiting Approval' : data.status}
                 </div>
               ) : null}
-              <button
-                type='button'
-                onClick={e => {
-                  e.preventDefault();
-                  myFavBtnClick();
-                }}
-                style={{
-                  border: 'none',
-                  background: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                <IconContainer>
+              <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', gap: '8px' }}>
+                {/* Delete button - only visible to admins and creators */}
+                {isAdmin && (
+                  <Popconfirm
+                    title="Delete this signal?"
+                    description="This action cannot be undone."
+                    onConfirm={handleDeleteSignal}
+                    okText="Delete"
+                    cancelText="Cancel"
+                    okButtonProps={{ danger: true }}
+                  >
+                    <button
+                      type='button'
+                      onClick={e => {
+                        e.preventDefault(); // Prevent navigation
+                      }}
+                      style={{
+                        border: 'none',
+                        background: 'rgba(255, 255, 255, 0.85)',
+                        cursor: 'pointer',
+                        padding: '8px',
+                        borderRadius: '4px',
+                        marginRight: '5px',
+                      }}
+                    >
+                      <DeleteOutlined style={{ color: 'red', fontSize: '1.2em' }} />
+                    </button>
+                  </Popconfirm>
+                )}
+                
+                {/* Favorite button */}
+                <button
+                  type='button'
+                  onClick={e => {
+                    e.preventDefault();
+                    myFavBtnClick();
+                  }}
+                  style={{
+                    border: 'none',
+                    background: 'rgba(255, 255, 255, 0.85)',
+                    cursor: 'pointer',
+                    padding: '8px',
+                    borderRadius: '4px',
+                  }}
+                >
                   <FontAwesomeIcon
                     icon={isFilled ? solidHeart : regularHeart}
                     style={{
                       color: isFilled ? 'orange' : 'black',
-                      fontSize: '1.5em',
+                      fontSize: '1.2em',
                     }}
                   />
-                </IconContainer>
-              </button>
+                </button>
+              </div>
             </HeroImageEl>
           </NavLink>
           <div style={{ padding: '1rem 1rem 0 1rem' }}>

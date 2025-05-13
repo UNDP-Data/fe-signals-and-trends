@@ -4,8 +4,8 @@ import { Pagination, PaginationProps, Empty, Button, Space } from 'antd';
 import { AppstoreOutlined, BarsOutlined } from '@ant-design/icons';
 import { SignalGridView } from './SignalGridView';
 import { SignalHorizontalView } from './SignalHorizontalView';
-import type { SignalDataType, UserGroupDataType } from '../../Types';
-import { listUserGroups } from '../../API/userCalls';
+import type { SignalDataType, UserGroupDataType, UserDataType } from '../../Types';
+import { listUserGroups, UserGroupResponseDataType } from '../../API/userCalls';
 
 const ViewToggleContainer = styled.div`
   display: flex;
@@ -51,6 +51,28 @@ export const SignalsList: React.FC<SignalsListProps> = ({
   const [pageSize, setPageSize] = useState(initialPageSize);
   const [viewMode, setViewMode] = useState<'grid' | 'horizontal'>('grid');
 
+  // Convert UserGroupResponseDataType to UserGroupDataType
+  const convertUserGroupResponseToUserGroupData = (
+    responseGroups: UserGroupResponseDataType[]
+  ): UserGroupDataType[] => {
+    return responseGroups.map(group => ({
+      id: group.id,
+      name: group.name,
+      user_ids: group.user_ids || [],
+      signal_ids: group.signal_ids || [],
+      collaborator_map: group.collaborator_map || {},
+      // Convert string[] to UserDataType[] by creating minimal user objects
+      users: group.users ? group.users.map(email => ({
+        email,
+        name: email.split('@')[0], // Just use the email's local part as name
+        id: 0, // Placeholder
+        role: 'User', // Default role
+        unit: '', // Empty unit
+        created_at: '', // Empty created_at
+      })) : [],
+    }));
+  };
+
   // Fetch user groups when the component mounts
   useEffect(() => {
     let mounted = true;
@@ -59,7 +81,9 @@ export const SignalsList: React.FC<SignalsListProps> = ({
       try {
         const groups = await listUserGroups();
         if (mounted) {
-          setUserGroups(groups);
+          // Convert API response to the expected type
+          const convertedGroups = convertUserGroupResponseToUserGroupData(groups);
+          setUserGroups(convertedGroups);
         }
       } catch (error) {
         console.error('Error fetching user groups:', error);

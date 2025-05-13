@@ -45,6 +45,10 @@ const GroupCard = styled.div`
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  
+  a:hover {
+    text-decoration: underline !important;
+  }
 `;
 
 const GroupHeader = styled.div`
@@ -61,6 +65,10 @@ const GroupHeader = styled.div`
 const GroupTitle = styled(Title)`
   margin: 0 !important;
   font-size: 22px !important;
+  
+  &:hover {
+    color: #006EB5 !important;
+  }
 `;
 
 const GroupContent = styled.div`
@@ -335,7 +343,7 @@ export const UserGroupsList = ({ onEdit, onView, userGroups: propUserGroups }: U
     };
 
     return (
-      <UserAvatarGroup onClick={handleClick}>
+      <UserAvatarGroup>
         <Text>
           <UserOutlined /> {collaboratorCount} {collaboratorCount === 1 ? 'Collaborator' : 'Collaborators'}
         </Text>
@@ -348,7 +356,7 @@ export const UserGroupsList = ({ onEdit, onView, userGroups: propUserGroups }: U
     const signalCount = group.signal_ids ? group.signal_ids.length : 0;
 
     return (
-      <SignalAvatarGroup onClick={() => handleAddSignals(group)}>
+      <SignalAvatarGroup>
         <Text>
           <FileTextOutlined /> {signalCount} {signalCount === 1 ? 'Signal' : 'Signals'}
         </Text>
@@ -410,18 +418,31 @@ export const UserGroupsList = ({ onEdit, onView, userGroups: propUserGroups }: U
         }
       ];
 
-      const handleGroupClick = () => {
-        if (onView) {
-          onView(group.id);
-        }
+      // Generate URL for the group
+      const getGroupUrl = () => {
+        if (!onView) return '#';
+        
+        // Create a URL-friendly slug from the group name
+        const slug = group.name.toLowerCase()
+          .replace(/[^\w\s-]/g, '') // Remove special characters
+          .replace(/\s+/g, '-')     // Replace spaces with hyphens
+          .trim();
+        
+        return `/sprint/${slug}-${group.id}`;
       };
       
       return (
-        <GroupCard key={group.id} style={{ cursor: onView ? 'pointer' : 'default' }} onClick={onView ? handleGroupClick : undefined}>
+        <GroupCard key={group.id}>
           <GroupHeader>
             <GroupHeaderContent>
               <div className="group-header-left">
-                <GroupTitle level={3}>{group.name}</GroupTitle>
+                {onView ? (
+                  <a href={getGroupUrl()} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <GroupTitle level={3}>{group.name}</GroupTitle>
+                  </a>
+                ) : (
+                  <GroupTitle level={3}>{group.name}</GroupTitle>
+                )}
                 <TimeAgo date={group.modified_at} />
               </div>
               <div className="group-header-center">

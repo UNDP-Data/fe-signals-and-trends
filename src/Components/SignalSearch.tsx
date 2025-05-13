@@ -4,6 +4,7 @@ import { SearchOutlined, SaveOutlined, DeleteOutlined } from '@ant-design/icons'
 import styled from 'styled-components';
 import { searchSignals } from '../API/signalsCall';
 import type { SignalDataType } from '../Types';
+import { logger } from '../logger';
 import type { TablePaginationConfig } from 'antd/es/table';
 
 const { Text, Title } = Typography;
@@ -108,7 +109,7 @@ export const SignalSearch = ({
         total: response.total_count || 0,
       });
     } catch (error) {
-      console.error('Error searching signals:', error);
+      logger.error('Error searching signals:', error);
     } finally {
       setLoading(false);
     }

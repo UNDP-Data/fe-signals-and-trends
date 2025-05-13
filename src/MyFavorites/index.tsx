@@ -16,6 +16,8 @@ export function MyFavorites() {
     error,
     isLoading,
   } = useFavorites({
+    page: 1, // Default to first page
+    pageSize: 100, // Use a large page size to get all favorites
     onSuccess: (data) => {
       updateSignalList(data);
     },

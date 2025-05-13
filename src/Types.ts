@@ -199,6 +199,7 @@ export interface CtxDataType {
   name?: string;
   unit?: string;
   role?: 'Admin' | 'Curator' | 'User';
+  isAdmin?: boolean;
   isAcceleratorLab?: boolean;
   userID?: number;
   notificationText?: string;
@@ -218,6 +219,7 @@ export interface CtxDataType {
   updateUnit: (_d?: string) => void;
   updateUserID: (_d?: number) => void;
   updateIsAcceleratorLab: (_d?: boolean) => void;
+  updateIsAdmin: (_d: boolean) => void;
   updateRole: (_d?: 'Admin' | 'Curator' | 'User') => void;
   updateNotificationText: (_d?: string) => void;
   updateChoices: (_d?: ChoicesDataType) => void;

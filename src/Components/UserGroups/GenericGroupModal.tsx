@@ -14,11 +14,12 @@ export interface GenericGroupModalProps {
   initialValues?: {
     name?: string;
     users?: string[];
+    admins?: string[];
     description?: string;
   };
   groupId?: number;
   submitButtonText?: string;
-  onSubmit: (values: { name: string; users: string[]; description?: string }, groupId?: number) => Promise<any>;
+  onSubmit: (values: { name: string; users: string[]; admins?: string[]; description?: string }, groupId?: number) => Promise<any>;
 }
 
 export const GenericGroupModal: React.FC<GenericGroupModalProps> = ({
@@ -26,7 +27,7 @@ export const GenericGroupModal: React.FC<GenericGroupModalProps> = ({
   onClose,
   onSuccess,
   title = 'Add Collaborator',
-  initialValues = { name: '', users: [], description: '' },
+  initialValues = { name: '', users: [], admins: [], description: '' },
   groupId,
   submitButtonText = 'Save Group & Send Invites',
   onSubmit
@@ -43,6 +44,7 @@ export const GenericGroupModal: React.FC<GenericGroupModalProps> = ({
       const fieldsToSet: Record<string, any> = {};
       if (initialValues.name) fieldsToSet.name = initialValues.name;
       if (initialValues.users) fieldsToSet.users = initialValues.users;
+      if (initialValues.admins) fieldsToSet.admins = initialValues.admins;
       if (initialValues.description) fieldsToSet.description = initialValues.description;
       
       if (Object.keys(fieldsToSet).length > 0) {
@@ -99,7 +101,7 @@ export const GenericGroupModal: React.FC<GenericGroupModalProps> = ({
           };
           handleSubmit(trimmedValues);
         }}
-        initialValues={{ users: [] }}
+        initialValues={{ users: [], admins: [] }}
         validateTrigger={['onChange', 'onBlur']}
       >
         <Form.Item 
@@ -133,12 +135,23 @@ export const GenericGroupModal: React.FC<GenericGroupModalProps> = ({
             rows={3}
           />
         </Form.Item> */}
+{/* 
+        <div className="section-title">Group Administrators</div>
+        <Form.Item name="admins">
+          <MemberSelect
+            placeholder="Select group administrators"
+            value={initialValues.admins || []}
+            isAdminSelect={true}
+            label="Group Administrators"
+          />
+        </Form.Item> */}
 
         <div className="members-title">Members</div>
         <Form.Item name="users">
           <MemberSelect
             placeholder="Type a name or UNDP email to search and select users"
             value={initialValues.users || []}
+            label="Group Members"
           />
         </Form.Item>
 

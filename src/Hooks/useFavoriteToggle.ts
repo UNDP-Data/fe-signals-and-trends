@@ -4,6 +4,7 @@ import { notification } from 'antd';
 import { makeSignalFavorite } from '../API';
 import { NavLink } from 'react-router-dom';
 import { navLinks } from '../Constants';
+import { logger } from '../logger';
 
 interface UseFavoriteToggleProps {
   signalId: number;
@@ -31,7 +32,7 @@ export const useFavoriteToggle = ({
 
     makeSignalFavorite(signalId, { status: 'created' })
       .then(() => {
-        console.log(`Signal ${newStatus ? 'added to' : 'removed from'} favorites`);
+        logger.info(`Signal ${newStatus ? 'added to' : 'removed from'} favorites`);
 
         // Invalidate favorites query to refresh the data
         queryClient.invalidateQueries({ queryKey: ['favorites'] });
@@ -57,7 +58,7 @@ export const useFavoriteToggle = ({
         }
       })
       .catch(error => {
-        console.error('Error updating favorite status:', error);
+        logger.error('Error updating favorite status:', error);
         // Revert UI state if API call fails
         setIsFavorite(!newStatus);
 

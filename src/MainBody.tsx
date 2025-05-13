@@ -203,9 +203,19 @@ function MainBody() {
                 <Route path='/add-new-signal' element={<AddNewSignalEl />} />
                 <Route path='/add-new-trend' element={<AddNewTrendEl />} />
                 <Route path='/admin-panel' element={<AdminPanel />} />
-                <Route path='/my-drafts' element={<MyDrafts />} />
-                <Route path='/my-sprints' element={<MySprints />} />
-                <Route path='/sprint/:id' element={<SprintPage />} />
+                <Route path='/my-drafts' element={
+                  <MyDrafts />
+                } />
+                <Route path='/my-sprints' element={
+                  <div className='main-page-container'>
+                    <MySprints />
+                  </div>
+                } />
+                <Route path='/sprint/:id' element={
+                  <div className='main-page-container'>
+                    <SprintPage />
+                  </div>
+                } />
                 <Route path='/sprint/:id/edit' element={<MySprints />} />
                 <Route path='/my-favorites' element={<MyFavorites />} />
                 <Route path='/my-projects' element={<MyProjects />} />

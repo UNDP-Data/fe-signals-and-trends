@@ -6,6 +6,7 @@ import {
   StatusDataType,
 } from '../Types';
 import { axiosInstance } from './apiConfig';
+import logger from '../logger';
 
 
 interface BaseSignalsParamsDataType {
@@ -147,13 +148,13 @@ export function searchSignals(params: BaseSignalsParamsDataType = {}) {
       params: queryParams,
     })
     .then(response => {
-      console.log(
-        'API Call URL ',
+      logger.debug(
+        'API Call URL',
         axiosInstance.defaults.baseURL,
         '/signals/search',
         queryParams,
       );
-      console.log(response.data);
+      logger.debug('API Response Data', response.data);
       return response.data;
     })
     .catch(error => {

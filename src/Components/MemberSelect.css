@@ -7,6 +7,22 @@
   max-width: 100%;
 }
 
+.member-select-container.admin-select {
+  margin-bottom: 12px;
+}
+
+.member-select-label {
+  width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.admin-indicator {
+  color: #006EB5;
+  font-weight: 600;
+}
+
 .member-select-form-item {
   flex: 1;
   margin-bottom: 0;
@@ -23,6 +39,11 @@
   min-height: 42px !important;
   display: flex;
   align-items: center;
+}
+
+.admin-select-input .ant-select-selector {
+  border: 2px solid #006EB5 !important;
+  background-color: rgba(0, 110, 181, 0.05) !important;
 }
 
 .member-select .ant-select-selection-search {

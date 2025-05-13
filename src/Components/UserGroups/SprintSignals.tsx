@@ -6,6 +6,7 @@ import { SignalSearch } from '../SignalSearch';
 import { addSignalToUserGroup, removeSignalFromUserGroup } from '../../API/userCalls';
 import type { SignalDataType, UserGroupDataType } from '../../Types';
 import { useQueryClient } from '@tanstack/react-query';
+import { logger } from '../../logger';
 
 const { Title } = Typography;
 
@@ -37,7 +38,7 @@ export const SprintSignals: React.FC<SprintSignalsProps> = ({
       queryClient.invalidateQueries({ queryKey: ['sprint', sprintId] });
       messageApi.success('Signal removed from sprint');
     } catch (error) {
-      console.error('Failed to remove signal:', error);
+      logger.error('Failed to remove signal:', error);
       messageApi.error('Failed to remove signal from sprint');
     }
   };
@@ -59,7 +60,7 @@ export const SprintSignals: React.FC<SprintSignalsProps> = ({
       messageApi.success(`Successfully added ${selectedSignals.length} signal(s) to sprint`);
       setIsSignalSearchVisible(false);
     } catch (error) {
-      console.error('Failed to add signals to sprint:', error);
+      logger.error('Failed to add signals to sprint:', error);
       messageApi.error('Failed to add signals to sprint');
     }
   };
@@ -73,13 +74,13 @@ export const SprintSignals: React.FC<SprintSignalsProps> = ({
           {signals.length > 0 ? `Signals (${signals.length})` : 'No Signals in this Sprint.'}
         </Title>
         
-        <Button 
+        {/* <Button 
           type="primary" 
           icon={<PlusOutlined />} 
           onClick={handleAddSignal}
         >
           Add Signals
-        </Button>
+        </Button> */}
       </div>
 
       {/* Grid view for larger displays */}

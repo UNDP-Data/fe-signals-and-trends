@@ -218,8 +218,7 @@ export function MySprints() {
   const totalGroups = displayGroups.length;
 
   return (
-    <div className='main-content-container'>
-      <AuthenticatedTemplate>
+     <>
         <div className="flex-div flex-space-between flex-vert-align-center" style={{ flexWrap: 'wrap', gap: '1rem' }}>
           <Title level={2} className="undp-typography margin-top-05 margin-bottom-09">
             My Sprints
@@ -283,10 +282,6 @@ export function MySprints() {
             onSuccess={onGroupFormSuccess} 
           />
         </Modal>
-      </AuthenticatedTemplate>
-      <UnauthenticatedTemplate>
-        <SignInButton buttonText='Sign In to View Dashboard' />
-      </UnauthenticatedTemplate>
-    </div>
+    </>
   );
 }
