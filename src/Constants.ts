@@ -340,3 +340,5 @@ export const navLinks = {
   addNewSignal: '/add-new-signal',
   addNewTrend: '/add-new-trend',
 }
+
+export const isLocalEnv = process.env.ENVIRONMENT === 'local' || process.env.NODE_ENV === 'development';

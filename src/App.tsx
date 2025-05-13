@@ -271,32 +271,32 @@ function App() {
     }
   }, [isAuthenticated, instance]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      // Get basic user group information
-      listUserGroups()
-        .then((data: UserGroupDataType[]) => {
-          updateUserGroups(data);
-        })
-        .catch(err => {
-          // eslint-disable-next-line no-console
-          console.warn(err);
-        });
+  // useEffect(() => {
+  //   if (isAuthenticated) {
+  //     // Get basic user group information
+  //     listUserGroups()
+  //       .then((data: UserGroupDataType[]) => {
+  //         updateUserGroups(data);
+  //       })
+  //       .catch(err => {
+  //         // eslint-disable-next-line no-console
+  //         console.warn(err);
+  //       });
       
-      // Get detailed user groups with signals
-      getUserGroupsWithSignals()
-        .then((data: UserGroupDataType[]) => {
-          // We can store this in another state if needed,
-          // or use it to update the userGroups state with more information
-          // For now, we're updating the same state
-          updateUserGroups(data);
-        })
-        .catch(err => {
-          // eslint-disable-next-line no-console
-          console.warn(err);
-        });
-    }
-  }, [isAuthenticated]);
+  //     // Get detailed user groups with signals
+  //     getUserGroupsWithSignals()
+  //       .then((data: UserGroupDataType[]) => {
+  //         // We can store this in another state if needed,
+  //         // or use it to update the userGroups state with more information
+  //         // For now, we're updating the same state
+  //         updateUserGroups(data);
+  //       })
+  //       .catch(err => {
+  //         // eslint-disable-next-line no-console
+  //         console.warn(err);
+  //       });
+  //   }
+  // }, [isAuthenticated]);
 
   const contextValue = useMemo(
     () => ({
@@ -358,7 +358,7 @@ function App() {
         >
           <MainBody />
           <Footer />
-          {/* {isAuthenticated && <ChatBubble />} */}
+          {isAuthenticated && <ChatBubble />}
         </div>
       ) : (
         <div

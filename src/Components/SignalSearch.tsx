@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Input, Button, Table, Empty, Typography, Space, Spin, Modal } from 'antd';
-import { SearchOutlined } from '@ant-design/icons';
+import { Input, Button, Table, Empty, Typography, Space, Spin, Modal, Tag, Divider } from 'antd';
+import { SearchOutlined, SaveOutlined, DeleteOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
 import { searchSignals } from '../API/signalsCall';
 import type { SignalDataType } from '../Types';
@@ -14,6 +14,9 @@ interface SignalSearchProps {
   onSelect: (signals: SignalDataType[]) => void;
   selectedSignals?: SignalDataType[];
   title?: string;
+  width?: string | number;
+  containerStyles?: React.CSSProperties;
+  isModal?: boolean;
 }
 
 const SearchContainer = styled.div`
@@ -46,12 +49,37 @@ const SelectedCount = styled(Text)`
   font-weight: bold;
 `;
 
+const ComponentContainer = styled.div<{ customWidth?: string | number }>`
+  width: ${props => props.customWidth || '100%'};
+  overflow: hidden;
+`;
+
+const SelectedSignalsContainer = styled.div`
+  margin-bottom: 16px;
+  padding: 12px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+`;
+
+const SelectedSignalTag = styled(Tag)`
+  margin: 4px;
+`;
+
+const ActionBar = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+`;
+
 export const SignalSearch = ({
   visible,
   onClose,
   onSelect,
   selectedSignals = [],
-  title = 'Add Signals'
+  title = 'Add Signals',
+  width,
+  containerStyles,
+  isModal,
 }: SignalSearchProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -136,11 +164,19 @@ export const SignalSearch = ({
     onClose();
   };
 
+  const handleSave = () => {
+    onSelect(selectedRows);
+  };
+
+  const handleRemoveSelected = (signalId: number) => {
+    setSelectedRows(selectedRows.filter(signal => signal.id !== signalId));
+  };
+
   const columns = [
     {
       title: 'Title',
-      dataIndex: 'title',
-      key: 'title',
+      dataIndex: 'headline',
+      key: 'headline',
       render: (text: string) => <Text strong>{text}</Text>,
     },
     {
@@ -148,7 +184,7 @@ export const SignalSearch = ({
       dataIndex: 'description',
       key: 'description',
       render: (text: string) => (
-        <Text ellipsis={{ tooltip: text }}>
+        <Text ellipsis={{ tooltip: text }} style={{ maxWidth: 300, display: 'block' }}>
           {text}
         </Text>
       ),
@@ -161,32 +197,22 @@ export const SignalSearch = ({
     },
   ];
 
-  return (
-    <Modal
-      title={<Title level={4}>{title}</Title>}
-      open={visible}
-      onCancel={onClose}
-      width={800}
-      footer={
-        <ModalFooter>
-          <SelectedCount>
-            {selectedRows.length} signals selected
-          </SelectedCount>
-          <Space>
-            <Button onClick={onClose}>
-              Cancel
-            </Button>
-            <Button 
-              type="primary" 
-              onClick={handleApply}
-              disabled={selectedRows.length === 0}
+  const renderContent = () => (
+    <>
+      {selectedRows.length > 0 && (
+        <>
+          <ActionBar>
+            <Button
+              type="primary"
+              icon={<SaveOutlined />}
+              onClick={handleSave}
             >
-              Apply
+              Save Selection
             </Button>
-          </Space>
-        </ModalFooter>
-      }
-    >
+          </ActionBar>
+        </>
+      )}
+
       <SearchContainer>
         <SearchInput
           placeholder="Search signals by title, description, or keywords"
@@ -218,10 +244,41 @@ export const SignalSearch = ({
             onSelect: (record, selected) => handleSelect(record as SignalDataType, selected),
             onSelectAll: (selected, selectedRows) => handleSelectAll(selected, selectedRows as SignalDataType[]),
           }}
-          rowClassName={(record) => 
+          rowClassName={(record) =>
             selectedRows.some(signal => signal.id === (record as SignalDataType).id) ? 'selected-row' : ''}
         />
       )}
+    </>
+  );
+
+  return isModal ? (
+    <Modal
+      title={title}
+      open={visible}
+      onCancel={onClose}
+      width={width || 800}
+      footer={
+        <ModalFooter>
+          <SelectedCount>
+            {selectedRows.length} {selectedRows.length === 1 ? 'signal' : 'signals'} selected
+          </SelectedCount>
+          <Space>
+            <Button onClick={onClose}>Cancel</Button>
+            <Button type="primary" onClick={handleApply}>
+              Apply
+            </Button>
+          </Space>
+        </ModalFooter>
+      }
+    >
+      {renderContent()}
     </Modal>
+  ) : (
+    <ComponentContainer
+      customWidth={width}
+      style={containerStyles}
+    >
+      {renderContent()}
+    </ComponentContainer>
   );
 };

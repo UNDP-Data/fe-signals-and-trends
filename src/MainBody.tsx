@@ -176,39 +176,41 @@ function MainBody() {
         {name && choices ? (
           <>
             <Header signOutClickHandler={signOutClickHandler} />
-            <Routes>
-              <Route path='/' element={<HomePage />} />
-              <Route path='/signals' element={<SignalsListing />} />
-              <Route path='/signals/:id' element={<SignalDetail />} />
-              <Route path='/signals/:id/edit' element={<EditSignal />} />
-              <Route
-                path='/archived-signals'
-                element={<ArchivedSignalsListing />}
-              />
-              <Route path='/archived-signals/:id' element={<SignalDetail />} />
-              <Route
-                path='/archived-signals/:id/edit'
-                element={<EditSignal />}
-              />
-              <Route path='/trends' element={<TrendsListing />} />
-              <Route path='/trends/:id' element={<TrendDetail />} />
-              <Route path='/trends/:id/edit' element={<EditTrend />} />
-              <Route
-                path='/archived-trends'
-                element={<ArchivedTrendsListing />}
-              />
-              <Route path='/archived-trends/:id' element={<TrendDetail />} />
-              <Route path='/archived-trends/:id/edit' element={<EditTrend />} />
-              <Route path='/add-new-signal' element={<AddNewSignalEl />} />
-              <Route path='/add-new-trend' element={<AddNewTrendEl />} />
-              <Route path='/admin-panel' element={<AdminPanel />} />
-              <Route path='/my-drafts' element={<MyDrafts />} />
-              <Route path='/my-sprints' element={<MySprints />} />
-              <Route path='/sprint/:id' element={<SprintPage />} />
-              <Route path='/sprint/:id/edit' element={<MySprints />} />
-              <Route path='/my-favorites' element={<MyFavorites />} />
-              <Route path='/my-projects' element={<MyProjects />} />
-            </Routes>
+            <div className="main-content-container">
+              <Routes>
+                <Route path='/' element={<HomePage />} />
+                <Route path='/signals' element={<SignalsListing />} />
+                <Route path='/signals/:id' element={<SignalDetail />} />
+                <Route path='/signals/:id/edit' element={<EditSignal />} />
+                <Route
+                  path='/archived-signals'
+                  element={<ArchivedSignalsListing />}
+                />
+                <Route path='/archived-signals/:id' element={<SignalDetail />} />
+                <Route
+                  path='/archived-signals/:id/edit'
+                  element={<EditSignal />}
+                />
+                <Route path='/trends' element={<TrendsListing />} />
+                <Route path='/trends/:id' element={<TrendDetail />} />
+                <Route path='/trends/:id/edit' element={<EditTrend />} />
+                <Route
+                  path='/archived-trends'
+                  element={<ArchivedTrendsListing />}
+                />
+                <Route path='/archived-trends/:id' element={<TrendDetail />} />
+                <Route path='/archived-trends/:id/edit' element={<EditTrend />} />
+                <Route path='/add-new-signal' element={<AddNewSignalEl />} />
+                <Route path='/add-new-trend' element={<AddNewTrendEl />} />
+                <Route path='/admin-panel' element={<AdminPanel />} />
+                <Route path='/my-drafts' element={<MyDrafts />} />
+                <Route path='/my-sprints' element={<MySprints />} />
+                <Route path='/sprint/:id' element={<SprintPage />} />
+                <Route path='/sprint/:id/edit' element={<MySprints />} />
+                <Route path='/my-favorites' element={<MyFavorites />} />
+                <Route path='/my-projects' element={<MyProjects />} />
+              </Routes>
+            </div>
           </>
         ) : (
           <div className='undp-loader-container'>
@@ -219,9 +221,11 @@ function MainBody() {
       <UnauthenticatedTemplate>
         <>
           <Header signOutClickHandler={signOutClickHandler} />
-          <Routes>
-            <Route path='/*' element={<SignedOutHomePage />} />
-          </Routes>
+          <div className="main-content-container">
+            <Routes>
+              <Route path='/*' element={<SignedOutHomePage />} />
+            </Routes>
+          </div>
         </>
       </UnauthenticatedTemplate>
       {cardsToPrint.length > 0 ? (

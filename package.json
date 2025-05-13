@@ -38,6 +38,7 @@
     "d3-fetch": "^3.0.1",
     "d3-force": "^3.0.0",
     "d3-scale": "^4.0.2",
+    "date-fns": "^4.1.0",
     "jszip": "^3.10.1",
     "lodash.remove": "^4.7.0",
     "lodash.sortby": "^4.7.0",

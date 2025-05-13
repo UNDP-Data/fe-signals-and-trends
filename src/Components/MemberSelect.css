@@ -3,6 +3,8 @@
   gap: 8px;
   margin-bottom: 16px;
   align-items: stretch;
+  flex-wrap: wrap;
+  max-width: 100%;
 }
 
 .member-select-form-item {
@@ -38,4 +40,16 @@
   margin-bottom: 2px !important;
   background: #edf6fb !important;
   border-color: #006EB5 !important;
-} 
+}
+
+.member-tag {
+  background: #edf6fb !important;
+  border: 1px solid #006EB5 !important;
+  color: #006EB5 !important;
+  font-weight: 500;
+  padding: 2px 8px;
+  margin: 2px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+}

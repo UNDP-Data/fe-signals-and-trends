@@ -14,7 +14,7 @@ import { searchSignals } from '../API';
 import { listUserGroups } from '../API/userCalls';
 import { UserGroupForm, UserGroupsList } from '../Components/UserGroups';
 import type { UserGroupDataType, SignalDataType } from '../Types';
-import { SprintCard } from '../Components/SprintCard';
+import { SignalCard } from '../Components/SignalCard';
 import TEST_USER_GROUPS, { 
   ExtendedUserGroupDataType,
   convertToStandardFormat 
@@ -115,13 +115,16 @@ export function MySprints() {
         const groups = await listUserGroups();
         
         // Make sure we return a valid UserGroupDataType[] by ensuring required fields
-        return groups.map(group => ({
-          ...group,
-          // Ensure required fields have default values
-          user_ids: group.user_ids || [],
-          signal_ids: group.signal_ids || [],
-          collaborator_map: group.collaborator_map || {}
-        })) as UserGroupDataType[];
+        return groups.map(group => {
+          const { users, ...groupWithoutUsers } = group;
+          return {
+            ...groupWithoutUsers,
+            // users omitted
+            user_ids: group.user_ids || [],
+            signal_ids: group.signal_ids || [],
+            collaborator_map: group.collaborator_map || {}
+          };
+        }) as UserGroupDataType[];
       } catch (error) {
         console.error('Failed to fetch user groups:', error);
         return [];
@@ -215,24 +218,21 @@ export function MySprints() {
   const totalGroups = displayGroups.length;
 
   return (
-    <div
-      className='margin-top-13 padding-top-09 margin-bottom-09'
-      style={{ paddingLeft: '1rem', paddingRight: '1rem' }}
-    >
+    <div className='main-content-container'>
       <AuthenticatedTemplate>
-        <div className="flex-div flex-space-between flex-vert-align-center">
+        <div className="flex-div flex-space-between flex-vert-align-center" style={{ flexWrap: 'wrap', gap: '1rem' }}>
           <Title level={2} className="undp-typography margin-top-05 margin-bottom-09">
             My Sprints
           </Title>
-          
+
           <div style={{ display: 'flex', gap: '12px' }}>
             {LOAD_TEST_DATA && !useTestData && (
-              <Button 
+              <Button
                 type="primary"
                 onClick={handleLoadTestData}
-                style={{ 
-                  backgroundColor: '#2E6EB5', 
-                  marginBottom: '1rem' 
+                style={{
+                  backgroundColor: '#2E6EB5',
+                  marginBottom: '1rem'
                 }}
               >
                 Load Test Data

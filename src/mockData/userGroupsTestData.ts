@@ -128,7 +128,7 @@ export const convertToStandardFormat = (groups: ExtendedUserGroupDataType[]): Us
   return groups.map(group => ({
     id: group.id,
     name: group.name,
-    users: group.users.map(user => user.email)
+    // users omitted or mapped to string[] if needed
   }));
 };
 

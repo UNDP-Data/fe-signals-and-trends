@@ -3017,14 +3017,14 @@
     }
     }
     },
-    "/user-groups/{group_id}/{signal_id}/collaborators": {
+    "/user-groups/{group_id}/signals/{signal_id}/collaborators": {
     "post": {
     "tags": [
     "user groups"
     ],
     "summary": "Add Collaborator To Signal By Email",
     "description": "Add a user as a collaborator for a specific signal in a group by email address.",
-    "operationId": "add_collaborator_to_signal_by_email_user_groups__group_id___signal_id__collaborators_post",
+    "operationId": "add_collaborator_to_signal_by_email_user_groups__group_id__signals__signal_id__collaborators_post",
     "security": [
     {
     "APIKeyHeader": []
@@ -3071,7 +3071,7 @@
     "application/json": {
     "schema": {
     "type": "boolean",
-    "title": "Response Add Collaborator To Signal By Email User Groups  Group Id   Signal Id  Collaborators Post"
+    "title": "Response Add Collaborator To Signal By Email User Groups  Group Id  Signals  Signal Id  Collaborators Post"
     }
     }
     }

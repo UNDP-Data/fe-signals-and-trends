@@ -131,7 +131,8 @@ export const UserGroupForm = ({ group, onSuccess }: UserGroupFormProps) => {
               return {
                 ...g, 
                 ...updatedGroup,
-                user_ids: updatedGroup.user_ids || g.user_ids
+                user_ids: updatedGroup.user_ids || g.user_ids,
+                users: g.users
               };
             }
             return g;
@@ -143,9 +144,11 @@ export const UserGroupForm = ({ group, onSuccess }: UserGroupFormProps) => {
         // Create new group
         const newGroup = await createUserGroup(submitData);
         
+        // Remove users property if present (from API response)
+        const { users, ...newGroupWithoutUsers } = newGroup;
         // Convert to UserGroupDataType format for compatibility
         const newGroupData: UserGroupDataType = {
-          ...newGroup,
+          ...newGroupWithoutUsers,
           user_ids: newGroup.user_ids || [],
           signal_ids: [],
           collaborator_map: {},

@@ -11,6 +11,7 @@ import {
   PlusOutlined
 } from '@ant-design/icons';
 import styled from 'styled-components';
+import { formatDistanceToNow } from 'date-fns';
 import Context from '../../Context/Context';
 import type { UserGroupDataType } from '../../Types';
 import { deleteUserGroup } from '../../API/userCalls';
@@ -19,13 +20,14 @@ import { SignalCard } from '../SignalCard';
 import type { SignalDataType } from '../../Types';
 import type { MenuProps } from 'antd';
 import { SignalSearch } from '../SignalSearch';
+import { SignalHorizontalView } from '../SignalViews';
 
 interface UserWithNameAndEmail {
   name: string;
   email: string;
 }
 
-interface ExtendedUserGroupDataType extends UserGroupDataType {
+interface ExtendedUserGroupDataType extends Omit<UserGroupDataType, 'users'> {
   users: UserWithNameAndEmail[];
   signals?: SignalDataType[];
 }
@@ -41,6 +43,8 @@ const { Title, Text } = Typography;
 const GroupCard = styled.div`
   margin-bottom: 30px;
   width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 `;
 
 const GroupHeader = styled.div`
@@ -50,6 +54,8 @@ const GroupHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 `;
 
 const GroupTitle = styled(Title)`
@@ -115,9 +121,42 @@ const AddUserButton = styled(PlusCircleOutlined)`
 
 const GroupHeaderContent = styled.div`
   display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 15px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  width: 100%;
+
+  .group-header-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .group-header-center {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 0;
+    min-width: 0;
+    gap: 16px;
+  }
+  .group-header-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 0 0 auto;
+  }
+`;
+
+const TimeAgoText = styled(Text)`
+  color: #8c8c8c;
+  font-size: 14px;
+  font-style: italic;
+  margin-bottom: 8px;
+  display: block;
 `;
 
 const MenuButton = styled.div`
@@ -130,20 +169,6 @@ const MenuButton = styled.div`
   }
 `;
 
-const SignalsContainer = styled.div`
-  display: flex;
-  overflow-x: auto;
-  gap: 20px;
-  padding: 20px 0;
-  margin-top: 20px;
-  border-top: 1px solid #eeeeee;
-`;
-
-const CompactSignalCard = styled.div`
-  width: 300px;
-  min-width: 300px;
-  border: 1px solid #e8e8e8;
-`;
 
 const SignalBadge = styled(Badge)`
   margin-left: 5px;
@@ -197,8 +222,22 @@ const convertToStandardFormat = (
     steep_secondary: group.steep_secondary,
     signature_primary: group.signature_primary,
     signature_secondary: group.signature_secondary,
-    sdgs: group.sdgs
+    sdgs: group.sdgs,
+    // users omitted or mapped to string[] if needed
   }));
+};
+
+// TimeAgo component for displaying relative time from a date string
+export const TimeAgo = ({ date }: { date?: string | null }) => {
+  if (!date) return null;
+  try {
+    const parsedDate = new Date(date);
+    const timeAgo = formatDistanceToNow(parsedDate, { addSuffix: true });
+    return <TimeAgoText>Modified {timeAgo}</TimeAgoText>;
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return null;
+  }
 };
 
 export const UserGroupsList = ({ onEdit, onView, userGroups: propUserGroups }: UserGroupsListProps) => {
@@ -276,23 +315,13 @@ export const UserGroupsList = ({ onEdit, onView, userGroups: propUserGroups }: U
     // with the selected signals and update the context or prop
   };
 
-  const renderUserAvatars = (group: UserGroupDataType | ExtendedUserGroupDataType, compact = false) => {
-    // For ExtendedUserGroupDataType, we have users as UserWithNameAndEmail[]
-    // For UserGroupDataType, we need to use user_ids since it doesn't have a users property
-    const isExtendedGroup = 'users' in group && Array.isArray(group.users);
-    
-    // Get users data from the appropriate place
-    const users = isExtendedGroup
-      ? (group as ExtendedUserGroupDataType).users
-      : []; // If it's a standard UserGroupDataType, we don't have user data, just IDs
-      
-    const totalUsers = users.length;
-    const displayedUsers = compact ? users.slice(0, 2) : users.slice(0, 3);
-    const remainingCount = totalUsers - displayedUsers.length;
-    
+  const renderCollaboratorCount = (group: UserGroupDataType | ExtendedUserGroupDataType, compact = false) => {
+    // Get the number of collaborators from user_ids
+    const collaboratorCount = group.user_ids ? group.user_ids.length : 0;
+
     // Convert to standard format if needed before passing to onEdit
     const handleClick = () => {
-      const standardGroup = isExtendedGroup
+      const standardGroup = 'users' in group
         ? {
             id: group.id,
             name: group.name,
@@ -301,85 +330,44 @@ export const UserGroupsList = ({ onEdit, onView, userGroups: propUserGroups }: U
             collaborator_map: group.collaborator_map,
           } as UserGroupDataType
         : group as UserGroupDataType;
-      
+
       onEdit?.(standardGroup);
     };
-    
+
     return (
       <UserAvatarGroup onClick={handleClick}>
-        {!compact && <Text style={{ marginRight: '15px' }}><UserOutlined /> Collaborators:</Text>}
-        
-        {isExtendedGroup ? (
-          // Render avatars for extended user groups
-          displayedUsers.map((user) => (
-            <Tooltip title={user.name} key={user.email}>
-              <UserAvatar 
-                style={{ backgroundColor: getAvatarColor(user.name) }}
-                size={compact ? "small" : "default"}
-              >
-                {getInitials(user.name)}
-              </UserAvatar>
-            </Tooltip>
-          ))
-        ) : (
-          // For standard UserGroupDataType, we don't have user details
-          // This is a placeholder rendering when we only have user_ids
-          <Text type="secondary">No user details available</Text>
-        )}
-        
-        {remainingCount > 0 && (
-          <Tooltip title={`${remainingCount} more collaborators`}>
-            <MoreUsers size={compact ? "small" : "default"}>+{remainingCount}</MoreUsers>
-          </Tooltip>
-        )}
-        
-        <Tooltip title="Edit collaborators">
-          <AddUserButton />
-        </Tooltip>
+        <Text>
+          <UserOutlined /> {collaboratorCount} {collaboratorCount === 1 ? 'Collaborator' : 'Collaborators'}
+        </Text>
       </UserAvatarGroup>
     );
   };
 
-  const renderSignalAvatars = (group: UserGroupDataType | ExtendedUserGroupDataType) => {
-    // Use signals property if it exists on the group (for ExtendedUserGroupDataType)
-    const signals = 'signals' in group ? group.signals : undefined;
-    const signalCount = signals?.length || 0;
-    
+  const renderSignalCount = (group: UserGroupDataType | ExtendedUserGroupDataType) => {
+    // Get the number of signals from signal_ids
+    const signalCount = group.signal_ids ? group.signal_ids.length : 0;
+
     return (
       <SignalAvatarGroup onClick={() => handleAddSignals(group)}>
-        <Text style={{ marginRight: '15px' }}><FileTextOutlined /> Signals:</Text>
-        
-        {signalCount > 0 ? (
-          <>
-            <Text strong style={{ marginRight: '8px' }}>{signalCount}</Text>
-            <SignalBadge count={signalCount} color="#006EB5" />
-          </>
-        ) : (
-          <Text type="secondary">No signals</Text>
-        )}
-        
-        <Tooltip title="Add signals">
-          <AddUserButton />
-        </Tooltip>
+        <Text>
+          <FileTextOutlined /> {signalCount} {signalCount === 1 ? 'Signal' : 'Signals'}
+        </Text>
       </SignalAvatarGroup>
     );
   };
 
   const renderGroupSignals = (group: UserGroupDataType | ExtendedUserGroupDataType) => {
     const signals = 'signals' in group ? group.signals : undefined;
-    
+
     if (!signals || signals.length === 0) {
       return null;
     }
-    
+
     return (
-      <SignalsContainer>
-        {signals.slice(0, 3).map(signal => (
-          <CompactSignalCard key={signal.id}>
-            <SignalCard data={signal} />
-          </CompactSignalCard>
-        ))}
-      </SignalsContainer>
+      <SignalHorizontalView
+        signals={signals.slice(0, 3)}
+        showRemoveButton={false}
+      />
     );
   };
 
@@ -432,15 +420,22 @@ export const UserGroupsList = ({ onEdit, onView, userGroups: propUserGroups }: U
         <GroupCard key={group.id} style={{ cursor: onView ? 'pointer' : 'default' }} onClick={onView ? handleGroupClick : undefined}>
           <GroupHeader>
             <GroupHeaderContent>
-              <GroupTitle level={3}>{group.name}</GroupTitle>
-              {renderUserAvatars(group, true)}
-              {renderSignalAvatars(group)}
+              <div className="group-header-left">
+                <GroupTitle level={3}>{group.name}</GroupTitle>
+                <TimeAgo date={group.modified_at} />
+              </div>
+              <div className="group-header-center">
+                {renderCollaboratorCount(group, true)}
+                {renderSignalCount(group)}
+              </div>
+              <div className="group-header-right">
+                <Dropdown menu={{ items: menuItems }} trigger={['click']}>
+                  <MenuButton onClick={(e) => e.stopPropagation()}>
+                    <EllipsisOutlined style={{ fontSize: '24px' }} />
+                  </MenuButton>
+                </Dropdown>
+              </div>
             </GroupHeaderContent>
-            <Dropdown menu={{ items: menuItems }} trigger={['click']}>
-              <MenuButton onClick={(e) => e.stopPropagation()}>
-                <EllipsisOutlined style={{ fontSize: '24px' }} />
-              </MenuButton>
-            </Dropdown>
           </GroupHeader>
           <GroupContent>
             {renderGroupSignals(group)}

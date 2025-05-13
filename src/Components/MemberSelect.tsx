@@ -3,8 +3,18 @@ import { Form, Input, Select, message } from 'antd';
 import { searchUsers } from '../API/userCalls';
 import './MemberSelect.css';
 
+interface User {
+  id: number;
+  created_at: string;
+  email: string;
+  role: string;
+  name: string;
+  unit: string | null;
+  acclab: boolean | null;
+}
+
 interface MemberSelectProps {
-  value?: string[];
+  value?: string[] | User[];
   onChange?: (value: string[]) => void;
   placeholder?: string;
 }
@@ -17,6 +27,11 @@ const MemberSelect: React.FC<MemberSelectProps> = ({
   const [searchLoading, setSearchLoading] = useState(false);
   const [userOptions, setUserOptions] = useState<{ label: string; value: string }[]>([]);
   const [searchValue, setSearchValue] = useState('');
+
+  // Format value to ensure it's always a string[] for the Select component
+  const formattedValue = Array.isArray(value)
+    ? value.map(item => typeof item === 'string' ? item : item.email)
+    : [];
 
   // Load initial users
   useEffect(() => {
@@ -31,12 +46,12 @@ const MemberSelect: React.FC<MemberSelectProps> = ({
         per_page: 100,
         query: query || undefined
       });
-      
+
       const options = response.data.map(user => ({
         label: `${user.name} (${user.email})`,
         value: user.email,
       }));
-      
+
       setUserOptions(options);
     } catch (error) {
       console.error('Failed to fetch users:', error);
@@ -79,7 +94,7 @@ const MemberSelect: React.FC<MemberSelectProps> = ({
           onSearch={handleSearch}
           notFoundContent={searchLoading ? "Searching..." : "No users found"}
           listHeight={280}
-          value={value}
+          value={formattedValue}
           onChange={handleChange}
         />
       </Form.Item>

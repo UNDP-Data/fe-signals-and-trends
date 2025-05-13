@@ -7,6 +7,45 @@ import {
   UserDataType,
   UserGroupDataType,
 } from '../Types';
+import { isLocalEnv } from '../Constants';
+
+
+function logApiCall(methodName: string, url: string, params?: any) {
+  if (isLocalEnv) {
+    console.group(`%c🌐 API Call: ${methodName}`, 'color: #3498db; font-weight: bold');
+    console.log(`%c📍 Endpoint: ${url}`, 'color: #27ae60');
+    if (params) {
+      console.log('%c📦 Params:', 'color: #f39c12', params);
+    }
+    console.groupEnd();
+  }
+}
+
+function logApiResponse(methodName: string, url: string, response: any, timeMs: number) {
+  if (isLocalEnv) {
+    console.group(`%c✅ API Response: ${methodName}`, 'color: #2ecc71; font-weight: bold');
+    console.log(`%c📍 Endpoint: ${url}`, 'color: #27ae60');
+    console.log(`%c⏱️ Time: ${timeMs}ms`, 'color: #9b59b6');
+    console.log('%c📄 Response:', 'color: #f39c12', response);
+    console.groupEnd();
+  }
+}
+
+function logApiError(methodName: string, url: string, error: any, timeMs: number) {
+  if (isLocalEnv) {
+    console.group(`%c❌ API Error: ${methodName}`, 'color: #e74c3c; font-weight: bold');
+    console.log(`%c📍 Endpoint: ${url}`, 'color: #27ae60');
+    console.log(`%c⏱️ Time: ${timeMs}ms`, 'color: #9b59b6');
+
+    if (isAxiosError(error)) {
+      console.log('%c🔍 Status:', 'color: #f39c12', error.response?.status);
+      console.log('%c📄 Error Data:', 'color: #f39c12', error.response?.data);
+    }
+
+    console.log('%c🚨 Error:', 'color: #e74c3c', error);
+    console.groupEnd();
+  }
+}
 
 interface UpdateUserResponseDataType {
   acclab: boolean;
@@ -65,10 +104,23 @@ export interface UserGroupResponseDataType {
 }
 
 export function readCurrentUser() {
+  const methodName = 'readCurrentUser';
+  const url = '/users/me';
+  const startTime = performance.now();
+
+  logApiCall(methodName, url);
+
   return axiosInstance
-    .get<CurrentUserResponseDataType>('/users/me')
-    .then(response => response.data)
+    .get<CurrentUserResponseDataType>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to retrieve current user information at the moment, try again later. ${
@@ -101,10 +153,23 @@ export function searchUsers(params: SearchUsersParamsDataType = {}) {
 
   if (query) queryParams.query = query;
 
+  const methodName = 'searchUsers';
+  const url = '/users/search';
+  const startTime = performance.now();
+
+  logApiCall(methodName, url, queryParams);
+
   return axiosInstance
-    .get<UserSearchResponseDataType>('/users/search', { params: queryParams })
-    .then(response => response.data)
+    .get<UserSearchResponseDataType>(url, { params: queryParams })
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to search users at the moment, try again later. ${
@@ -120,10 +185,23 @@ export function searchUsers(params: SearchUsersParamsDataType = {}) {
 export function readUser(params: ReadUserParamsDataType) {
   const { uid } = params;
 
+  const methodName = 'readUser';
+  const url = `/users/${uid}`;
+  const startTime = performance.now();
+
+  logApiCall(methodName, url, { uid });
+
   return axiosInstance
-    .get<UserDataTypeResponseDataType>(`/users/${uid}`)
-    .then(response => response.data)
+    .get<UserDataTypeResponseDataType>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to retrieve the user at the moment, try again later. ${
@@ -137,10 +215,23 @@ export function readUser(params: ReadUserParamsDataType) {
 }
 
 export function updateUser(uid: number, params: UpdateUserParamsDataType) {
+  const methodName = 'updateUser';
+  const url = `/users/${uid}`;
+  const startTime = performance.now();
+
+  logApiCall(methodName, url, params);
+
   return axiosInstance
-    .put<UpdateUserResponseDataType>(`/users/${uid}`, params)
-    .then(response => response.data)
+    .put<UpdateUserResponseDataType>(url, params)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to update user at the moment, try again later. ${
@@ -154,10 +245,23 @@ export function updateUser(uid: number, params: UpdateUserParamsDataType) {
 }
 
 export function listUserGroups() {
+  const methodName = 'listUserGroups';
+  const url = '/user-groups/me';
+  const startTime = performance.now();
+
+  logApiCall(methodName, url);
+
   return axiosInstance
-    .get<UserGroupResponseDataType[]>('/user-groups/me')
-    .then(response => response.data)
+    .get<UserGroupResponseDataType[]>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to retrieve user groups at the moment, try again later. ${
@@ -170,10 +274,23 @@ export function listUserGroups() {
 }
 
 export function getUserGroupsWithSignals() {
+  const methodName = 'getUserGroupsWithSignals';
+  const url = '/user-groups/me/with-signals';
+  const startTime = performance.now();
+
+  logApiCall(methodName, url);
+
   return axiosInstance
-    .get<UserGroupResponseDataType[]>('/user-groups/me/with-signals')
-    .then(response => response.data)
+    .get<UserGroupResponseDataType[]>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to retrieve user groups with signals at the moment, try again later. ${
@@ -186,10 +303,23 @@ export function getUserGroupsWithSignals() {
 }
 
 export function createUserGroup(group: { name: string; users?: string[] }) {
+  const methodName = 'createUserGroup';
+  const url = '/user-groups';
+  const startTime = performance.now();
+
+  logApiCall(methodName, url, group);
+
   return axiosInstance
-    .post<UserGroupResponseDataType>('/user-groups', group)
-    .then(response => response.data)
+    .post<UserGroupResponseDataType>(url, group)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to create user group at the moment, try again later. ${
@@ -202,10 +332,23 @@ export function createUserGroup(group: { name: string; users?: string[] }) {
 }
 
 export function getUserGroup(groupId: number) {
+  const methodName = 'getUserGroup';
+  const url = `/user-groups/${groupId}`;
+  const startTime = performance.now();
+
+  logApiCall(methodName, url, { groupId });
+
   return axiosInstance
-    .get<UserGroupResponseDataType>(`/user-groups/${groupId}`)
-    .then(response => response.data)
+    .get<UserGroupDataType>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to retrieve user group at the moment, try again later. ${
@@ -217,11 +360,24 @@ export function getUserGroup(groupId: number) {
     });
 }
 
-export function updateUserGroup(groupId: number, group: UserGroupResponseDataType) {
+export function updateUserGroup(groupId: number, group: UserGroupDataType) {
+  const methodName = 'updateUserGroup';
+  const url = `/user-groups/${groupId}`;
+  const startTime = performance.now();
+
+  logApiCall(methodName, url, { groupId, group });
+
   return axiosInstance
-    .put<UserGroupResponseDataType>(`/user-groups/${groupId}`, group)
-    .then(response => response.data)
+    .put<UserGroupDataType>(url, group)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to update user group at the moment, try again later. ${
@@ -234,10 +390,23 @@ export function updateUserGroup(groupId: number, group: UserGroupResponseDataTyp
 }
 
 export function deleteUserGroup(groupId: number) {
+  const methodName = 'deleteUserGroup';
+  const url = `/user-groups/${groupId}`;
+  const startTime = performance.now();
+
+  logApiCall(methodName, url, { groupId });
+
   return axiosInstance
-    .delete<boolean>(`/user-groups/${groupId}`)
-    .then(response => response.data)
+    .delete<boolean>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to delete user group at the moment, try again later. ${
@@ -250,10 +419,23 @@ export function deleteUserGroup(groupId: number) {
 }
 
 export function addUserToGroup(groupId: number, userIdOrEmail: string) {
+  const methodName = 'addUserToGroup';
+  const url = `/user-groups/${groupId}/users/${userIdOrEmail}`;
+  const startTime = performance.now();
+
+  logApiCall(methodName, url, { groupId, userIdOrEmail });
+
   return axiosInstance
-    .post<boolean>(`/user-groups/${groupId}/users/${userIdOrEmail}`)
-    .then(response => response.data)
+    .post<boolean>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to add user to group at the moment, try again later. ${
@@ -266,10 +448,23 @@ export function addUserToGroup(groupId: number, userIdOrEmail: string) {
 }
 
 export function addUserToGroupByEmail(groupId: number, email: string) {
+  const methodName = 'addUserToGroupByEmail';
+  const url = `/user-groups/${groupId}/users`;
+  const startTime = performance.now();
+
+  logApiCall(methodName, url, { groupId, email });
+
   return axiosInstance
-    .post<boolean>(`/user-groups/${groupId}/users`, { email })
-    .then(response => response.data)
+    .post<boolean>(url, { email })
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to add user to group at the moment, try again later. ${
@@ -282,10 +477,23 @@ export function addUserToGroupByEmail(groupId: number, email: string) {
 }
 
 export function removeUserFromGroup(groupId: number, userIdOrEmail: string) {
+  const methodName = 'removeUserFromGroup';
+  const url = `/user-groups/${groupId}/users/${userIdOrEmail}`;
+  const startTime = performance.now();
+
+  logApiCall(methodName, url, { groupId, userIdOrEmail });
+
   return axiosInstance
-    .delete<boolean>(`/user-groups/${groupId}/users/${userIdOrEmail}`)
-    .then(response => response.data)
+    .delete<boolean>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to remove user from group at the moment, try again later. ${
@@ -298,10 +506,23 @@ export function removeUserFromGroup(groupId: number, userIdOrEmail: string) {
 }
 
 export function addSignalToUserGroup(signalId: number, groupId: number) {
+  const methodName = 'addSignalToUserGroup';
+  const url = `/user-groups/${groupId}/signals/${signalId}`;
+  const startTime = performance.now();
+
+  logApiCall(methodName, url, { signalId, groupId });
+
   return axiosInstance
-    .post<boolean>(`/user-groups/${groupId}/signals/${signalId}`)
-    .then(response => response.data)
+    .post<boolean>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to add signal to user group at the moment, try again later. ${
@@ -314,10 +535,23 @@ export function addSignalToUserGroup(signalId: number, groupId: number) {
 }
 
 export function removeSignalFromUserGroup(signalId: number, groupId: number) {
+  const methodName = 'removeSignalFromUserGroup';
+  const url = `/user-groups/${groupId}/signals/${signalId}`;
+  const startTime = performance.now();
+
+  logApiCall(methodName, url, { signalId, groupId });
+
   return axiosInstance
-    .delete<boolean>(`/user-groups/${groupId}/signals/${signalId}`)
-    .then(response => response.data)
+    .delete<boolean>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to remove signal from user group at the moment, try again later. ${
@@ -330,10 +564,23 @@ export function removeSignalFromUserGroup(signalId: number, groupId: number) {
 }
 
 export function addCollaboratorToSignalInGroup(groupId: number, signalId: number, userIdOrEmail: string) {
+  const methodName = 'addCollaboratorToSignalInGroup';
+  const url = `/user-groups/${groupId}/signals/${signalId}/collaborators/${userIdOrEmail}`;
+  const startTime = performance.now();
+
+  logApiCall(methodName, url, { groupId, signalId, userIdOrEmail });
+
   return axiosInstance
-    .post<boolean>(`/user-groups/${groupId}/signals/${signalId}/collaborators/${userIdOrEmail}`)
-    .then(response => response.data)
+    .post<boolean>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to add collaborator to signal at the moment, try again later. ${
@@ -346,10 +593,23 @@ export function addCollaboratorToSignalInGroup(groupId: number, signalId: number
 }
 
 export function addCollaboratorToSignalByEmail(groupId: number, signalId: number, email: string) {
+  const methodName = 'addCollaboratorToSignalByEmail';
+  const url = `/user-groups/${groupId}/${signalId}/collaborators`;
+  const startTime = performance.now();
+
+  logApiCall(methodName, url, { groupId, signalId, email });
+
   return axiosInstance
-    .post<boolean>(`/user-groups/${groupId}/${signalId}/collaborators`, { email })
-    .then(response => response.data)
+    .post<boolean>(url, { email })
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to add collaborator to signal at the moment, try again later. ${
@@ -362,10 +622,23 @@ export function addCollaboratorToSignalByEmail(groupId: number, signalId: number
 }
 
 export function removeCollaboratorFromSignalInGroup(groupId: number, signalId: number, userIdOrEmail: string) {
+  const methodName = 'removeCollaboratorFromSignalInGroup';
+  const url = `/user-groups/${groupId}/signals/${signalId}/collaborators/${userIdOrEmail}`;
+  const startTime = performance.now();
+
+  logApiCall(methodName, url, { groupId, signalId, userIdOrEmail });
+
   return axiosInstance
-    .delete<boolean>(`/user-groups/${groupId}/signals/${signalId}/collaborators/${userIdOrEmail}`)
-    .then(response => response.data)
+    .delete<boolean>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiResponse(methodName, url, response.data, timeMs);
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      logApiError(methodName, url, error, timeMs);
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to remove collaborator from signal at the moment, try again later. ${

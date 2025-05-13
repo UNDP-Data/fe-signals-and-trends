@@ -1,10 +1,8 @@
 import { faHeart as regularHeart } from '@fortawesome/free-regular-svg-icons';
 import { faHeart as solidHeart } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Modal, Tooltip } from 'antd';
-import { NavLink } from 'react-router-dom';
+import { Tooltip, Spin } from 'antd';
 import styled from 'styled-components';
-import { navLinks } from '../Constants';
 import { useFavoriteToggle } from '../Hooks/useFavoriteToggle';
 
 interface FavoriteButtonProps {
@@ -33,7 +31,7 @@ export function FavoriteButton({
   iconColor = 'orange',
   inDropdown = false,
 }: FavoriteButtonProps) {
-  const { isFavorite, openModal, handleFavoriteClick, closeModal } =
+  const { isFavorite, isLoading, handleFavoriteClick } =
     useFavoriteToggle({
       signalId,
       initialFavoriteStatus,
@@ -50,8 +48,8 @@ export function FavoriteButton({
     }
   };
 
-  const tooltipTitle = isFavorite 
-    ? "Remove from favorites" 
+  const tooltipTitle = isFavorite
+    ? "Remove from favorites"
     : "Add to favorites - Save this signal for easy access later";
 
   const button = (
@@ -67,7 +65,7 @@ export function FavoriteButton({
         style={{
           border: 'none',
           background: 'none',
-          cursor: 'pointer',
+          cursor: isLoading ? 'wait' : 'pointer',
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem',
@@ -77,8 +75,11 @@ export function FavoriteButton({
           justifyContent: inDropdown ? 'flex-start' : undefined,
         }}
         aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
+        disabled={isLoading}
       >
-        {withContainer ? (
+        {isLoading ? (
+          <Spin size="small" style={{ marginRight: '8px' }} />
+        ) : withContainer ? (
           <IconContainer>
             <FontAwesomeIcon
               icon={isFavorite ? solidHeart : regularHeart}
@@ -99,8 +100,8 @@ export function FavoriteButton({
               }}
             />
             <span className="undp-typography small-font">
-              {inDropdown ? (isFavorite ? "Remove from favorites" : "Add to favorites") : 
-               (size === 'small' ? (isFavorite ? "Saved" : "Favorite") : 
+              {inDropdown ? (isFavorite ? "Remove from favorites" : "Add to favorites") :
+               (size === 'small' ? (isFavorite ? "Saved" : "Favorite") :
                (isFavorite ? "Saved to favorites" : "Save to favorites"))}
             </span>
           </>
@@ -109,45 +110,5 @@ export function FavoriteButton({
     </Tooltip>
   );
 
-  return (
-    <>
-      {button}
-      <Modal 
-        className="undp-modal" 
-        open={openModal} 
-        onCancel={closeModal}
-        title={isFavorite ? "Added to Favorites" : "Removed from Favorites"}
-        footer={[
-          <button 
-            key="close" 
-            onClick={closeModal} 
-            className="undp-button button-secondary"
-            type="button"
-          >
-            Close
-          </button>,
-          isFavorite && (
-            <NavLink key="view-favorites" to="/my-favorites">
-              <button className="undp-button button-primary" type="button">
-                View My Favorites
-              </button>
-            </NavLink>
-          )
-        ]}
-      >
-        {isFavorite ? (
-          <div>
-            <p className="undp-typography">
-              This signal has been added to your favorites collection. You can access all your 
-              favorite signals anytime by visiting your <NavLink to={navLinks.myFavorites}>Favorites</NavLink> page.
-            </p>
-          </div>
-        ) : (
-          <p className="undp-typography">
-            This signal has been removed from your favorites collection.
-          </p>
-        )}
-      </Modal>
-    </>
-  );
+  return button;
 } 

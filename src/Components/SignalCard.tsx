@@ -95,11 +95,18 @@ export function SignalCard(props: Props) {
   // Check if the signal is already in any groups
   useEffect(() => {
     if (userGroups && userGroups.length > 0) {
-      const signalGroups = userGroups.filter(group => 
+      const signalGroups = userGroups.filter(group =>
         group.signal_ids?.includes(data.id)
       ).map(group => group.id);
-      
-      setGroupsWithSignal(signalGroups);
+
+      // Use functional update to prevent infinite loops
+      setGroupsWithSignal(prev => {
+        // Only update if actually different to prevent unnecessary renders
+        if (JSON.stringify(prev) !== JSON.stringify(signalGroups)) {
+          return signalGroups;
+        }
+        return prev;
+      });
     }
   }, [userGroups, data.id]);
   
@@ -224,7 +231,14 @@ export function SignalCard(props: Props) {
           </NavLink>
           
           <div style={{ padding: '1rem 1rem 0 1rem' }}>
-            <div className='flex-div flex-wrap' style={{ alignItems: 'center' }}>
+            <div
+              className="flex-div"
+              style={{
+                alignItems: 'flex-start',
+                justifyContent: 'space-between',
+                width: '100%',
+              }}
+            >
               <div style={{ display: 'flex', flexWrap: 'wrap', flexGrow: 1 }}>
                 <ChipEl
                   text={
@@ -260,11 +274,8 @@ export function SignalCard(props: Props) {
                     />
                   ))}
               </div>
-
               <Dropdown menu={{ items: menuItems }} trigger={['click']}>
-                <MenuButton
-                  onClick={e => e.preventDefault()}
-                >
+                <MenuButton onClick={e => e.preventDefault()}>
                   <EllipsisOutlined style={{ fontSize: '24px' }} />
                 </MenuButton>
               </Dropdown>
