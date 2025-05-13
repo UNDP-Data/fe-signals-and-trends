@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from 'antd';
-import { UserGroupsList, UserGroupForm, CreateGroupModal } from './index';
+import { UserGroupsList, GenericGroupModal, CreateGroupModal } from './index';
 import type { UserGroupDataType } from '../../Types';
 
 const UserGroupsPage = () => {
@@ -53,9 +53,15 @@ const UserGroupsPage = () => {
           <h2 className="undp-typography margin-bottom-07">
             {selectedGroup ? 'Edit User Group' : 'Create New User Group'}
           </h2>
-          <UserGroupForm 
+          <GenericGroupModal
+            visible={true}
+            onClose={() => {
+              setSelectedGroup(undefined);
+              setIsFormVisible(false);
+            }}
             group={selectedGroup} 
-            onSuccess={handleFormSuccess} 
+            onSuccess={handleFormSuccess}
+            modalMode={false}
           />
           <Button 
             onClick={() => {

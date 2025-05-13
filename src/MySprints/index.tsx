@@ -12,7 +12,7 @@ import { SignInButton } from '../Components/SignInButton';
 import Context from '../Context/Context';
 import { searchSignals } from '../API';
 import { listUserGroups } from '../API/userCalls';
-import { UserGroupForm, UserGroupsList } from '../Components/UserGroups';
+import { GenericGroupModal, UserGroupsList } from '../Components/UserGroups';
 import type { UserGroupDataType, SignalDataType } from '../Types';
 import { SignalCard } from '../Components/SignalCard';
 import TEST_USER_GROUPS, { 
@@ -277,9 +277,12 @@ export function MySprints() {
           width={600}
           className="undp-modal"
         >
-          <UserGroupForm 
-            group={selectedGroup} 
-            onSuccess={onGroupFormSuccess} 
+          <GenericGroupModal 
+            visible={true}
+            onClose={handleGroupModalClose}
+            group={selectedGroup}
+            onSuccess={onGroupFormSuccess}
+            modalMode={false}
           />
         </Modal>
     </>

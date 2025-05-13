@@ -181,7 +181,7 @@ export function SignalCard(props: Props) {
 
     menuItems.push({
       key: 'user-groups',
-      label: 'Add to Group',
+      label: 'Add to Sprint',
       children: userGroupsSubmenu,
     });
   } else {
