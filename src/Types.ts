@@ -31,6 +31,7 @@ export interface SignalDataType {
   connected_trends: number[];
   created_for?: string;
   favorite?: boolean;
+  user_group_ids?: number[];
 }
 
 export interface NewSignalDataType {
@@ -57,6 +58,7 @@ export interface NewSignalDataType {
   score?: string;
   connected_trends?: number[];
   created_for?: string;
+  user_group_ids?: number[];
 }
 
 export interface TrendDataType {

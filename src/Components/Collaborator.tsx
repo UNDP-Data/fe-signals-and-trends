@@ -5,13 +5,14 @@ import styled from 'styled-components';
 const { Text } = Typography;
 
 interface CollaboratorProps {
-  user: {
+  user?: {
     id: number;
     name: string;
     email: string;
     role: string;
   };
-  isAdmin: boolean;
+  isAdmin?: boolean;
+  name?: string;  // Added for backward compatibility
 }
 
 const CollaboratorContainer = styled.div`
@@ -58,23 +59,28 @@ const getUserColor = (name: string): string => {
   return colors[Math.abs(hash) % colors.length];
 };
 
-export const Collaborator: React.FC<CollaboratorProps> = ({ user, isAdmin }) => {
+export const Collaborator: React.FC<CollaboratorProps> = ({ user, isAdmin, name }) => {
+  // Use either user.name or direct name prop
+  const displayName = user?.name || name || '';
+  
   return (
     <CollaboratorContainer>
       <Avatar
         size="large"
         style={{
-          backgroundColor: getUserColor(user.name),
+          backgroundColor: getUserColor(displayName),
           flexShrink: 0
         }}
       >
-        {getInitials(user.name)}
+        {getInitials(displayName)}
       </Avatar>
       <UserInfoContainer>
-        <Text strong ellipsis>{user.name}</Text>
-        <div>
-          <Text type="secondary" style={{ fontSize: '12px' }} ellipsis>{user.email}</Text>
-        </div>
+        <Text strong ellipsis>{displayName}</Text>
+        {user?.email && (
+          <div>
+            <Text type="secondary" style={{ fontSize: '12px' }} ellipsis>{user.email}</Text>
+          </div>
+        )}
       </UserInfoContainer>
       {isAdmin && (
         <Tooltip title="This user has admin permissions for this sprint">

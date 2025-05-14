@@ -10,6 +10,7 @@ import { NewSignalDataType, SignalDataType, TrendDataType } from '../Types';
 import { AddTrendsModal } from './AddTrendsModal';
 import { ExtractedNewsData, LinkExtractor } from './LinkExtractor';
 import { PexelsImagePicker } from './PexelsImagePicker';
+import { SprintSelect } from './SprintSelect';
 
 import {
   createSignal,
@@ -331,6 +332,7 @@ export function SignalEntryFormEl(props: Props) {
       score: initialData?.score || undefined,
       connected_trends: initialData?.connected_trends || [],
       created_for: initialData?.created_for || undefined,
+      user_group_ids: initialData?.user_group_ids || [],
     },
   );
   const [buttonDisabled, setButtonDisabled] = useState(false);
@@ -356,7 +358,23 @@ export function SignalEntryFormEl(props: Props) {
   );
   const [useFetchedArticles, setUseFetchedArticles] = useState(false);
   const [showRedBorders, setShowRedBorders] = useState(SHOW_RED_BORDERS);
- 
+  // Extract user group IDs from either user_group_ids or the user_groups array
+  const extractUserGroupIds = (signal?: SignalDataType): number[] => {
+    if (!signal) return [];
+    
+    // If user_group_ids is available and valid, use it
+    if (Array.isArray(signal.user_group_ids) && signal.user_group_ids.length > 0) {
+      return signal.user_group_ids;
+    }
+    
+    // user_groups is not part of SignalDataType, so we only use user_group_ids
+    return [];
+  };
+  
+  const [selectedUserGroups, setSelectedUserGroups] = useState<number[]>(
+    extractUserGroupIds(updateSignal)
+  );
+
 
   // Initialize keywords from initialData if available
   useEffect(() => {
@@ -364,6 +382,13 @@ export function SignalEntryFormEl(props: Props) {
       setKeyword1(initialData.keywords[0]);
       if (initialData.keywords.length > 1) setKeyword2(initialData.keywords[1]);
       if (initialData.keywords.length > 2) setKeyword3(initialData.keywords[2]);
+    }
+    
+    // Set selected user groups from initialData if they exist
+    // This also handles the case where initialData may have user_groups instead of user_group_ids
+    const extractedGroups = extractUserGroupIds(initialData as any);
+    if (extractedGroups.length > 0) {
+      setSelectedUserGroups(extractedGroups);
     }
   }, [initialData]);
 
@@ -1236,6 +1261,23 @@ export function SignalEntryFormEl(props: Props) {
         )}
       </div>
       <div className='margin-bottom-07'>
+        <p className='undp-typography margin-bottom-01'>Add to Sprint</p>
+        <SprintSelect
+          value={selectedUserGroups}
+          onChange={(values: number[]) => {
+            // Ensure values is always an array, never null
+            const safeValues = Array.isArray(values) ? values : [];
+            setSelectedUserGroups(safeValues);
+            updateSignalData({
+              ...signalData,
+              user_group_ids: safeValues,
+            });
+          }}
+          placeholder='Select sprints to add this signal to'
+        />
+      </div>
+      
+      <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Created For</p>
         <Select
           className='undp-select'
@@ -1372,6 +1414,7 @@ export function SignalEntryFormEl(props: Props) {
                         created_for: signalData.created_for,
                         score: signalData.score,
                         connected_trends: selectedTrendsList,
+                        user_group_ids: selectedUserGroups,
                         status: 'New',
                         keywords: [keyword1, keyword2, keyword3].filter(
                           (d): d is string => d !== null && d !== undefined,
@@ -1445,6 +1488,7 @@ export function SignalEntryFormEl(props: Props) {
                         created_by: signalData.created_by || null,
                         created_for: signalData.created_for || null,
                         connected_trends: selectedTrendsList || null,
+                        user_group_ids: selectedUserGroups,
                         keywords: [keyword1, keyword2, keyword3].filter(
                           (d): d is string => d !== null && d !== undefined,
                         ),
@@ -1555,6 +1599,7 @@ export function SignalEntryFormEl(props: Props) {
                       score: signalData.score,
                       created_unit: signalData.created_unit || '',
                       connected_trends: selectedTrendsList,
+                      user_group_ids: selectedUserGroups,
                       keywords: [keyword1, keyword2, keyword3].filter(
                         (d): d is string => d !== null && d !== undefined,
                       ),
@@ -1641,6 +1686,7 @@ export function SignalEntryFormEl(props: Props) {
                     secondary_location: signalData.secondary_location || [],
                     score: signalData.score,
                     connected_trends: selectedTrendsList,
+                    user_group_ids: selectedUserGroups,
                     status: 'New',
                     keywords: [keyword1, keyword2, keyword3].filter(
                       (d): d is string => d !== null && d !== undefined,
@@ -1711,6 +1757,7 @@ export function SignalEntryFormEl(props: Props) {
                     score: signalData.score || null,
                     location: signalData.location || null,
                     connected_trends: selectedTrendsList,
+                    user_group_ids: selectedUserGroups,
                     status: 'Draft',
                     keywords: [keyword1, keyword2, keyword3].filter(
                       (d): d is string => d !== null && d !== undefined,

@@ -3,7 +3,6 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   Typography,
   Divider,
-  Button,
   Skeleton,
   Row,
   Col,
@@ -16,15 +15,17 @@ import {
   Input,
   Popconfirm,
   Collapse,
+  Button,
   InputRef
 } from 'antd';
+import UNDPButton from "./Components/button"
 import {
-  EditOutlined,
-  DeleteOutlined,
   CheckOutlined,
   CloseOutlined,
   DownOutlined,
-  UpOutlined
+  UpOutlined,
+  PlusOutlined,
+  EditOutlined
 } from '@ant-design/icons';
 import styled from 'styled-components';
 import {
@@ -50,6 +51,7 @@ import { SprintSignals, EditGroupModal } from './Components/UserGroups';
 import type { UserGroupDataType, SignalDataType } from './Types';
 import { CollaboratorsContainer } from './Components/CollaboratorsContainer';
 import { CollaboratorsList } from './Components/CollaboratorsList';
+import { OptionsDropdown } from './Components/OptionsDropdown';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -161,6 +163,29 @@ export function SprintPage() {
   // Handle back navigation
   const handleBack = () => {
     navigate('/my-sprints');
+  };
+  
+  // Handler for adding signals to sprint
+  const handleSignalSelect = async (selectedSignals: SignalDataType[], sprintId: number) => {
+    if (!selectedSignals.length) return;
+
+    try {
+      messageApi.loading('Adding signals to sprint...');
+
+      // Process signals sequentially to avoid race conditions
+      for (const signal of selectedSignals) {
+        await addSignalToUserGroup(signal.id, sprintId);
+      }
+
+      // Invalidate only the sprint query since it contains all the data we need
+      queryClient.invalidateQueries({ queryKey: ['sprint', sprintId] });
+
+      messageApi.success(`Successfully added ${selectedSignals.length} signal(s) to sprint`);
+      setIsSignalSearchVisible(false);
+    } catch (error) {
+      console.error('Failed to add signals to sprint:', error);
+      messageApi.error('Failed to add signals to sprint');
+    }
   };
 
   // State for signal search modal
@@ -357,33 +382,20 @@ export function SprintPage() {
 
               {/* Action buttons */}
               <div>
-                {hasEditPermission ? (
-                  <>
-                    <Button
-                      type="primary"
-                      style={{ backgroundColor: '#006EB5' }}
-                      onClick={() => setIsCollaboratorModalVisible(true)}>
-                      Edit Sprint
-                    </Button>
-                    <Button
-                      danger
-                      style={{ marginRight: '10px' }}
-                      icon={<DeleteOutlined />}
-                      onClick={() => setIsDeleteModalVisible(true)}
-                    >
-                      Delete
-                    </Button>
-                  </>
-                ) : (
-                  <Tooltip title="Only sprint admins or application admins can edit or delete this sprint">
-                    <Button
-                      type="default"
-                      onClick={() => messageApi.info('You need to be a sprint admin or application admin to edit this sprint')}>
-                      View Sprint Details
-                    </Button>
-                  </Tooltip>
-                )}
+                <OptionsDropdown 
+                  hasEditPermission={hasEditPermission}
+                  onEdit={() => setIsCollaboratorModalVisible(true)}
+                  onDelete={() => setIsDeleteModalVisible(true)}
+                  disabledTooltip="Only sprint admins or application admins can edit or delete this sprint"
+                />
               </div>
+              <UNDPButton 
+                  icon={<PlusOutlined />}
+                  onClick={() => setIsSignalSearchVisible(true)}
+                  style={{ backgroundColor: '#006EB5' }}
+                >
+                  Add Signals
+              </UNDPButton>
             </div>
           </HeaderContent>
         </HeaderContainer>
@@ -424,6 +436,7 @@ export function SprintPage() {
             )}
 
             <Divider />
+            
 
             {signalsQuery.isLoading ? (
               <Row gutter={[24, 24]}>
@@ -438,10 +451,22 @@ export function SprintPage() {
                 sprint={sprintQuery.data as UserGroupDataType & { signals?: SignalDataType[] }}
                 sprintId={sprintId as number}
                 loading={signalsQuery.isLoading}
+                showAddButton={false}
               />
             )}
 
-            {/* Signal Search Modal moved to bottom of the component */}
+            {/* Signal Search Modal */}
+        {/* <SignalSearch
+          visible={isSignalSearchVisible}
+          onClose={() => setIsSignalSearchVisible(false)}
+          onSelect={(signals) => {
+            if (sprintId) {
+              handleSignalSelect(signals, sprintId);
+            }
+          }}
+          selectedSignals={signalsQuery.data || []}
+          title={`Add Signals to ${sprintQuery.data?.name || 'Sprint'}`}
+        /> */}
           </>
         )}
 

@@ -1,4 +1,5 @@
 import type { SignalDataType, UserGroupDataType } from '../../Types';
+import React from 'react';
 
 export interface SignalViewProps {
   signals: SignalDataType[];
@@ -8,4 +9,5 @@ export interface SignalViewProps {
   showRemoveButton?: boolean;
   loading?: boolean;
   userGroups?: UserGroupDataType[];
+  renderCustomCard?: (signal: SignalDataType) => React.ReactNode;
 }

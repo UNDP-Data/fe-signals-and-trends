@@ -251,7 +251,6 @@ export function MySprints() {
           <>
             <UserGroupsList 
               userGroups={paginatedGroups} 
-              onEdit={handleEditGroup} 
               onView={handleViewGroup} 
             />
             

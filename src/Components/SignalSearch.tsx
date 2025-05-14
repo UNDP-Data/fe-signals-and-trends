@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Input, Button, Table, Empty, Typography, Space, Spin, Modal, Tag, Divider } from 'antd';
 import { SearchOutlined, SaveOutlined, DeleteOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
@@ -8,6 +8,23 @@ import { logger } from '../logger';
 import type { TablePaginationConfig } from 'antd/es/table';
 
 const { Text, Title } = Typography;
+
+// Debounce helper function
+const useDebounce = <T,>(value: T, delay: number): T => {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 
 interface SignalSearchProps {
   visible: boolean;
@@ -91,8 +108,11 @@ export const SignalSearch = ({
     pageSize: 10,
     total: 0,
   });
+  
+  // Apply debounce to search query (500ms delay)
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
-  const fetchSignals = useCallback(async (page = 1, query = searchQuery) => {
+  const fetchSignals = useCallback(async (page = 1, query = debouncedSearchQuery) => {
     try {
       setLoading(true);
       const response = await searchSignals({
@@ -113,14 +133,16 @@ export const SignalSearch = ({
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, pagination]);
+  }, [debouncedSearchQuery, pagination]);
 
+  // Only fetch when the debounced search query changes
   useEffect(() => {
     if (visible) {
-      fetchSignals();
+      fetchSignals(1);
     }
-  }, [visible, fetchSignals]);
+  }, [visible, debouncedSearchQuery, fetchSignals]);
 
+  // This is now only used for the explicit search button
   const handleSearch = () => {
     fetchSignals(1);
   };
@@ -129,9 +151,11 @@ export const SignalSearch = ({
     fetchSignals(newPagination.current || 1);
   };
 
+  // Enter key no longer needed with debouncing, but keeping for button-like behavior
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      handleSearch();
+      // Since we're debouncing, we don't need to do anything here
+      // The search will happen automatically after the debounce delay
     }
   };
 
@@ -221,9 +245,15 @@ export const SignalSearch = ({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyPress={handleKeyPress}
+          allowClear
         />
-        <Button onClick={handleSearch} type="primary">
-          Search
+        {/* Search happens automatically with debouncing, but keeping button for UX */}
+        <Button 
+          onClick={handleSearch} 
+          type="primary"
+          disabled={loading}
+        >
+          {loading ? 'Searching...' : 'Search'}
         </Button>
       </SearchContainer>
 

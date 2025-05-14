@@ -27,6 +27,7 @@ export const SignalGridView: React.FC<SignalViewProps> = ({
   showRemoveButton = true,
   loading = false,
   userGroups,
+  renderCustomCard,
 }) => {
   if (!signals || signals.length === 0) {
     return (
@@ -50,22 +51,28 @@ export const SignalGridView: React.FC<SignalViewProps> = ({
     <SignalsContainer>
       {signals.map(signal => (
         <div key={signal.id} style={{ position: 'relative' }}>
-          <SignalCard data={signal} />
-          {showRemoveButton && onRemove && (
-            <Button
-              danger
-              type="text"
-              size="small"
-              icon={<DeleteOutlined />}
-              style={{
-                position: 'absolute',
-                top: '10px',
-                right: '10px',
-                background: 'rgba(255, 255, 255, 0.8)',
-                borderRadius: '50%'
-              }}
-              onClick={() => onRemove(signal)}
-            />
+          {renderCustomCard ? (
+            renderCustomCard(signal)
+          ) : (
+            <>
+              <SignalCard data={signal} />
+              {showRemoveButton && onRemove && (
+                <Button
+                  danger
+                  type="text"
+                  size="small"
+                  icon={<DeleteOutlined />}
+                  style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    background: 'rgba(255, 255, 255, 0.8)',
+                    borderRadius: '50%'
+                  }}
+                  onClick={() => onRemove(signal)}
+                />
+              )}
+            </>
           )}
         </div>
       ))}

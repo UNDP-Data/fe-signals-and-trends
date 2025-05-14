@@ -61,6 +61,7 @@ export interface CreateSignalParamsDataType {
   created_for?: string | null;
   status: string | null;
   connected_trends: number[] | null;
+  user_group_ids?: number[] | null;
 }
 
 interface UpdateSignalParamsDataType {
@@ -78,6 +79,7 @@ interface UpdateSignalParamsDataType {
   steep?: string | null;
   url?: string | null;
   connected_trends?: number[] | null;
+  user_group_ids?: number[] | null;
   status?: string | null;
   modified_by?: string | null;
   steep_primary: string | null;
@@ -256,7 +258,7 @@ export function generateSignal(params: { url: string }) {
 
 export function readSignal(uid: number) {
   return axiosInstance
-    .get<SignalDataType>(`/signals/${uid}`)
+    .get<SignalDataType>(`/signals/${uid}/with-user-groups`)
     .then(response => response.data)
     .catch(error => {
       if (isAxiosError(error)) {
