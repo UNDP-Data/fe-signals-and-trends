@@ -1,6 +1,7 @@
 import {
   AuthenticatedTemplate,
   UnauthenticatedTemplate,
+  useIsAuthenticated,
 } from '@azure/msal-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { Modal, notification } from 'antd';
@@ -8,6 +9,7 @@ import { useContext, useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { AddNewSignalEl, AddNewTrendEl } from './AddNew';
 import { AdminPanel } from './AdminPanel';
+import { AllSprints } from './AllSprints';
 import { searchSignals, searchTrends } from './API';
 import { Header } from './Components/HeaderEl';
 import Context from './Context/Context';
@@ -205,6 +207,11 @@ function MainBody() {
                 <Route path='/admin-panel' element={<AdminPanel />} />
                 <Route path='/my-drafts' element={
                   <MyDrafts />
+                } />
+                <Route path='/all-sprints' element={
+                  <div className='main-page-container'>
+                    <AllSprints />
+                  </div>
                 } />
                 <Route path='/my-sprints' element={
                   <div className='main-page-container'>
