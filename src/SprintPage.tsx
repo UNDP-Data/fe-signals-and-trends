@@ -49,36 +49,11 @@ import { SignalGridView, SignalHorizontalView } from './Components/SignalViews';
 import { SprintSignals, EditGroupModal } from './Components/UserGroups';
 import type { UserGroupDataType, SignalDataType } from './Types';
 import { CollaboratorsContainer } from './Components/CollaboratorsContainer';
+import { CollaboratorsList } from './Components/CollaboratorsList';
 
 const { Title, Text, Paragraph } = Typography;
 
-// Helper function to get initials from a name
-const getInitials = (name: string): string => {
-  if (!name) return '?';
-  const parts = name.split(' ');
-  if (parts.length >= 2) {
-    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
-  }
-  return name.substring(0, 2).toUpperCase();
-};
-
-// Helper to get user avatar color based on name
-const getUserColor = (name: string): string => {
-  if (!name) return '#1890ff';
-
-  const colors = [
-    '#1890ff', '#52c41a', '#faad14', '#f5222d', '#722ed1',
-    '#13c2c2', '#eb2f96', '#fa541c', '#a0d911', '#2f54eb'
-  ];
-
-  // Simple hash function to generate a consistent color
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-
-  return colors[Math.abs(hash) % colors.length];
-};
+// Utility functions for collaborator display are now moved to Collaborator.tsx and CollaboratorsList.tsx
 
 const BackButtonContainer = styled.div`
   margin-bottom: 1rem;
@@ -111,20 +86,6 @@ const createSprintSlug = (name: string): string => {
     .trim();
 };
 
-const CollaboratorsList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-  width: 100%;
-
-  @media (min-width: 768px) {
-    flex-flow: row wrap;
-    & > div {
-      width: calc(50% - 12px);
-    }
-  }
-`;
 
 export function SprintPage() {
   // Extract sprint ID from the URL path - get the last part after the last hyphen
@@ -455,35 +416,10 @@ export function SprintPage() {
             {/* Expanded collaborators view */}
             {isCollaboratorsExpanded && (sprintQuery.data?.users ?? []).length > 0 && (
               <div style={{ marginBottom: '20px' }}>
-                <div style={{ marginBottom: '10px' }}>Collaborators</div>
-                    <CollaboratorsList>
-                      {(sprintQuery.data?.users ?? []).map((user) => (
-                        <div key={user.id} style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '8px',
-                          borderRadius: '4px',
-                          backgroundColor: 'rgba(0,0,0,0.02)'
-                        }}>
-                          <Avatar
-                            size="large"
-                            style={{
-                              backgroundColor: getUserColor(user.name),
-                              flexShrink: 0
-                            }}
-                          >
-                            {getInitials(user.name)}
-                          </Avatar>
-                          <div style={{ overflow: 'hidden' }}>
-                            <Text strong ellipsis>{user.name}</Text>
-                            <div>
-                              <Text type="secondary" style={{ fontSize: '12px' }} ellipsis>{user.email}</Text>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </CollaboratorsList>
+                <CollaboratorsList 
+                  users={sprintQuery.data?.users ?? []} 
+                  adminId={sprintQuery.data?.user_ids?.[0]} // Assume first user is admin
+                />
               </div>
             )}
 
