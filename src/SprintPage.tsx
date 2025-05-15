@@ -389,6 +389,7 @@ export function SprintPage() {
                   disabledTooltip="Only sprint admins or application admins can edit or delete this sprint"
                 />
               </div>
+              <a href="/signals">
               <UNDPButton 
                   icon={<PlusOutlined />}
                   onClick={() => setIsSignalSearchVisible(true)}
@@ -396,6 +397,7 @@ export function SprintPage() {
                 >
                   Add Signals
               </UNDPButton>
+              </a>
             </div>
           </HeaderContent>
         </HeaderContainer>

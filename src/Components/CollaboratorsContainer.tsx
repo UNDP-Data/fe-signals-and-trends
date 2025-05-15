@@ -109,13 +109,6 @@ export const CollaboratorsContainer: React.FC<CollaboratorsContainerProps> = ({
           ) : (
             <Text type="secondary" style={{ marginRight: '8px' }}>No collaborators</Text>
           )}
-          <CollaboratorAvatar
-            size="large"
-            style={{ backgroundColor: '#8FC0E3' }}
-            onClick={onAdd}
-          >
-            +
-          </CollaboratorAvatar>
         </>
       )}
     </CollaboratorsContainerStyled>
