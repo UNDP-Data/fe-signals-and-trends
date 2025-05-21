@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Form, Input, Select, message } from 'antd';
+import PropTypes from 'prop-types';
 import { searchUsers } from '../API/userCalls';
 import './MemberSelect.css';
 import { logger } from '../logger';
+import Context from '../Context/Context';
 
 interface User {
   id: number;
@@ -32,7 +34,8 @@ const MemberSelect: React.FC<MemberSelectProps> = ({
   const [searchLoading, setSearchLoading] = useState(false);
   const [userOptions, setUserOptions] = useState<{ label: string; value: string }[]>([]);
   const [searchValue, setSearchValue] = useState('');
-
+  const { userName, userID, isAdmin } = useContext(Context);
+  
   // Format value to ensure it's always a string[] for the Select component
   const formattedValue = Array.isArray(value)
     ? value.map(item => typeof item === 'string' ? item : item.email)
@@ -55,7 +58,7 @@ const MemberSelect: React.FC<MemberSelectProps> = ({
       const options = response.data.map(user => ({
         label: `${user.name} (${user.email})`,
         value: user.email,
-      }));
+      })).filter(user => user.value !== userName);
 
       setUserOptions(options);
     } catch (error) {
@@ -115,3 +118,28 @@ const MemberSelect: React.FC<MemberSelectProps> = ({
 };
 
 export default MemberSelect;
+
+// Moved PropTypes definition after component definition
+// Commenting out PropTypes for now to address complex type issue later
+/*
+MemberSelect.propTypes = {
+  value: PropTypes.oneOfType([
+    PropTypes.arrayOf(PropTypes.string),
+    PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        created_at: PropTypes.string.isRequired,
+        email: PropTypes.string.isRequired,
+        role: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
+        unit: PropTypes.string,
+        acclab: PropTypes.bool,
+      })
+    ),
+  ]),
+  onChange: PropTypes.func,
+  placeholder: PropTypes.string,
+  isAdminSelect: PropTypes.bool,
+  label: PropTypes.string,
+};
+*/

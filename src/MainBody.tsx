@@ -7,7 +7,7 @@ import { PDFDownloadLink } from '@react-pdf/renderer';
 import { Modal, notification } from 'antd';
 import { useContext, useEffect, useState } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { AddNewSignalEl, AddNewTrendEl } from './AddNew';
+import { AddNewSignalEl, AddNewTrendEl, AddNewSprintEl } from './AddNew';
 import { AdminPanel } from './AdminPanel';
 import { AllSprints } from './AllSprints';
 import { searchSignals, searchTrends } from './API';
@@ -29,6 +29,7 @@ import { EditTrend } from './Trends/EditTrend';
 import { TrendDetail } from './Trends/TrendDetail';
 import { SignalDataType, TrendDataType } from './Types';
 import { signOutClickHandler } from './Utils/AuthStatusHandler';
+import { navLinks } from './Constants';
 
 function MainBody() {
   const {
@@ -202,8 +203,9 @@ function MainBody() {
                 />
                 <Route path='/archived-trends/:id' element={<TrendDetail />} />
                 <Route path='/archived-trends/:id/edit' element={<EditTrend />} />
-                <Route path='/add-new-signal' element={<AddNewSignalEl />} />
-                <Route path='/add-new-trend' element={<AddNewTrendEl />} />
+                <Route path={navLinks.addNewSignal} element={<AddNewSignalEl />} />
+                <Route path={navLinks.addNewTrend} element={<AddNewTrendEl />} />
+                <Route path={navLinks.addNewSprint} element={<AddNewSprintEl />} />
                 <Route path='/admin-panel' element={<AdminPanel />} />
                 <Route path='/my-drafts' element={
                   <MyDrafts />

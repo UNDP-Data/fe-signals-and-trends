@@ -237,8 +237,8 @@ export function MySprints() {
                 Load Test Data
               </Button>
             )}
-            <CreateButton onClick={() => setGroupModalVisible(true)}>
-              <span>+</span> Create Group
+            <CreateButton onClick={() => navigate('/add-new-sprint')}>
+              <span>+</span> Create Sprint
             </CreateButton>
           </div>
         </div>
@@ -269,7 +269,7 @@ export function MySprints() {
           </>
         )}
         <Modal
-          title={selectedGroup ? `Edit Group: ${selectedGroup.name}` : "Create New Group"}
+          title={selectedGroup ? `Edit Sprint: ${selectedGroup.name}` : "Create New Sprint"}
           open={groupModalVisible}
           onCancel={handleGroupModalClose}
           footer={null}

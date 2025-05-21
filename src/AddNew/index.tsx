@@ -8,6 +8,7 @@ import { SignalEntryFormEl } from '../Components/SignalEntryFormEl';
 import { SignInButton } from '../Components/SignInButton';
 import { TrendEntryFormEl } from '../Components/TrendEntryFormEl';
 import Context from '../Context/Context';
+import { AddNewSprintEl } from './AddNewSprintEl';
 
 // Helper function to map short STEEP+V names to full format
 const mapSteepToFullFormat = (shortName: string | null, steepOptions: string[] | undefined) => {
@@ -129,3 +130,5 @@ export function AddNewTrendEl() {
     </div>
   );
 }
+
+export { AddNewSprintEl };

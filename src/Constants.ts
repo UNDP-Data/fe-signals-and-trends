@@ -339,6 +339,7 @@ export const navLinks = {
   adminPanel: '/admin-panel',
   addNewSignal: '/add-new-signal',
   addNewTrend: '/add-new-trend',
+  addNewSprint: '/add-new-sprint',
 }
 
 export const isLocalEnv = process.env.ENVIRONMENT === 'local' || process.env.NODE_ENV === 'development';

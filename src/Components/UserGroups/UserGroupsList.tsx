@@ -298,9 +298,9 @@ export const UserGroupsList = ({ onEdit, onView, userGroups: propUserGroups }: U
             <GroupCard key={group.id}>
               <HeroCard
                 title={group.name}
-                timeAgo={TimeAgo({ date: group.modified_at })}
+                // timeAgo={TimeAgo({ date: group.modified_at })}
                 bgImage={group.attachment || undefined}
-                menuItems={menuItems}
+                // menuItems={menuItems}
                 url={onView ? getGroupUrl() : undefined}
                 onClick={onView ? () => onView(group.id) : undefined}
               >

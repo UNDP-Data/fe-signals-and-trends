@@ -10,6 +10,7 @@ import { SignalHero } from '../SignalHero';
 import styled from 'styled-components';
 import Button from '../button';
 import { Typography, Collapse, message } from 'antd';
+import { DownloadButtons } from '../SignalViews/DownloadButtons';
 import { SignalCard } from '../SignalCard';
 
 const { Title } = Typography;
@@ -80,6 +81,22 @@ export const SprintSignals: React.FC<SprintSignalsProps> = ({
     }
   };
 
+  // Query parameters function for DownloadButtons
+  const getQueryParams = () => {
+    return {
+      // Only include signals from this sprint
+      ids: signals.map(signal => signal.id),
+    };
+  };
+
+  // Query parameters function for downloading all signals
+  const getQueryParamsToDownloadAll = () => {
+    return {
+      // Same implementation as getQueryParams for sprint signals
+      ids: signals.map(signal => signal.id),
+    };
+  };
+
   return (
     <div>
       {contextHolder}
@@ -96,6 +113,16 @@ export const SprintSignals: React.FC<SprintSignalsProps> = ({
             </Button>
           </a>
         </div>
+      )}
+
+      {/* Download Buttons for Sprint Signals */}
+      {signals.length > 0 && (
+        <DownloadButtons
+          totalCount={signals.length}
+          getQueryParams={getQueryParams}
+          getQueryParamsToDownloadAll={getQueryParamsToDownloadAll}
+          signalList={signals}
+        />
       )}
 
       {/* Collapsible Search Component */}

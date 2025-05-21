@@ -52,6 +52,22 @@ export function LoggedInHeader(props: Props) {
         </NavLink>
       ),
     },
+    {
+      key: '3',
+      label: (
+        <NavLink
+          to={navLinks.addNewSprint}
+          style={{
+            fontFamily: 'var(--fontFamily)',
+            fontSize: '1.25rem',
+            textTransform: 'none',
+            padding: '0.75rem',
+          }}
+        >
+          Sprint
+        </NavLink>
+      ),
+    }
   ];
 
   return (

@@ -173,7 +173,7 @@ export function searchSignals(params: BaseSignalsParamsDataType = {}) {
     });
 }
 
-export function exportSignals(params: BaseSignalsParamsDataType = {}) {
+export function exportSignals(params: BaseSignalsParamsDataType = {}, format: 'excel' | 'csv' = 'excel') {
   const {
     page = 1,
     per_page = 10,
@@ -201,6 +201,7 @@ export function exportSignals(params: BaseSignalsParamsDataType = {}) {
     order_by,
     direction,
     statuses,
+    format, // Add format parameter for backend
   };
 
   if (ids) queryParams.ids = ids;
