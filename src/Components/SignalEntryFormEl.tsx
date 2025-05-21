@@ -1398,8 +1398,14 @@ export function SignalEntryFormEl(props: Props) {
                       { isSubmit: true }
                     );
 
-                    if (signalData.id)
-                      updateSignalApi(updateSignal.id, formattedData)
+                    if (signalData.id) {
+                      // Create a properly typed object for the API
+                      const apiData = {
+                        ...formattedData,
+                        id: updateSignal.id,
+                        created_by: formattedData.created_by || '',
+                      };
+                      updateSignalApi(updateSignal.id, apiData)
                         .then(() => {
                           setButtonDisabled(false);
                           navigate('/signals');
@@ -1416,6 +1422,7 @@ export function SignalEntryFormEl(props: Props) {
                             }`,
                           );
                         });
+                    }
                   }}
                 >
                   Submit Signal
@@ -1444,8 +1451,14 @@ export function SignalEntryFormEl(props: Props) {
                         { isAddToSprint: true }
                       );
 
-                      if (signalData.id)
-                        updateSignalApi(updateSignal.id, formattedData)
+                      if (signalData.id) {
+                        // Create a properly typed object for the API
+                        const apiData = {
+                          ...formattedData,
+                          id: updateSignal.id,
+                          created_by: formattedData.created_by || '',
+                        };
+                        updateSignalApi(updateSignal.id, apiData)
                           .then(() => {
                             setButtonDisabled(false);
                             // Navigate to the first sprint if available
@@ -1467,6 +1480,7 @@ export function SignalEntryFormEl(props: Props) {
                               }`,
                             );
                           });
+                      }
                     }}
                   >
                     Add to Sprint
@@ -1490,8 +1504,14 @@ export function SignalEntryFormEl(props: Props) {
                       { isDraft: true }
                     );
 
-                    if (signalData.id)
-                      updateSignalApi(updateSignal.id, formattedData)
+                    if (signalData.id) {
+                      // Create a properly typed object for the API
+                      const apiData = {
+                        ...formattedData,
+                        id: updateSignal.id,
+                        created_by: formattedData.created_by || '',
+                      };
+                      updateSignalApi(updateSignal.id, apiData)
                         .then(() => {
                           setButtonDisabled(false);
                           navigate('/my-drafts');
@@ -1508,6 +1528,7 @@ export function SignalEntryFormEl(props: Props) {
                             }`,
                           );
                         });
+                    }
                   }}
                 >
                   Save Signal as Draft
@@ -1568,10 +1589,16 @@ export function SignalEntryFormEl(props: Props) {
                     {}
                   );
                   // Preserve the original status
-                  formattedData.status = signalData.status as any || '';
+                  formattedData.status = signalData.status || '';
 
-                  if (signalData.id)
-                    updateSignalApi(updateSignal.id, formattedData)
+                  if (signalData.id) {
+                    // Create a properly typed object for the API
+                    const apiData = {
+                      ...formattedData,
+                      id: updateSignal.id,
+                      created_by: formattedData.created_by || '',
+                    };
+                    updateSignalApi(updateSignal.id, apiData)
                       .then(() => {
                         setButtonDisabled(false);
                         navigate(`/signals/${updateSignal.id}`);
@@ -1588,6 +1615,7 @@ export function SignalEntryFormEl(props: Props) {
                           }`,
                         );
                       });
+                  }
                 }}
               >
                 Update Signal
@@ -1628,7 +1656,8 @@ export function SignalEntryFormEl(props: Props) {
                     { isSubmit: true }
                   );
 
-                  createSignal(formattedData)
+                  // Create signal with properly typed data
+                  createSignal(formattedData as any)
                     .then(() => {
                       setButtonDisabled(false);
                       navigate('/signals');
@@ -1673,7 +1702,8 @@ export function SignalEntryFormEl(props: Props) {
                       { isAddToSprint: true }
                     );
 
-                    createSignal(formattedData)
+                    // Create signal with properly typed data
+                    createSignal(formattedData as any)
                       .then(() => {
                         setButtonDisabled(false);
                         // Navigate to the first sprint if available
@@ -1718,7 +1748,8 @@ export function SignalEntryFormEl(props: Props) {
                     { isDraft: true }
                   );
 
-                  createSignal(formattedData)
+                  // Create signal with properly typed data
+                  createSignal(formattedData as any)
                     .then(() => {
                       setButtonDisabled(false);
                       navigate('/my-drafts');

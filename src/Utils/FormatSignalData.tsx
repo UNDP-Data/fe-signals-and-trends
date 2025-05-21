@@ -23,7 +23,7 @@ export const formatSignalData = (
   selectedTrendsList: number[],
   selectedUserGroups: number[],
   options: SubmissionOptions = {}
-) => {
+): any => {
   const { isSubmit, isAddToSprint, isDraft } = options;
   
   // Determine if values should be null for drafts or when adding to sprint
@@ -53,7 +53,7 @@ export const formatSignalData = (
   }
 
   // Construct the base formatted data
-  const formattedData = {
+  const formattedData: any = {
     id: signalData.id,
     headline: signalData.headline || (useNullValues ? null : ''),
     description: signalData.description || (useNullValues ? null : ''),
@@ -74,6 +74,7 @@ export const formatSignalData = (
     connected_trends: selectedTrendsList || (useNullValues ? null : []),
     user_group_ids: selectedUserGroups,
     keywords: formattedKeywords,
+    status: null // Initialize with null, will be updated based on options
   };
 
   // Add status based on submission type
@@ -88,7 +89,7 @@ export const formatSignalData = (
   if (isAddToSprint) {
     formattedData.private = true;
     // Remove status when adding to sprint
-    delete formattedData.status;
+    formattedData.status = null;
   }
 
   return formattedData;

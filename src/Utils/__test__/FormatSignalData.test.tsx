@@ -1,8 +1,9 @@
 import { formatSignalData, isSignalValid } from '../FormatSignalData';
+import { NewSignalDataType } from '../../Types';
 
 describe('FormatSignalData', () => {
   // Test data
-  const signalData = {
+  const signalData: NewSignalDataType = {
     id: 123,
     headline: 'Test headline',
     description: 'Test description longer than 30 characters to be valid',
@@ -18,8 +19,9 @@ describe('FormatSignalData', () => {
     secondary_location: ['UK'],
     created_by: 'Test User',
     created_for: 'Test Purpose',
-    score: 5,
-    status: 'Draft'
+    score: '5',
+    status: 'Draft',
+    keywords: ['existing_keyword']
   };
 
   const keywords = ['keyword1', 'keyword2', undefined];
@@ -31,14 +33,14 @@ describe('FormatSignalData', () => {
     goal: ['GOAL 1 – No Poverty', 'GOAL 2 – Zero Hunger']
   };
 
-  test('formats signal data with standard values', () => {
+  test('formats signal data with submit option', () => {
     const result = formatSignalData(
       signalData,
       keywords,
+      mockChoices,
       selectedTrends,
       selectedUserGroups,
-      { status: 'New' },
-      mockChoices
+      { isSubmit: true }
     );
 
     expect(result.headline).toBe('Test headline');
@@ -49,14 +51,14 @@ describe('FormatSignalData', () => {
     expect(result.private).toBeUndefined();
   });
 
-  test('formats signal data with allowNulls option', () => {
+  test('formats signal data with draft option', () => {
     const result = formatSignalData(
-      {},
+      {} as NewSignalDataType,
       keywords,
+      mockChoices,
       selectedTrends,
       selectedUserGroups,
-      { status: 'Draft', allowNulls: true },
-      mockChoices
+      { isDraft: true }
     );
 
     expect(result.headline).toBe(null);
@@ -64,27 +66,28 @@ describe('FormatSignalData', () => {
     expect(result.status).toBe('Draft');
   });
 
-  test('formats signal data with private option', () => {
+  test('formats signal data with addToSprint option', () => {
     const result = formatSignalData(
       signalData,
       keywords,
+      mockChoices,
       selectedTrends,
       selectedUserGroups,
-      { status: 'Draft', private: true },
-      mockChoices
+      { isAddToSprint: true }
     );
 
     expect(result.private).toBe(true);
-    expect(result.status).toBe('Draft');
+    expect(result.status).toBe(null);
   });
 
   test('formats signal data without choices', () => {
     const result = formatSignalData(
       signalData,
       keywords,
+      undefined,
       selectedTrends,
       selectedUserGroups,
-      { status: 'New' }
+      { isSubmit: true }
     );
 
     expect(result.steep_primary).toBe('Social');
@@ -94,7 +97,7 @@ describe('FormatSignalData', () => {
 
 describe('isSignalValid', () => {
   test('returns true for valid signal', () => {
-    const validSignal = {
+    const validSignal: NewSignalDataType = {
       headline: 'Test headline',
       description: 'Test description longer than 30 characters to be valid',
       steep_primary: 'Social',
@@ -103,11 +106,12 @@ describe('isSignalValid', () => {
       created_unit: 'Test Unit',
       url: 'https://example.com',
       relevance: 'Test relevance',
-      location: 'USA'
+      location: 'USA',
+      status: 'New',
+      keywords: ['keyword1']
     };
 
-    const keywords: [string | undefined, string | undefined, string | undefined] = 
-      ['keyword1', undefined, undefined];
+    const keywords: (string | undefined)[] = ['keyword1', undefined, undefined];
 
     expect(isSignalValid(validSignal, keywords)).toBe(true);
   });
@@ -116,17 +120,18 @@ describe('isSignalValid', () => {
     const invalidSignal = {
       headline: 'Test headline',
       description: 'Test description longer than 30 characters to be valid',
+      status: 'New',
+      keywords: ['keyword1']
       // missing other required fields
-    };
+    } as NewSignalDataType;
 
-    const keywords: [string | undefined, string | undefined, string | undefined] = 
-      ['keyword1', undefined, undefined];
+    const keywords: (string | undefined)[] = ['keyword1', undefined, undefined];
 
     expect(isSignalValid(invalidSignal, keywords)).toBe(false);
   });
 
   test('returns false for invalid signal - short description', () => {
-    const invalidSignal = {
+    const invalidSignal: NewSignalDataType = {
       headline: 'Test headline',
       description: 'Too short',
       steep_primary: 'Social',
@@ -135,17 +140,18 @@ describe('isSignalValid', () => {
       created_unit: 'Test Unit',
       url: 'https://example.com',
       relevance: 'Test relevance',
-      location: 'USA'
+      location: 'USA',
+      status: 'New',
+      keywords: ['keyword1']
     };
 
-    const keywords: [string | undefined, string | undefined, string | undefined] = 
-      ['keyword1', undefined, undefined];
+    const keywords: (string | undefined)[] = ['keyword1', undefined, undefined];
 
     expect(isSignalValid(invalidSignal, keywords)).toBe(false);
   });
 
   test('returns false for invalid signal - no keywords', () => {
-    const invalidSignal = {
+    const invalidSignal: NewSignalDataType = {
       headline: 'Test headline',
       description: 'Test description longer than 30 characters to be valid',
       steep_primary: 'Social',
@@ -154,11 +160,12 @@ describe('isSignalValid', () => {
       created_unit: 'Test Unit',
       url: 'https://example.com',
       relevance: 'Test relevance',
-      location: 'USA'
+      location: 'USA',
+      status: 'New',
+      keywords: []
     };
 
-    const keywords: [string | undefined, string | undefined, string | undefined] = 
-      [undefined, undefined, undefined];
+    const keywords: (string | undefined)[] = [undefined, undefined, undefined];
 
     expect(isSignalValid(invalidSignal, keywords)).toBe(false);
   });
