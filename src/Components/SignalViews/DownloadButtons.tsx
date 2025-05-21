@@ -1,5 +1,4 @@
-import { Modal, Dropdown, Menu } from 'antd';
-import { DownOutlined } from '@ant-design/icons';
+import { Modal } from 'antd';
 import { useState, useContext } from 'react';
 import Context from '../../Context/Context';
 import { exportSignals } from '../../API';
@@ -21,20 +20,19 @@ export function DownloadButtons({
   const [loading, setLoading] = useState(false);
   const { role, cardsToPrint, updateCardsToPrint } = useContext(Context);
 
-  const handleDownloadAll = (format: 'excel' | 'csv') => {
+  const handleDownloadAll = () => {
     setLoading(true);
-    exportSignals(getQueryParamsToDownloadAll(), format).then(response => {
+    exportSignals(getQueryParamsToDownloadAll(), 'excel').then(response => {
       const url = window.URL.createObjectURL(
         new Blob([response]),
       );
       const link = document.createElement('a');
       link.href = url;
-      const fileExtension = format === 'excel' ? 'xlsx' : 'csv';
       link.setAttribute(
         'download',
         `FTSS_signals_${new Date(Date.now()).getFullYear()}-${
           new Date(Date.now()).getMonth() + 1
-        }-${new Date(Date.now()).getDate()}.${fileExtension}`,
+        }-${new Date(Date.now()).getDate()}.xlsx`,
       );
       document.body.appendChild(link);
       link.click();
@@ -42,20 +40,19 @@ export function DownloadButtons({
     });
   };
 
-  const handleDownload = (format: 'excel' | 'csv') => {
+  const handleDownload = () => {
     setLoading(true);
-    exportSignals(getQueryParams(), format).then(response => {
+    exportSignals(getQueryParams(), 'excel').then(response => {
       const url = window.URL.createObjectURL(
         new Blob([response]),
       );
       const link = document.createElement('a');
       link.href = url;
-      const fileExtension = format === 'excel' ? 'xlsx' : 'csv';
       link.setAttribute(
         'download',
         `FTSS_signals_${new Date(Date.now()).getFullYear()}-${
           new Date(Date.now()).getMonth() + 1
-        }-${new Date(Date.now()).getDate()}.${fileExtension}`,
+        }-${new Date(Date.now()).getDate()}.xlsx`,
       );
       document.body.appendChild(link);
       link.click();
@@ -101,50 +98,22 @@ export function DownloadButtons({
           {totalCount > 1 ? 'signals available' : 'signal available'}
         </div>
         {role === 'Admin' || role === 'Curator' ? (
-          <Dropdown
-            overlay={
-              <Menu>
-                <Menu.Item key="excel" onClick={() => handleDownloadAll('excel')}>
-                  Excel Format
-                </Menu.Item>
-                <Menu.Item key="csv" onClick={() => handleDownloadAll('csv')}>
-                  CSV Format
-                </Menu.Item>
-              </Menu>
-            }
-            trigger={['click']}
+          <button
+            type='button'
+            className='undp-button button-primary'
+            onClick={handleDownloadAll}
           >
-            <button
-              type='button'
-              className='undp-button button-primary'
-              onClick={e => e.preventDefault()}
-            >
-              Download All {totalCount} Signals <DownOutlined />
-            </button>
-          </Dropdown>
+            Download All {totalCount} Signals
+          </button>
         ) : null}
         {role === 'Admin' || role === 'Curator' ? (
-          <Dropdown
-            overlay={
-              <Menu>
-                <Menu.Item key="excel" onClick={() => handleDownload('excel')}>
-                  Excel Format
-                </Menu.Item>
-                <Menu.Item key="csv" onClick={() => handleDownload('csv')}>
-                  CSV Format
-                </Menu.Item>
-              </Menu>
-            }
-            trigger={['click']}
+          <button
+            type='button'
+            className='undp-button button-primary'
+            onClick={handleDownload}
           >
-            <button
-              type='button'
-              className='undp-button button-primary'
-              onClick={e => e.preventDefault()}
-            >
-              Download Current Page <DownOutlined />
-            </button>
-          </Dropdown>
+            Download Current Page
+          </button>
         ) : null}
         <button
           type='button'

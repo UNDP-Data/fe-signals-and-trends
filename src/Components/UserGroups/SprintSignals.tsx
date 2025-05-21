@@ -116,14 +116,14 @@ export const SprintSignals: React.FC<SprintSignalsProps> = ({
       )}
 
       {/* Download Buttons for Sprint Signals */}
-      {signals.length > 0 && (
+      {/* {signals.length > 0 && (
         <DownloadButtons
           totalCount={signals.length}
           getQueryParams={getQueryParams}
           getQueryParamsToDownloadAll={getQueryParamsToDownloadAll}
           signalList={signals}
         />
-      )}
+      )} */}
 
       {/* Collapsible Search Component */}
       {/* <CollapseContainer 
