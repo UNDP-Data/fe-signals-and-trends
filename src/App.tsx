@@ -321,7 +321,7 @@ function App() {
           const convertedData = data.map(group => ({
             ...group,
             // Convert string[] to UserDataType[]
-            users: group.users.map(email => ({
+            users: (group.users || []).map(email => ({
               created_at: '',
               email,
               name: email,
@@ -345,7 +345,7 @@ function App() {
           const convertedData = data.map(group => ({
             ...group,
             // Convert string[] to UserDataType[]
-            users: group.users.map(email => ({
+            users: (group.users || []).map(email => ({
               created_at: '',
               email,
               name: email,

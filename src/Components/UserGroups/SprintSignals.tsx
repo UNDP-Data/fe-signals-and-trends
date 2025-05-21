@@ -134,7 +134,8 @@ export const SprintSignals: React.FC<SprintSignalsProps> = ({
               return (
                 <div className="signal-card" style={{ marginBottom: '20px' }}>
                   <SignalCard 
-                    data={signal} 
+                    data={signal}
+                    optionsDropdownItems={menuItems}
                   />
                 </div>
               );

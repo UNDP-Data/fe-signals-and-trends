@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import { Checkbox, Input, Popconfirm, Select } from 'antd';
+import { Checkbox, Input, Popconfirm, Select, Tooltip } from 'antd';
 import sortBy from 'lodash.sortby';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +11,7 @@ import { AddTrendsModal } from './AddTrendsModal';
 import { ExtractedNewsData, LinkExtractor } from './LinkExtractor';
 import { PexelsImagePicker } from './PexelsImagePicker';
 import { SprintSelect } from './SprintSelect';
-
+import { formatSignalData, isSignalValid } from '../Utils/FormatSignalData';
 import {
   createSignal,
   deleteSignal,
@@ -84,6 +84,28 @@ const FileAttachmentButton = styled.input`
   display: none;
 `;
 
+const SprintSection = styled.div`
+  background-color: #F5F7F9;
+  border: 2px solid #E5EAEF;
+  border-radius: 8px;
+  padding: 24px;
+  margin-top: 32px;
+  margin-bottom: 32px;
+  
+  .sprint-header {
+    font-size: 20px;
+    font-weight: bold;
+    color: #2C3E50;
+    margin-bottom: 8px;
+  }
+  
+  .sprint-description {
+    font-size: 14px;
+    color: #6C757D;
+    margin-bottom: 16px;
+  }
+`;
+
 /*
 const isUrl = (str?: string) => {
   if (str) {
@@ -128,23 +150,7 @@ export function isSignalInvalid(
   signal: SignalDataType | NewSignalDataType,
   keyWords: [string | undefined, string | undefined, string | undefined],
 ) {
-  if (
-    signal.headline &&
-    signal.created_unit &&
-    signal.description &&
-    signal.description.length > 30 &&
-    keyWords.filter(d => d !== undefined).length > 0 &&
-    signal.location &&
-    signal.steep_primary &&
-    signal.signature_primary &&
-    signal.sdgs &&
-    signal.sdgs?.length > 0 &&
-    signal.relevance &&
-    signal.url
-  ) {
-    return false;
-  }
-  return true;
+  return !isSignalValid(signal, keyWords);
 }
 
 // New function to get form validation status with detailed messages
@@ -335,6 +341,7 @@ export function SignalEntryFormEl(props: Props) {
       user_group_ids: initialData?.user_group_ids || [],
     },
   );
+  console.log({signalData});
   const [buttonDisabled, setButtonDisabled] = useState(false);
   // const [acceptTOS, setAcceptTOS] = useState(false);
   const [trendsList, setTrendsList] = useState<undefined | TrendDataType[]>(
@@ -359,7 +366,7 @@ export function SignalEntryFormEl(props: Props) {
   const [useFetchedArticles, setUseFetchedArticles] = useState(false);
   const [showRedBorders, setShowRedBorders] = useState(SHOW_RED_BORDERS);
   // Extract user group IDs from either user_group_ids or the user_groups array
-  const extractUserGroupIds = (signal?: SignalDataType): number[] => {
+  const extractUserGroupIds = (signal?: any): number[] => {
     if (!signal) return [];
     
     // If user_group_ids is available and valid, use it
@@ -367,7 +374,11 @@ export function SignalEntryFormEl(props: Props) {
       return signal.user_group_ids;
     }
     
-    // user_groups is not part of SignalDataType, so we only use user_group_ids
+    // If user_groups array exists with objects containing id
+    if (Array.isArray(signal.user_groups) && signal.user_groups.length > 0) {
+      return signal.user_groups.map((group: any) => group.id).filter((id: any) => id !== undefined);
+    }
+    
     return [];
   };
   
@@ -618,10 +629,9 @@ export function SignalEntryFormEl(props: Props) {
     }
   };
 
-  // Update the validation check function to remove state setting
+  // Update the validation check function to use isSignalValid directly
   const validateForm = () => {
-    const { isValid } = getFormValidation(signalData, [keyword1, keyword2, keyword3]);
-    return isValid;
+    return isSignalValid(signalData, [keyword1, keyword2, keyword3]);
   };
 
   return (
@@ -1260,22 +1270,6 @@ export function SignalEntryFormEl(props: Props) {
           <p className='undp-typography'>Loading trends...</p>
         )}
       </div>
-      <div className='margin-bottom-07'>
-        <p className='undp-typography margin-bottom-01'>Add to Sprint</p>
-        <SprintSelect
-          value={selectedUserGroups}
-          onChange={(values: number[]) => {
-            // Ensure values is always an array, never null
-            const safeValues = Array.isArray(values) ? values : [];
-            setSelectedUserGroups(safeValues);
-            updateSignalData({
-              ...signalData,
-              user_group_ids: safeValues,
-            });
-          }}
-          placeholder='Select sprints to add this signal to'
-        />
-      </div>
       
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Created For</p>
@@ -1347,6 +1341,25 @@ export function SignalEntryFormEl(props: Props) {
           </Select>
         </div>
       ) : null}
+      <SprintSection>
+        <p className='sprint-header'>Sprint Management</p>
+        <p className='sprint-description'>Choose which sprint(s) this signal should be added to. This allows you to organize signals within specific sprint cycles.</p>
+        <div className='margin-bottom-02'>
+          <SprintSelect
+            value={selectedUserGroups}
+            onChange={(values: number[]) => {
+              // Ensure values is always an array, never null
+              const safeValues = Array.isArray(values) ? values : [];
+              setSelectedUserGroups(safeValues);
+              updateSignalData({
+                ...signalData,
+                user_group_ids: safeValues,
+              });
+            }}
+            placeholder='Select sprints to add this signal to'
+          />
+        </div>
+      </SprintSection>
       <div className='margin-top-09'>
         {submittingError ? (
           <p className='margin-bottom-05' style={{ color: 'var(--dark-red)' }}>
@@ -1376,50 +1389,17 @@ export function SignalEntryFormEl(props: Props) {
                     setButtonDisabled(true);
                     setSubmittingError(undefined);
 
-                    // Make sure steep_primary is in the correct format if it's a simple string
-                    let steep_primary = signalData.steep_primary || '';
-                    if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
-                      const fullSteep = choices.steep.find(s => s.startsWith(steep_primary as string));
-                      if (fullSteep) {
-                        steep_primary = fullSteep;
-                      }
-                    }
-
-                    // Make sure sdgs are in the correct format
-                    let sdgs = signalData.sdgs || [];
-                    if (sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
-                      sdgs = sdgs.map(sdg => {
-                        const fullSdg = choices.goal.find(g => g.includes(sdg));
-                        return fullSdg || sdg;
-                      });
-                    }
+                    const formattedData = formatSignalData(
+                      signalData,
+                      [keyword1, keyword2, keyword3],
+                      choices,
+                      selectedTrendsList,
+                      selectedUserGroups,
+                      { isSubmit: true }
+                    );
 
                     if (signalData.id)
-                      updateSignalApi(updateSignal.id, {
-                        // ...signalData,
-                        id: signalData.id,
-                        headline: signalData.headline || '',
-                        description: signalData.description || '',
-                        attachment: signalData.attachment || '',
-                        steep_primary: steep_primary,
-                        signature_primary: signalData.signature_primary || '',
-                        signature_secondary:
-                          signalData.signature_secondary || [],
-                        sdgs: sdgs,
-                        url: signalData.url || '',
-                        relevance: signalData.relevance || '',
-                        location: signalData.location || '',
-                        secondary_location: signalData.secondary_location || [],
-                        created_by: signalData.created_by || '',
-                        created_for: signalData.created_for,
-                        score: signalData.score,
-                        connected_trends: selectedTrendsList,
-                        user_group_ids: selectedUserGroups,
-                        status: 'New',
-                        keywords: [keyword1, keyword2, keyword3].filter(
-                          (d): d is string => d !== null && d !== undefined,
-                        ),
-                      })
+                      updateSignalApi(updateSignal.id, formattedData)
                         .then(() => {
                           setButtonDisabled(false);
                           navigate('/signals');
@@ -1440,6 +1420,58 @@ export function SignalEntryFormEl(props: Props) {
                 >
                   Submit Signal
                 </button>
+                <Tooltip
+                  title={selectedUserGroups.length === 0 ? "Please select a sprint from the 'Add to Sprint' field above to use this option" : ""}
+                  open={selectedUserGroups.length === 0 ? undefined : false}
+                >
+                  <button
+                    className={`undp-button button-secondary button-arrow ${
+                      selectedUserGroups.length === 0 ? 'disabled' : ''
+                    }`}
+                    type='button'
+                    disabled={selectedUserGroups.length === 0}
+                    onClick={() => {
+                      // add to sprint - similar to draft but with private attribute
+                      setButtonDisabled(true);
+                      setSubmittingError(undefined);
+
+                      const formattedData = formatSignalData(
+                        signalData,
+                        [keyword1, keyword2, keyword3],
+                        choices,
+                        selectedTrendsList,
+                        selectedUserGroups,
+                        { isAddToSprint: true }
+                      );
+
+                      if (signalData.id)
+                        updateSignalApi(updateSignal.id, formattedData)
+                          .then(() => {
+                            setButtonDisabled(false);
+                            // Navigate to the first sprint if available
+                            if (selectedUserGroups.length > 0) {
+                              navigate(`/sprint/${selectedUserGroups[0]}`);
+                            } else {
+                              navigate('/my-drafts');
+                            }
+                            updateNotificationText(
+                              'Successfully added signal to sprint',
+                            );
+                          })
+                          .catch(err => {
+                            setButtonDisabled(false);
+                            setSubmittingError(
+                              `${err}. ${err.response?.status === 500
+                                ? 'Please try again in some time'
+                                : ''
+                              }`,
+                            );
+                          });
+                    }}
+                  >
+                    Add to Sprint
+                  </button>
+                </Tooltip>
                 <button
                   className='undp-button button-secondary button-arrow'
                   type='button'
@@ -1449,51 +1481,17 @@ export function SignalEntryFormEl(props: Props) {
                     setButtonDisabled(true);
                     setSubmittingError(undefined);
 
-                    // Make sure steep_primary is in the correct format if it's not null and doesn't have the full format
-                    let steep_primary = signalData.steep_primary || null;
-                    if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
-                      const fullSteep = choices.steep.find(s => s.startsWith(steep_primary as string));
-                      if (fullSteep) {
-                        steep_primary = fullSteep;
-                      }
-                    }
-
-                    // Make sure sdgs are in the correct format if not null
-                    let sdgs = signalData.sdgs || null;
-                    if (sdgs && sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
-                      sdgs = sdgs.map(sdg => {
-                        const fullSdg = choices.goal.find(g => g.includes(sdg));
-                        return fullSdg || sdg;
-                      });
-                    }
+                    const formattedData = formatSignalData(
+                      signalData,
+                      [keyword1, keyword2, keyword3],
+                      choices,
+                      selectedTrendsList,
+                      selectedUserGroups,
+                      { isDraft: true }
+                    );
 
                     if (signalData.id)
-                      updateSignalApi(updateSignal.id, {
-                        // ...signalData,
-                        id: signalData.id,
-                        headline: signalData.headline || null,
-                        description: signalData.description || null,
-                        attachment: signalData.attachment || null,
-                        steep_primary: steep_primary,
-                        steep_secondary: signalData.steep_secondary || null,
-                        signature_primary: signalData.signature_primary || null,
-                        signature_secondary:
-                          signalData.signature_secondary || null,
-                        sdgs: sdgs,
-                        url: signalData.url || null,
-                        relevance: signalData.relevance || null,
-                        location: signalData.location || null,
-                        secondary_location: signalData.secondary_location || null,
-                        score: signalData.score || null,
-                        created_by: signalData.created_by || null,
-                        created_for: signalData.created_for || null,
-                        connected_trends: selectedTrendsList || null,
-                        user_group_ids: selectedUserGroups,
-                        keywords: [keyword1, keyword2, keyword3].filter(
-                          (d): d is string => d !== null && d !== undefined,
-                        ),
-                        status: 'Draft',
-                      })
+                      updateSignalApi(updateSignal.id, formattedData)
                         .then(() => {
                           setButtonDisabled(false);
                           navigate('/my-drafts');
@@ -1560,50 +1558,20 @@ export function SignalEntryFormEl(props: Props) {
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
 
-                  // Make sure steep_primary is in the correct format if it's a simple string
-                  let steep_primary = signalData.steep_primary || '';
-                  if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
-                    const fullSteep = choices.steep.find(s => s.startsWith(steep_primary as string));
-                    if (fullSteep) {
-                      steep_primary = fullSteep;
-                    }
-                  }
-
-                  // Make sure sdgs are in the correct format
-                  let sdgs = signalData.sdgs || [];
-                  if (sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
-                    sdgs = sdgs.map(sdg => {
-                      const fullSdg = choices.goal.find(g => g.includes(sdg));
-                      return fullSdg || sdg;
-                    });
-                  }
+                  // For updates, we maintain the existing status
+                  const formattedData = formatSignalData(
+                    signalData,
+                    [keyword1, keyword2, keyword3],
+                    choices,
+                    selectedTrendsList,
+                    selectedUserGroups,
+                    {}
+                  );
+                  // Preserve the original status
+                  formattedData.status = signalData.status as any || '';
 
                   if (signalData.id)
-                    updateSignalApi(updateSignal.id, {
-                      // ...signalData,
-                      id: signalData.id,
-                      headline: signalData.headline || '',
-                      description: signalData.description || '',
-                      attachment: signalData.attachment || undefined,
-                      steep_primary: steep_primary,
-                      signature_primary: signalData.signature_primary || '',
-                      signature_secondary: signalData.signature_secondary || [],
-                      sdgs: sdgs,
-                      url: signalData.url || '',
-                      relevance: signalData.relevance || '',
-                      location: signalData.location || '',
-                      secondary_location: signalData.secondary_location || [],
-                      status: signalData.status || '',
-                      created_by: signalData.created_by || '',
-                      created_for: signalData.created_for || '',
-                      score: signalData.score,
-                      created_unit: signalData.created_unit || '',
-                      connected_trends: selectedTrendsList,
-                      user_group_ids: selectedUserGroups,
-                      keywords: [keyword1, keyword2, keyword3].filter(
-                        (d): d is string => d !== null && d !== undefined,
-                      ),
-                    })
+                    updateSignalApi(updateSignal.id, formattedData)
                       .then(() => {
                         setButtonDisabled(false);
                         navigate(`/signals/${updateSignal.id}`);
@@ -1651,47 +1619,16 @@ export function SignalEntryFormEl(props: Props) {
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
 
-                  // Make sure steep_primary is in the correct format if it's a simple string
-                  let steep_primary = signalData.steep_primary || '';
-                  if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
-                    const fullSteep = choices.steep.find(s => s.startsWith(steep_primary as string));
-                    if (fullSteep) {
-                      steep_primary = fullSteep;
-                    }
-                  }
+                  const formattedData = formatSignalData(
+                    signalData,
+                    [keyword1, keyword2, keyword3],
+                    choices,
+                    selectedTrendsList,
+                    selectedUserGroups,
+                    { isSubmit: true }
+                  );
 
-                  // Make sure sdgs are in the correct format
-                  let sdgs = signalData.sdgs || [];
-                  if (sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
-                    sdgs = sdgs.map(sdg => {
-                      const fullSdg = choices.goal.find(g => g.includes(sdg));
-                      return fullSdg || sdg;
-                    });
-                  }
-
-                  createSignal({
-                    headline: signalData.headline || '',
-                    description: signalData.description || '',
-                    attachment: signalData.attachment || '',
-                    steep_primary: steep_primary,
-                    steep_secondary: signalData.steep_secondary || undefined,
-                    signature_primary: signalData.signature_primary || '',
-                    signature_secondary: signalData.signature_secondary || [],
-                    sdgs: sdgs,
-                    created_unit: signalData.created_unit || '',
-                    url: signalData.url || '',
-                    relevance: signalData.relevance || '',
-                    created_for: signalData.created_for || '',
-                    location: signalData.location || '',
-                    secondary_location: signalData.secondary_location || [],
-                    score: signalData.score,
-                    connected_trends: selectedTrendsList,
-                    user_group_ids: selectedUserGroups,
-                    status: 'New',
-                    keywords: [keyword1, keyword2, keyword3].filter(
-                      (d): d is string => d !== null && d !== undefined,
-                    ),
-                  })
+                  createSignal(formattedData)
                     .then(() => {
                       setButtonDisabled(false);
                       navigate('/signals');
@@ -1712,6 +1649,57 @@ export function SignalEntryFormEl(props: Props) {
               >
                 Submit Signal
               </button>
+              <Tooltip
+                title={selectedUserGroups.length === 0 ? "Please select a sprint from the 'Add to Sprint' field above to use this option" : ""}
+                open={selectedUserGroups.length === 0 ? undefined : false}
+              >
+                <button
+                  className={`undp-button button-secondary button-arrow ${
+                    selectedUserGroups.length === 0 ? 'disabled' : ''
+                  }`}
+                  type='button'
+                  disabled={selectedUserGroups.length === 0}
+                  onClick={() => {
+                    // add to sprint - similar to draft but with private attribute
+                    setButtonDisabled(true);
+                    setSubmittingError(undefined);
+
+                    const formattedData = formatSignalData(
+                      signalData,
+                      [keyword1, keyword2, keyword3],
+                      choices,
+                      selectedTrendsList,
+                      selectedUserGroups,
+                      { isAddToSprint: true }
+                    );
+
+                    createSignal(formattedData)
+                      .then(() => {
+                        setButtonDisabled(false);
+                        // Navigate to the first sprint if available
+                        if (selectedUserGroups.length > 0) {
+                          navigate(`/sprint/${selectedUserGroups[0]}`);
+                        } else {
+                          navigate('/my-drafts');
+                        }
+                        updateNotificationText(
+                          'Successfully added signal to sprint',
+                        );
+                      })
+                      .catch(err => {
+                        setButtonDisabled(false);
+                        setSubmittingError(
+                          `${err}. ${err.response?.status === 500
+                            ? 'Please try again in some time'
+                            : ''
+                          }`,
+                        );
+                      });
+                  }}
+                >
+                  Add to Sprint
+                </button>
+              </Tooltip>
               <button
                 className='undp-button button-secondary button-arrow'
                 type='button'
@@ -1721,48 +1709,16 @@ export function SignalEntryFormEl(props: Props) {
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
 
-                  // Make sure steep_primary is in the correct format if it's not null and doesn't have the full format
-                  let steep_primary = signalData.steep_primary || null;
-                  if (steep_primary && !steep_primary.includes(' – ') && choices?.steep) {
-                    const fullSteep = choices.steep.find(s => s.startsWith(steep_primary as string));
-                    if (fullSteep) {
-                      steep_primary = fullSteep;
-                    }
-                  }
+                  const formattedData = formatSignalData(
+                    signalData,
+                    [keyword1, keyword2, keyword3],
+                    choices,
+                    selectedTrendsList,
+                    selectedUserGroups,
+                    { isDraft: true }
+                  );
 
-                  // Make sure sdgs are in the correct format if not null
-                  let sdgs = signalData.sdgs || null;
-                  if (sdgs && sdgs.length > 0 && !sdgs[0].startsWith('GOAL') && choices?.goal) {
-                    sdgs = sdgs.map(sdg => {
-                      const fullSdg = choices.goal.find(g => g.includes(sdg));
-                      return fullSdg || sdg;
-                    });
-                  }
-
-                  // console.log(signalData);
-                  createSignal({
-                    headline: signalData.headline || null,
-                    description: signalData.description || null,
-                    attachment: signalData.attachment || null,
-                    steep_primary: steep_primary,
-                    steep_secondary: signalData.steep_secondary || null,
-                    signature_primary: signalData.signature_primary || null,
-                    signature_secondary: signalData.signature_secondary || null,
-                    sdgs: sdgs,
-                    created_unit: signalData.created_unit || null,
-                    url: signalData.url || null,
-                    relevance: signalData.relevance || null,
-                    created_for: signalData.created_for || null,
-                    secondary_location: signalData.secondary_location || null,
-                    score: signalData.score || null,
-                    location: signalData.location || null,
-                    connected_trends: selectedTrendsList,
-                    user_group_ids: selectedUserGroups,
-                    status: 'Draft',
-                    keywords: [keyword1, keyword2, keyword3].filter(
-                      (d): d is string => d !== null && d !== undefined,
-                    ),
-                  })
+                  createSignal(formattedData)
                     .then(() => {
                       setButtonDisabled(false);
                       navigate('/my-drafts');

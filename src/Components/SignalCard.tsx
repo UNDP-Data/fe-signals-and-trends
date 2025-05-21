@@ -18,6 +18,7 @@ import { SignalCardActions } from './SignalCardActions';
 interface Props {
   data: SignalDataType;
   isDraft?: boolean;
+  optionsDropdownItems?: MenuProps['items'];
 }
 
 interface HeroImageProps {
@@ -86,7 +87,7 @@ const MenuButton = styled.div`
 `;
 
 export function SignalCard(props: Props) {
-  const { data, isDraft } = props;
+  const { data, isDraft, optionsDropdownItems } = props;
   const { role, choices, updateCardsToPrint, cardsToPrint, userGroups } =
     useContext(Context);
   const [groupsWithSignal, setGroupsWithSignal] = useState<number[]>([]);
@@ -149,47 +150,55 @@ export function SignalCard(props: Props) {
   };
 
   // Create menu items for the dropdown
-  const menuItems: MenuProps['items'] = [
-    {
-      key: 'favorite',
-      label: (
-        <FavoriteButton 
-          signalId={data.id} 
-          initialFavoriteStatus={data.favorite || false}
-          size="small"
-          inDropdown
-        />
-      ),
-    },
-    {
-      type: 'divider',
-    },
-  ];
-
-  // Add user groups to menu items
-  if (userGroups && userGroups.length > 0) {
-    const userGroupsSubmenu = userGroups.map(group => ({
-      key: `group-${group.id}`,
-      label: (
-        <span>
-          {group.name} {groupsWithSignal.includes(group.id) && '✓'}
-        </span>
-      ),
-      disabled: groupsWithSignal.includes(group.id) || loading,
-      onClick: () => handleAddToUserGroup(group.id),
-    }));
-
-    menuItems.push({
-      key: 'user-groups',
-      label: 'Add to Sprint',
-      children: userGroupsSubmenu,
-    });
+  let menuItems: MenuProps['items'] = [];
+  
+  // Use custom dropdown items if provided, otherwise use default
+  if (optionsDropdownItems) {
+    menuItems = optionsDropdownItems;
   } else {
-    menuItems.push({
-      key: 'no-groups',
-      label: 'No Groups Available',
-      disabled: true,
-    });
+    // Default menu items
+    menuItems = [
+      {
+        key: 'favorite',
+        label: (
+          <FavoriteButton 
+            signalId={data.id} 
+            initialFavoriteStatus={data.favorite || false}
+            size="small"
+            inDropdown
+          />
+        ),
+      },
+      {
+        type: 'divider',
+      },
+    ];
+
+    // Add user groups to menu items
+    if (userGroups && userGroups.length > 0) {
+      const userGroupsSubmenu = userGroups.map(group => ({
+        key: `group-${group.id}`,
+        label: (
+          <span>
+            {group.name} {groupsWithSignal.includes(group.id) && '✓'}
+          </span>
+        ),
+        disabled: groupsWithSignal.includes(group.id) || loading,
+        onClick: () => handleAddToUserGroup(group.id),
+      }));
+
+      menuItems.push({
+        key: 'user-groups',
+        label: 'Add to Sprint',
+        children: userGroupsSubmenu,
+      });
+    } else {
+      menuItems.push({
+        key: 'no-groups',
+        label: 'No Groups Available',
+        disabled: true,
+      });
+    }
   }
 
   return (

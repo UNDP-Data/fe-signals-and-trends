@@ -62,6 +62,7 @@ export interface CreateSignalParamsDataType {
   status: string | null;
   connected_trends: number[] | null;
   user_group_ids?: number[] | null;
+  private?: boolean;
 }
 
 interface UpdateSignalParamsDataType {
@@ -89,6 +90,7 @@ interface UpdateSignalParamsDataType {
   created_by: string | null;
   created_unit?: string | null;
   score?: string | null;
+  private?: boolean;
 }
 
 interface makeSignalFavoriteDataType {
