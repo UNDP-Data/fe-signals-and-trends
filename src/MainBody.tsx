@@ -31,6 +31,7 @@ import { SignalDataType, TrendDataType } from './Types';
 import { signOutClickHandler } from './Utils/AuthStatusHandler';
 import { navLinks } from './Constants';
 import DigestPage from './Pages/DigestPage';
+import SignalAnalyticsPage from './Pages/SignalAnalyticsPage';
 
 function MainBody() {
   const {
@@ -244,6 +245,7 @@ function MainBody() {
                   <Route path='/my-favorites' element={<MyFavorites />} />
                   <Route path='/my-projects' element={<MyProjects />} />
                   <Route path='/digest' element={<DigestPage />} />
+                  <Route path='/signal-analytics' element={<SignalAnalyticsPage />} />
                 </Route>
               </Routes>
             </div>

@@ -232,6 +232,15 @@ export function LoggedInHeader(props: Props) {
         </div>
         <div>
           <NavLink
+            to={navLinks.signalAnalytics}
+            className={({ isActive }) =>
+              isActive ? 'header-link-active' : 'header-link'
+            }          >
+            Signal Analytics
+          </NavLink>
+        </div>
+        <div>
+          <NavLink
             to={navLinks.addNewSignal}
             className={({ isActive }) =>
               isActive ? 'header-link-active' : 'header-link'
