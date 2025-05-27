@@ -88,10 +88,6 @@ export function MyDrafts() {
   };
 
   return (
-    <div
-      className='margin-top-13 padding-top-09 margin-bottom-09'
-      style={{ paddingLeft: '1rem', paddingRight: '1rem' }}
-    >
       <AuthenticatedTemplate>
         {contextHolder}
         {isLoading ? (
@@ -184,9 +180,5 @@ export function MyDrafts() {
           </div>
         )}
       </AuthenticatedTemplate>
-      <UnauthenticatedTemplate>
-        <SignInButton buttonText='Sign In to View Admin Panel' />
-      </UnauthenticatedTemplate>
-    </div>
-  );
+  )
 }

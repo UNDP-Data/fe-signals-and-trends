@@ -64,10 +64,6 @@ export function MySprints() {
   
   // Test data loading state
   const [useTestData, setUseTestData] = useState(false);
-  
-  // Prevent unnecessary context updates by tracking previous data
-  const prevSignalsRef = useRef<string>('');
-  const prevGroupsRef = useRef<string>('');
 
   // Fetch user's sprints with React Query
   const sprintsQuery = useQuery({
@@ -132,27 +128,6 @@ export function MySprints() {
     },
     enabled: !!userName && !useTestData
   });
-
-  // Update context only when the data actually changes to prevent infinite loops
-  useEffect(() => {
-    if (sprintsQuery.data && !sprintsQuery.isLoading) {
-      const dataString = JSON.stringify(sprintsQuery.data);
-      if (dataString !== prevSignalsRef.current) {
-        prevSignalsRef.current = dataString;
-        updateSignalList(sprintsQuery.data);
-      }
-    }
-  }, [sprintsQuery.data, sprintsQuery.isLoading, updateSignalList]);
-
-  useEffect(() => {
-    if (userGroupsQuery.data && !userGroupsQuery.isLoading) {
-      const dataString = JSON.stringify(userGroupsQuery.data);
-      if (dataString !== prevGroupsRef.current) {
-        prevGroupsRef.current = dataString;
-        updateUserGroups(userGroupsQuery.data);
-      }
-    }
-  }, [userGroupsQuery.data, userGroupsQuery.isLoading, updateUserGroups]);
 
   const handleEditGroup = (group: UserGroupDataType) => {
     setSelectedGroup(group);

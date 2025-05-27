@@ -126,7 +126,7 @@ const UserGroupForm: React.FC<UserGroupFormProps> = ({
         };
         handleSubmit(trimmedValues);
       }}
-      initialValues={{ users: [], admins: [] }}
+      initialValues={initialValues}
       validateTrigger={['onChange', 'onBlur']}
       className={modalMode ? undefined : 'undp-form'}
     >
@@ -180,11 +180,6 @@ const UserGroupForm: React.FC<UserGroupFormProps> = ({
         >
           <MemberSelect
             placeholder='Type a name or UNDP email to search and select users'
-            value={
-              group?.users
-                ? group.users.map(u => u.email)
-                : initialValues.users || []
-            }
             label='Group Members'
           />
         </Form.Item>

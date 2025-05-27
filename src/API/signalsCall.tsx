@@ -102,6 +102,14 @@ export interface GetFavoriteSignalsParamsDataType {
   per_page?: number;
 }
 
+export interface DigestRequestParams {
+  recipients: string[];
+  days?: number;
+  status?: string[];
+  limit?: number;
+  test?: boolean;
+}
+
 export function searchSignals(params: BaseSignalsParamsDataType = {}) {
   const {
     page = 1,
@@ -403,4 +411,24 @@ export function deleteSignal(uid: number) {
         throw new Error(`An unknown error occurred. ${error.message}`);
       }
     });
+}
+
+export async function triggerDigestEmail(params: DigestRequestParams) {
+  try {
+    const response = await axiosInstance.post<{ message: string }>(
+      '/email/digest',
+      params
+    );
+    return response.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      throw new Error(
+        `Unable to trigger digest email. ${error.response?.data?.detail || error.message}`
+      );
+    } else if (error instanceof Error) {
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    } else {
+      throw new Error('An unexpected error occurred while triggering digest');
+    }
+  }
 }

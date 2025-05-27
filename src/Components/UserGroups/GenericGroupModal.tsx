@@ -19,7 +19,6 @@ export const GenericGroupModal: React.FC<GenericGroupModalProps> = ({
   submitButtonText = 'Save Group & Send Invites',
   modalMode = true
 }) => {
-  
   if (modalMode) {
     return (
       <Modal

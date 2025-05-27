@@ -6,7 +6,7 @@ import {
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { Modal, notification } from 'antd';
 import { useContext, useEffect, useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Outlet, Route, Routes } from 'react-router-dom';
 import { AddNewSignalEl, AddNewTrendEl, AddNewSprintEl } from './AddNew';
 import { AdminPanel } from './AdminPanel';
 import { AllSprints } from './AllSprints';
@@ -30,6 +30,7 @@ import { TrendDetail } from './Trends/TrendDetail';
 import { SignalDataType, TrendDataType } from './Types';
 import { signOutClickHandler } from './Utils/AuthStatusHandler';
 import { navLinks } from './Constants';
+import DigestPage from './Pages/DigestPage';
 
 function MainBody() {
   const {
@@ -173,13 +174,22 @@ function MainBody() {
       setConnectedSignalsForTrendsForPrinting([]);
     }
   }, [openModal]);
+
+  function MainWrapper() {
+    return (
+      <div className='main-page-container'>
+        <Outlet />
+      </div>
+    );
+  }
+
   return (
     <>
       <AuthenticatedTemplate>
         {name && choices ? (
           <>
             <Header signOutClickHandler={signOutClickHandler} />
-            <div className="main-content-container">
+            <div className='main-content-container'>
               <Routes>
                 <Route path='/' element={<HomePage />} />
                 <Route path='/signals' element={<SignalsListing />} />
@@ -189,7 +199,10 @@ function MainBody() {
                   path='/archived-signals'
                   element={<ArchivedSignalsListing />}
                 />
-                <Route path='/archived-signals/:id' element={<SignalDetail />} />
+                <Route
+                  path='/archived-signals/:id'
+                  element={<SignalDetail />}
+                />
                 <Route
                   path='/archived-signals/:id/edit'
                   element={<EditSignal />}
@@ -201,33 +214,37 @@ function MainBody() {
                   path='/archived-trends'
                   element={<ArchivedTrendsListing />}
                 />
-                <Route path='/archived-trends/:id' element={<TrendDetail />} />
-                <Route path='/archived-trends/:id/edit' element={<EditTrend />} />
-                <Route path={navLinks.addNewSignal} element={<AddNewSignalEl />} />
-                <Route path={navLinks.addNewTrend} element={<AddNewTrendEl />} />
-                <Route path={navLinks.addNewSprint} element={<AddNewSprintEl />} />
-                <Route path='/admin-panel' element={<AdminPanel />} />
-                <Route path='/my-drafts' element={
-                  <MyDrafts />
-                } />
-                <Route path='/all-sprints' element={
-                  <div className='main-page-container'>
-                    <AllSprints />
-                  </div>
-                } />
-                <Route path='/my-sprints' element={
-                  <div className='main-page-container'>
-                    <MySprints />
-                  </div>
-                } />
-                <Route path='/sprint/:id' element={
-                  <div className='main-page-container'>
-                    <SprintPage />
-                  </div>
-                } />
-                <Route path='/sprint/:id/edit' element={<MySprints />} />
-                <Route path='/my-favorites' element={<MyFavorites />} />
-                <Route path='/my-projects' element={<MyProjects />} />
+                <Route element={<MainWrapper />}>
+                  <Route
+                    path='/archived-trends/:id'
+                    element={<TrendDetail />}
+                  />
+                  <Route
+                    path='/archived-trends/:id/edit'
+                    element={<EditTrend />}
+                  />
+                  <Route
+                    path={navLinks.addNewSignal}
+                    element={<AddNewSignalEl />}
+                  />
+                  <Route
+                    path={navLinks.addNewTrend}
+                    element={<AddNewTrendEl />}
+                  />
+                  <Route
+                    path={navLinks.addNewSprint}
+                    element={<AddNewSprintEl />}
+                  />
+                  <Route path='/admin-panel' element={<AdminPanel />} />
+                  <Route path='/my-drafts' element={<MyDrafts />} />
+                  <Route path='/all-sprints' element={<AllSprints />} />
+                  <Route path='/my-sprints' element={<MySprints />} />
+                  <Route path='/sprint/:id' element={<SprintPage />} />
+                  <Route path='/sprint/:id/edit' element={<MySprints />} />
+                  <Route path='/my-favorites' element={<MyFavorites />} />
+                  <Route path='/my-projects' element={<MyProjects />} />
+                  <Route path='/digest' element={<DigestPage />} />
+                </Route>
               </Routes>
             </div>
           </>
@@ -240,7 +257,7 @@ function MainBody() {
       <UnauthenticatedTemplate>
         <>
           <Header signOutClickHandler={signOutClickHandler} />
-          <div className="main-content-container">
+          <div className='main-content-container'>
             <Routes>
               <Route path='/*' element={<SignedOutHomePage />} />
             </Routes>
@@ -441,46 +458,47 @@ function MainBody() {
                 );
               })}
             </div>
-            { <PDFDownloadLink
-              document={
-                <PDFDocument
-                  pages={cardsToPrint.map(d =>
-                    d.type === 'signal'
-                      ? {
-                          type: 'signal',
-                          mode: d.mode,
-                          data: signalsForPrinting[
-                            signalsForPrinting.findIndex(
-                              el => `${el.id}` === d.id,
-                            )
-                          ],
-                        }
-                      : {
-                          type: 'trend',
-                          mode: d.mode,
-                          data: trendsForPrinting[
-                            trendsForPrinting.findIndex(
-                              el => `${el.id}` === d.id,
-                            )
-                          ],
-                        },
-                  )}
-                  connectedSignalsForTrendsForPrinting={
-                    connectedSignalsForTrendsForPrinting
-                  }
-                  connectedTrendsForSignalsForPrinting={
-                    connectedTrendsForSignalsForPrinting
-                  }
-                />
-              }
-              fileName='Signals_And_trends.pdf'
-              style={{ textDecoration: 'none' }}
-              onClick={() => {
-                updateCardsToPrint([]);
-                setOpenModal(false);
-              }}
-            >
-              {/* {({ url }) =>
+            {
+              <PDFDownloadLink
+                document={
+                  <PDFDocument
+                    pages={cardsToPrint.map(d =>
+                      d.type === 'signal'
+                        ? {
+                            type: 'signal',
+                            mode: d.mode,
+                            data: signalsForPrinting[
+                              signalsForPrinting.findIndex(
+                                el => `${el.id}` === d.id,
+                              )
+                            ],
+                          }
+                        : {
+                            type: 'trend',
+                            mode: d.mode,
+                            data: trendsForPrinting[
+                              trendsForPrinting.findIndex(
+                                el => `${el.id}` === d.id,
+                              )
+                            ],
+                          },
+                    )}
+                    connectedSignalsForTrendsForPrinting={
+                      connectedSignalsForTrendsForPrinting
+                    }
+                    connectedTrendsForSignalsForPrinting={
+                      connectedTrendsForSignalsForPrinting
+                    }
+                  />
+                }
+                fileName='Signals_And_trends.pdf'
+                style={{ textDecoration: 'none' }}
+                onClick={() => {
+                  updateCardsToPrint([]);
+                  setOpenModal(false);
+                }}
+              >
+                {/* {({ url }) =>
                 !url ? (
                   <div
                     style={{
@@ -500,15 +518,16 @@ function MainBody() {
                     </h6>
                   </div>
                 ) : ( */}
-                  <button
-                    type='button'
-                    className='undp-button button-arrow button-primary'
-                  >
-                    Download PDF
-                  </button>
+                <button
+                  type='button'
+                  className='undp-button button-arrow button-primary'
+                >
+                  Download PDF
+                </button>
                 {/* )
               } */}
-            </PDFDownloadLink> }
+              </PDFDownloadLink>
+            }
           </>
         ) : (
           <div className='undp-loader-container'>
