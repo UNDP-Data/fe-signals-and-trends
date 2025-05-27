@@ -11,10 +11,8 @@ export function ChatBubble() {
 
   const handleClick = () => {
     setIsClicked(true);
-    // Add a small delay for the animation before opening the window
     setTimeout(() => {
-      window.open("https://future-signals-concierge.vercel.app/", '_blank');
-      // Reset the animation state after opening
+      window.open("https://ftss-chatbot.vercel.app/", '_blank');
       setTimeout(() => setIsClicked(false), 300);
     }, 150);
   };
