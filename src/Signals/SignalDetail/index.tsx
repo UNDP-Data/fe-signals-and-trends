@@ -68,10 +68,6 @@ export function SignalDetail() {
   );
 
   useEffect(() => {
-    console.log('User Name : ', userName);
-    console.log('Name : ', name);
-    console.log('User ID : ', userID);
-    console.log('Signal ID : ', id);
     readSignal(Number(id)).then(response => {
       setData(response);
       if (response?.connected_trends?.length) {

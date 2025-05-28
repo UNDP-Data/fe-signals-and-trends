@@ -72,7 +72,6 @@ export const CollaboratorsContainer: React.FC<CollaboratorsContainerProps> = ({
   onToggle,
   onAdd
 }) => {
-  console.log('users', {users});
   return (
     <CollaboratorsContainerStyled>
       {!loading && (

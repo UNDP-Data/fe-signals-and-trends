@@ -496,7 +496,6 @@ export function SignalEntryFormEl(props: Props) {
 
   // Signal Auto Complete
   const handleSuggestionSelect = (suggestion: SignalSuggestion) => {
-    // console.log('Selected Suggestion:', suggestion);
 
     updateSignalData({
       ...signalData,

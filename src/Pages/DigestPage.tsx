@@ -61,7 +61,6 @@ export default function DigestPage() {
       
       setResult(JSON.stringify(res, null, 2));
       message.success('Test digest email sent successfully!');
-      console.log('Digest result:', res);
     } catch (err: any) {
       setError(err?.message || 'Unknown error');
       message.error('Failed to send digest email');

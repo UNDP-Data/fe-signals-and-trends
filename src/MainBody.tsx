@@ -236,16 +236,16 @@ function MainBody() {
                     path={navLinks.addNewSprint}
                     element={<AddNewSprintEl />}
                   />
-                  <Route path='/admin-panel' element={<AdminPanel />} />
-                  <Route path='/my-drafts' element={<MyDrafts />} />
-                  <Route path='/all-sprints' element={<AllSprints />} />
-                  <Route path='/my-sprints' element={<MySprints />} />
-                  <Route path='/sprint/:id' element={<SprintPage />} />
-                  <Route path='/sprint/:id/edit' element={<MySprints />} />
-                  <Route path='/my-favorites' element={<MyFavorites />} />
-                  <Route path='/my-projects' element={<MyProjects />} />
-                  <Route path='/digest' element={<DigestPage />} />
-                  <Route path='/signal-analytics' element={<SignalAnalyticsPage />} />
+                  <Route path={navLinks.signalAnalytics} element={<SignalAnalyticsPage />} />
+                  <Route path={navLinks.adminPanel} element={<AdminPanel />} />
+                  <Route path={navLinks.myDrafts} element={<MyDrafts />} />
+                  <Route path={navLinks.allSprints} element={<AllSprints />} />
+                  <Route path={navLinks.mySprints} element={<MySprints />} />
+                  <Route path={navLinks.sprint} element={<SprintPage />} />
+                  <Route path={navLinks.sprintEdit} element={<MySprints />} />
+                  <Route path={navLinks.myFavorites} element={<MyFavorites />} />
+                  <Route path={navLinks.myProjects} element={<MyProjects />} />
+                  <Route path={navLinks.digest} element={<DigestPage />} />
                 </Route>
               </Routes>
             </div>

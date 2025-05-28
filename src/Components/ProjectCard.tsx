@@ -113,16 +113,13 @@ export function ProjectsCard(props: Props) {
   //   Need to remove this?
   const myFavBtnClick = () => {
     const signals = getfavoriteSignals();
-    console.log(signals);
     setIsFilled(!isFilled);
-    console.log(data);
   };
   //   const [users, setUsers] = useState<UserSearchResponseDataType[]>([]);
   //   const [loading, setLoading] = useState(false);
   //   const [error, setError] = useState<string | null>(null);
   const fetchUsers = async () => {
     const userData = await searchUsers();
-    console.log(userData);
     // setLoading(true);
     // setError(null);
     // try {
