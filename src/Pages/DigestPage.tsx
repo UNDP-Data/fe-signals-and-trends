@@ -235,8 +235,8 @@ export default function DigestPage() {
             style={{ width: 200 }}
             suffixIcon={<SortAscendingOutlined />}
           >
-            {Object.entries(SIGNAL_ORDER_BY_OPTIONS).map(([value, label]) => (
-              <Option key={value} value={value}>{label}</Option>
+            {SIGNAL_ORDER_BY_OPTIONS.map(option => (
+              <Option key={option.key} value={option.key}>{option.value}</Option>
             ))}
           </Select>
           

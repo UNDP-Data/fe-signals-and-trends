@@ -261,7 +261,7 @@ function MainBody() {
                   <Route path={navLinks.myFavorites} element={<MyFavorites />} />
                   <Route path={navLinks.myProjects} element={<MyProjects />} />
                   <Route 
-                    path={navLinks.digest} 
+                    path={navLinks.curatorDigest} 
                     element={
                       <AdminRoute>
                         <DigestPage />

@@ -341,7 +341,7 @@ export const navLinks = {
   addNewTrend: '/add-new-trend',
   addNewSprint: '/add-new-sprint',
   signalAnalytics: '/signal-analytics',
-  digest: '/digest',  
+  curatorDigest: '/curator-digest',  
   allSprints: '/all-sprints',
   sprint: '/sprint/:id',
   sprintEdit: '/sprint/:id/edit', 

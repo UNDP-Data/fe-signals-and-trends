@@ -3,9 +3,9 @@ import { Dropdown } from 'antd';
 import { useContext, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { navLinks } from '../../Constants';
+
 import Context from '../../Context/Context';
 import { SignOutButton } from '../SignOutButton';
-import { triggerDigestEmail } from '../../API/signalsCall';
 import { message } from 'antd';
 
 interface Props {
@@ -17,7 +17,6 @@ export function LoggedInHeader(props: Props) {
   const { role } = useContext(Context);
   const [showMenu, setShowMenu] = useState(false);
   const isAdmin = role === 'Admin' || role === 'Curator';
-  const [digestLoading, setDigestLoading] = useState(false);
 
   const items: MenuProps['items'] = [
     {
@@ -70,30 +69,6 @@ export function LoggedInHeader(props: Props) {
       ),
     }
   ];
-
-  const handleTriggerDigest = async () => {
-    setDigestLoading(true);
-    try {
-      await triggerDigestEmail({
-        recipients: ['your@email.com'], // TODO: Replace with real recipient(s) or make dynamic
-        test: true,
-      });
-      message.success('Digest email triggered!');
-    } catch (err: unknown) {
-      if (
-        err &&
-        typeof err === 'object' &&
-        'message' in err &&
-        typeof (err as { message: string }).message === 'string'
-      ) {
-        message.error((err as { message: string }).message);
-      } else {
-        message.error('Failed to trigger digest');
-      }
-    } finally {
-      setDigestLoading(false);
-    }
-  };
 
   return (
     <header className='undp-country-header'>
