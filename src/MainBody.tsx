@@ -12,6 +12,7 @@ import { AdminPanel } from './AdminPanel';
 import { AllSprints } from './AllSprints';
 import { searchSignals, searchTrends } from './API';
 import { Header } from './Components/HeaderEl';
+import { AdminRoute } from './Components/AdminRoute';
 import Context from './Context/Context';
 import { HomePage } from './HomePage';
 import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
@@ -236,8 +237,22 @@ function MainBody() {
                     path={navLinks.addNewSprint}
                     element={<AddNewSprintEl />}
                   />
-                  <Route path={navLinks.signalAnalytics} element={<SignalAnalyticsPage />} />
-                  <Route path={navLinks.adminPanel} element={<AdminPanel />} />
+                  <Route 
+                    path={navLinks.signalAnalytics} 
+                    element={
+                      <AdminRoute>
+                        <SignalAnalyticsPage />
+                      </AdminRoute>
+                    } 
+                  />
+                  <Route 
+                    path={navLinks.adminPanel} 
+                    element={
+                      <AdminRoute>
+                        <AdminPanel />
+                      </AdminRoute>
+                    } 
+                  />
                   <Route path={navLinks.myDrafts} element={<MyDrafts />} />
                   <Route path={navLinks.allSprints} element={<AllSprints />} />
                   <Route path={navLinks.mySprints} element={<MySprints />} />
@@ -245,7 +260,14 @@ function MainBody() {
                   <Route path={navLinks.sprintEdit} element={<MySprints />} />
                   <Route path={navLinks.myFavorites} element={<MyFavorites />} />
                   <Route path={navLinks.myProjects} element={<MyProjects />} />
-                  <Route path={navLinks.digest} element={<DigestPage />} />
+                  <Route 
+                    path={navLinks.digest} 
+                    element={
+                      <AdminRoute>
+                        <DigestPage />
+                      </AdminRoute>
+                    } 
+                  />
                 </Route>
               </Routes>
             </div>
