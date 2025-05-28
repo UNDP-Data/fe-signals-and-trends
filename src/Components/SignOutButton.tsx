@@ -109,6 +109,22 @@ export function SignOutButton(props: Props) {
           },
         ]
       : []),
+      {
+        key: 'signal-analytics',
+        label: (
+          <NavLink
+            to={navLinks.signalAnalytics}
+            style={{
+              fontFamily: 'var(--fontFamily)',
+              fontSize: '1.25rem',
+              textTransform: 'none',
+              padding: '0.75rem',
+            }}
+          >
+            Signal Analytics
+          </NavLink>
+        ),
+      },
     {
       type: 'divider',
     },
