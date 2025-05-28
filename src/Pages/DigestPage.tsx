@@ -202,7 +202,7 @@ export default function DigestPage() {
   return (
     <div className="undp-container" style={{ padding: '2rem' }}>
       <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography.Title level={2}>Signals Needing Review</Typography.Title>
+        <Typography.Title level={2}>Curator Digest</Typography.Title>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <Typography.Text type="secondary">
             {totalCount} draft signals pending curator review

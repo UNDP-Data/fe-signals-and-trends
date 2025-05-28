@@ -1,18 +1,20 @@
 import {
   AuthenticatedTemplate,
-  UnauthenticatedTemplate,
-  useIsAuthenticated,
+  UnauthenticatedTemplate
 } from '@azure/msal-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { Modal, notification } from 'antd';
+import { RaggleProvider } from 'raggle-js';
 import { useContext, useEffect, useState } from 'react';
 import { Outlet, Route, Routes } from 'react-router-dom';
-import { AddNewSignalEl, AddNewTrendEl, AddNewSprintEl } from './AddNew';
+import { AddNewSignalEl, AddNewSprintEl, AddNewTrendEl } from './AddNew';
 import { AdminPanel } from './AdminPanel';
 import { AllSprints } from './AllSprints';
 import { searchSignals, searchTrends } from './API';
-import { Header } from './Components/HeaderEl';
 import { AdminRoute } from './Components/AdminRoute';
+import { ChatIcon } from './Components/ChatIcon';
+import { Header } from './Components/HeaderEl';
+import { navLinks } from './Constants';
 import Context from './Context/Context';
 import { HomePage } from './HomePage';
 import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
@@ -20,19 +22,18 @@ import { MyDrafts } from './MyDrafts';
 import { MyFavorites } from './MyFavorites';
 import { MyProjects } from './MyProjects';
 import { MySprints } from './MySprints';
-import { SprintPage } from './SprintPage';
+import DigestPage from './Pages/DigestPage';
+import SignalAnalyticsPage from './Pages/SignalAnalyticsPage';
 import { PDFDocument } from './PDFGenerator';
 import { ArchivedSignalsListing, SignalsListing } from './Signals';
 import { EditSignal } from './Signals/EditSignal';
 import { SignalDetail } from './Signals/SignalDetail';
+import { SprintPage } from './SprintPage';
 import { ArchivedTrendsListing, TrendsListing } from './Trends';
 import { EditTrend } from './Trends/EditTrend';
 import { TrendDetail } from './Trends/TrendDetail';
 import { SignalDataType, TrendDataType } from './Types';
 import { signOutClickHandler } from './Utils/AuthStatusHandler';
-import { navLinks } from './Constants';
-import DigestPage from './Pages/DigestPage';
-import SignalAnalyticsPage from './Pages/SignalAnalyticsPage';
 
 function MainBody() {
   const {
@@ -188,6 +189,21 @@ function MainBody() {
   return (
     <>
       <AuthenticatedTemplate>
+        <RaggleProvider chatBubbleContent={() =>  <button
+        type="button"
+        className="chat-bubble"
+        style={{
+          backgroundColor: 'var(--blue-600)',
+          width: '100%',
+          height: '100%',
+          cursor: 'pointer',
+          transition: 'all 0.3s ease',
+        }}
+        aria-label="Chat with Echo, AI assistant"
+      >
+        <ChatIcon />
+      </button>}
+        >
         {name && choices ? (
           <>
             <Header signOutClickHandler={signOutClickHandler} />
@@ -277,6 +293,7 @@ function MainBody() {
             <div className='undp-loader' />
           </div>
         )}
+        </RaggleProvider>
       </AuthenticatedTemplate>
       <UnauthenticatedTemplate>
         <>

@@ -2,7 +2,6 @@ import { AuthenticationResult } from '@azure/msal-browser';
 import { useIsAuthenticated, useMsal } from '@azure/msal-react';
 import { Modal, Select, Switch } from 'antd';
 import { useEffect, useMemo, useReducer, useState } from 'react';
-import { ChatBubble } from './Components/ChatBubble';
 import { Footer } from './Components/FooterEl';
 import { SignUpButton } from './Components/SignUpButton';
 import { CHOICES, CLIENT_ID } from './Constants';
@@ -426,7 +425,6 @@ function App() {
         >
           <MainBody />
           <Footer />
-          {isAuthenticated && <ChatBubble />}
         </div>
       ) : (
         <div
