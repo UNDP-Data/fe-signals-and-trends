@@ -1,6 +1,6 @@
 import {
   AuthenticatedTemplate,
-  UnauthenticatedTemplate
+  UnauthenticatedTemplate,
 } from '@azure/msal-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { Modal, notification } from 'antd';
@@ -189,110 +189,123 @@ function MainBody() {
   return (
     <>
       <AuthenticatedTemplate>
-        <RaggleProvider chatBubbleContent={() =>  <button
-        type="button"
-        className="chat-bubble"
-        style={{
-          backgroundColor: 'var(--blue-600)',
-          width: '100%',
-          height: '100%',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease',
-        }}
-        aria-label="Chat with Echo, AI assistant"
-      >
-        <ChatIcon />
-      </button>}
+        <RaggleProvider
+          chatEmbedUrl='https://ftss-chatbot.vercel.app'
+          chatBubbleContent={() => (
+            <button
+              type='button'
+              className='chat-bubble'
+              style={{
+                backgroundColor: 'var(--blue-600)',
+                width: '100%',
+                height: '100%',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+              }}
+              aria-label='Chat with Echo, AI assistant'
+            >
+              <ChatIcon />
+            </button>
+          )}
         >
-        {name && choices ? (
-          <>
-            <Header signOutClickHandler={signOutClickHandler} />
-            <div className='main-content-container'>
-              <Routes>
-                <Route path='/' element={<HomePage />} />
-                <Route path='/signals' element={<SignalsListing />} />
-                <Route path='/signals/:id' element={<SignalDetail />} />
-                <Route path='/signals/:id/edit' element={<EditSignal />} />
-                <Route
-                  path='/archived-signals'
-                  element={<ArchivedSignalsListing />}
-                />
-                <Route
-                  path='/archived-signals/:id'
-                  element={<SignalDetail />}
-                />
-                <Route
-                  path='/archived-signals/:id/edit'
-                  element={<EditSignal />}
-                />
-                <Route path='/trends' element={<TrendsListing />} />
-                <Route path='/trends/:id' element={<TrendDetail />} />
-                <Route path='/trends/:id/edit' element={<EditTrend />} />
-                <Route
-                  path='/archived-trends'
-                  element={<ArchivedTrendsListing />}
-                />
-                <Route element={<MainWrapper />}>
+          {name && choices ? (
+            <>
+              <Header signOutClickHandler={signOutClickHandler} />
+              <div className='main-content-container'>
+                <Routes>
+                  <Route path='/' element={<HomePage />} />
+                  <Route path='/signals' element={<SignalsListing />} />
+                  <Route path='/signals/:id' element={<SignalDetail />} />
+                  <Route path='/signals/:id/edit' element={<EditSignal />} />
                   <Route
-                    path='/archived-trends/:id'
-                    element={<TrendDetail />}
+                    path='/archived-signals'
+                    element={<ArchivedSignalsListing />}
                   />
                   <Route
-                    path='/archived-trends/:id/edit'
-                    element={<EditTrend />}
+                    path='/archived-signals/:id'
+                    element={<SignalDetail />}
                   />
                   <Route
-                    path={navLinks.addNewSignal}
-                    element={<AddNewSignalEl />}
+                    path='/archived-signals/:id/edit'
+                    element={<EditSignal />}
                   />
+                  <Route path='/trends' element={<TrendsListing />} />
+                  <Route path='/trends/:id' element={<TrendDetail />} />
+                  <Route path='/trends/:id/edit' element={<EditTrend />} />
                   <Route
-                    path={navLinks.addNewTrend}
-                    element={<AddNewTrendEl />}
+                    path='/archived-trends'
+                    element={<ArchivedTrendsListing />}
                   />
-                  <Route
-                    path={navLinks.addNewSprint}
-                    element={<AddNewSprintEl />}
-                  />
-                  <Route 
-                    path={navLinks.signalAnalytics} 
-                    element={
-                      <AdminRoute>
-                        <SignalAnalyticsPage />
-                      </AdminRoute>
-                    } 
-                  />
-                  <Route 
-                    path={navLinks.adminPanel} 
-                    element={
-                      <AdminRoute>
-                        <AdminPanel />
-                      </AdminRoute>
-                    } 
-                  />
-                  <Route path={navLinks.myDrafts} element={<MyDrafts />} />
-                  <Route path={navLinks.allSprints} element={<AllSprints />} />
-                  <Route path={navLinks.mySprints} element={<MySprints />} />
-                  <Route path={navLinks.sprint} element={<SprintPage />} />
-                  <Route path={navLinks.sprintEdit} element={<MySprints />} />
-                  <Route path={navLinks.myFavorites} element={<MyFavorites />} />
-                  <Route path={navLinks.myProjects} element={<MyProjects />} />
-                  <Route 
-                    path={navLinks.curatorDigest} 
-                    element={
-                      <AdminRoute>
-                        <DigestPage />
-                      </AdminRoute>
-                    } 
-                  />
-                </Route>
-              </Routes>
+                  <Route element={<MainWrapper />}>
+                    <Route
+                      path='/archived-trends/:id'
+                      element={<TrendDetail />}
+                    />
+                    <Route
+                      path='/archived-trends/:id/edit'
+                      element={<EditTrend />}
+                    />
+                    <Route
+                      path={navLinks.addNewSignal}
+                      element={<AddNewSignalEl />}
+                    />
+                    <Route
+                      path={navLinks.addNewTrend}
+                      element={<AddNewTrendEl />}
+                    />
+                    <Route
+                      path={navLinks.addNewSprint}
+                      element={<AddNewSprintEl />}
+                    />
+                    <Route
+                      path={navLinks.signalAnalytics}
+                      element={
+                        <AdminRoute>
+                          <SignalAnalyticsPage />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path={navLinks.adminPanel}
+                      element={
+                        <AdminRoute>
+                          <AdminPanel />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route path={navLinks.myDrafts} element={<MyDrafts />} />
+                    <Route
+                      path={navLinks.allSprints}
+                      element={<AllSprints />}
+                    />
+                    <Route path={navLinks.mySprints} element={<MySprints />} />
+                    <Route path={navLinks.sprint} element={<SprintPage />} />
+                    <Route path={navLinks.sprintEdit} element={<MySprints />} />
+                    <Route
+                      path={navLinks.myFavorites}
+                      element={<MyFavorites />}
+                    />
+                    <Route
+                      path={navLinks.myProjects}
+                      element={<MyProjects />}
+                    />
+                    <Route
+                      path={navLinks.curatorDigest}
+                      element={
+                        <AdminRoute>
+                          <DigestPage />
+                        </AdminRoute>
+                      }
+                    />
+                  </Route>
+                </Routes>
+              </div>
+            </>
+          ) : (
+            <div className='undp-loader-container'>
+              <div className='undp-loader' />
             </div>
-          </>
-        ) : (
-          <div className='undp-loader-container'>
-            <div className='undp-loader' />
-          </div>
-        )}
+          )}
         </RaggleProvider>
       </AuthenticatedTemplate>
       <UnauthenticatedTemplate>
