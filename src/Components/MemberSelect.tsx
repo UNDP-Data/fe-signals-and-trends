@@ -1,0 +1,145 @@
+import { useState, useEffect, useContext } from 'react';
+import { Form, Input, Select, message } from 'antd';
+import PropTypes from 'prop-types';
+import { searchUsers } from '../API/userCalls';
+import './MemberSelect.css';
+import { logger } from '../logger';
+import Context from '../Context/Context';
+
+interface User {
+  id: number;
+  created_at: string;
+  email: string;
+  role: string;
+  name: string;
+  unit: string | null;
+  acclab: boolean | null;
+}
+
+interface MemberSelectProps {
+  value?: string[] | User[];
+  onChange?: (value: string[]) => void;
+  placeholder?: string;
+  isAdminSelect?: boolean;
+  label?: string;
+}
+
+const MemberSelect: React.FC<MemberSelectProps> = ({
+  value = [],
+  onChange,
+  placeholder = "Type a name or UNDP email to search and select users",
+  isAdminSelect = false,
+  label
+}) => {
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [userOptions, setUserOptions] = useState<{ label: string; value: string }[]>([]);
+  const [searchValue, setSearchValue] = useState('');
+  const { userName, userID, isAdmin } = useContext(Context);
+  
+  // Format value to ensure it's always a string[] for the Select component
+  const formattedValue = Array.isArray(value)
+    ? value.map(item => typeof item === 'string' ? item : item.email)
+    : [];
+
+  // Load initial users
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  // Function to fetch users based on search query
+  const fetchUsers = async (query?: string) => {
+    setSearchLoading(true);
+    try {
+      const response = await searchUsers({
+        per_page: 100,
+        query: query || undefined
+      });
+
+      const options = response.data.map(user => ({
+        label: `${user.name} (${user.email})`,
+        value: user.email,
+      })).filter(user => user.value !== userName);
+
+      setUserOptions(options);
+    } catch (error) {
+      logger.error('Failed to fetch users:', error);
+      message.error('Failed to fetch users. Please try again.');
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  // Debounced search function
+  const handleSearch = async (value: string) => {
+    setSearchValue(value);
+    if (value.trim().length > 1) {
+      await fetchUsers(value.trim());
+    } else if (value.trim() === '') {
+      await fetchUsers();
+    }
+  };
+
+  const handleChange = (newValue: string[]) => {
+    if (onChange) {
+      onChange(newValue);
+    }
+  };
+
+  return (
+    <div className={`member-select-container ${isAdminSelect ? 'admin-select' : ''}`}>
+      {label && (
+        <div className="member-select-label">
+          {label}
+          {isAdminSelect && <span className="admin-indicator"> (Admin)</span>}
+        </div>
+      )}
+      <Form.Item
+        className={`member-select-form-item ${isAdminSelect ? 'admin-select-form-item' : ''}`}
+      >
+        <Select
+          className={`member-select ${isAdminSelect ? 'admin-select-input' : ''}`}
+          mode="multiple"
+          placeholder={placeholder}
+          options={userOptions}
+          optionFilterProp="label"
+          showSearch
+          loading={searchLoading}
+          filterOption={false}
+          onSearch={handleSearch}
+          notFoundContent={searchLoading ? "Searching..." : "No users found"}
+          listHeight={280}
+          value={formattedValue}
+          onChange={handleChange}
+          maxTagCount={isAdminSelect ? 1 : undefined}
+        />
+      </Form.Item>
+    </div>
+  );
+};
+
+export default MemberSelect;
+
+// Moved PropTypes definition after component definition
+// Commenting out PropTypes for now to address complex type issue later
+/*
+MemberSelect.propTypes = {
+  value: PropTypes.oneOfType([
+    PropTypes.arrayOf(PropTypes.string),
+    PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        created_at: PropTypes.string.isRequired,
+        email: PropTypes.string.isRequired,
+        role: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
+        unit: PropTypes.string,
+        acclab: PropTypes.bool,
+      })
+    ),
+  ]),
+  onChange: PropTypes.func,
+  placeholder: PropTypes.string,
+  isAdminSelect: PropTypes.bool,
+  label: PropTypes.string,
+};
+*/

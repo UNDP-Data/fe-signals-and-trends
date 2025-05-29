@@ -31,6 +31,7 @@ export interface SignalDataType {
   connected_trends: number[];
   created_for?: string;
   favorite?: boolean;
+  user_group_ids?: number[];
 }
 
 export interface NewSignalDataType {
@@ -57,6 +58,7 @@ export interface NewSignalDataType {
   score?: string;
   connected_trends?: number[];
   created_for?: string;
+  user_group_ids?: number[];
 }
 
 export interface TrendDataType {
@@ -119,6 +121,29 @@ export interface UserDataType {
   id: number;
 }
 
+export interface UserGroupDataType {
+  id: number;
+  name: string;
+  created_at?: string;
+  created_by?: string;
+  modified_at?: string;
+  modified_by?: string;
+  status?: string;
+  headline?: string;
+  description?: string;
+  attachment?: string;
+  steep_primary?: string;
+  steep_secondary?: string[];
+  signature_primary?: string;
+  signature_secondary?: string[];
+  sdgs?: string[];
+  user_ids?: number[];
+  users?: UserDataType[];
+  signal_ids?: number[];
+  collaborator_map?: Record<string, number[]>;
+  signals?: SignalDataType[];
+}
+
 export interface SignalFiltersDataType {
   horizon?: string;
   impact?: string;
@@ -176,11 +201,13 @@ export interface CtxDataType {
   name?: string;
   unit?: string;
   role?: 'Admin' | 'Curator' | 'User';
+  isAdmin?: boolean;
   isAcceleratorLab?: boolean;
   userID?: number;
   notificationText?: string;
   choices?: ChoicesDataType;
   cardsToPrint: CardsToPrintDataType[];
+  userGroups?: UserGroupDataType[];
   trendFilters: TrendFiltersDataType;
   noOfTrendsFiltersActive: number;
   signalFilters: SignalFiltersDataType;
@@ -194,6 +221,7 @@ export interface CtxDataType {
   updateUnit: (_d?: string) => void;
   updateUserID: (_d?: number) => void;
   updateIsAcceleratorLab: (_d?: boolean) => void;
+  updateIsAdmin: (_d: boolean) => void;
   updateRole: (_d?: 'Admin' | 'Curator' | 'User') => void;
   updateNotificationText: (_d?: string) => void;
   updateChoices: (_d?: ChoicesDataType) => void;
@@ -206,6 +234,7 @@ export interface CtxDataType {
   updateTrendsSortBy: (_d: string) => void;
   updateTrendList: (_d?: TrendDataType[]) => void;
   updateSignalList: (_d?: SignalDataType[]) => void;
+  updateUserGroups: (_d?: UserGroupDataType[]) => void;
 }
 
 export interface ObjForPrintingDataType {

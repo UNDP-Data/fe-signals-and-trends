@@ -1,10 +1,11 @@
 import { useContext, useEffect, useState } from 'react';
-import { Modal, Pagination, PaginationProps } from 'antd';
+import { Pagination, PaginationProps } from 'antd';
 import sortBy from 'lodash.sortby';
 import { CardList } from './GridView';
 import { ListView } from './ListView';
 import Context from '../../Context/Context';
-import { exportSignals, searchSignals } from '../../API';
+import { searchSignals } from '../../API';
+import { DownloadButtons } from '../../Components/SignalViews/DownloadButtons';
 
 interface Props {
   view: 'cardView' | 'listView';
@@ -14,7 +15,6 @@ interface Props {
 export function AllSignals(props: Props) {
   const { view, isArchived } = props;
   const [paginationValue, setPaginationValue] = useState(1);
-  const [loading, setLoading] = useState(false);
   const [pageSize, setPageSize] = useState(20);
   const [totalCount, setTotalCount] = useState<number | undefined>(undefined);
   const {
@@ -23,8 +23,6 @@ export function AllSignals(props: Props) {
     signalsSortBy,
     signalList,
     updateSignalList,
-    cardsToPrint,
-    updateCardsToPrint,
   } = useContext(Context);
   const [error, setError] = useState<undefined | string>(undefined);
 
@@ -234,103 +232,12 @@ export function AllSignals(props: Props) {
     <div className='margin-bottom-09' style={{ padding: '0 1rem' }}>
       {signalList && totalCount !== undefined ? (
         <div>
-          <div
-            className='margin-bottom-05 flex-div'
-            style={{
-              padding: '1rem',
-              backgroundColor: 'var(--gray-200)',
-              justifyContent: 'center',
-              width: 'calc(100% - 2rem)',
-              alignItems: 'center',
-            }}
-          >
-            <div className='bold'>
-              {totalCount}{' '}
-              {totalCount > 1 ? 'signals available' : 'signal available'}
-            </div>
-            {role === 'Admin' || role === 'Curator' ? (
-              <button
-                type='button'
-                className='undp-button button-primary'
-                onClick={() => {
-                  setLoading(true);
-                  exportSignals(getQueryParamsToDownloadAll()).then(response => {
-                    const url = window.URL.createObjectURL(
-                      new Blob([response]),
-                    );
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.setAttribute(
-                      'download',
-                      `FTSS_signals_${new Date(Date.now()).getFullYear()}-${
-                        new Date(Date.now()).getMonth() + 1
-                      }-${new Date(Date.now()).getDate()}.xlsx`,
-                    );
-                    document.body.appendChild(link);
-                    link.click();
-                    setLoading(false);
-                  },
-                // console.log(exportSignals)
-                );
-                }}
-              >
-                Download Excel - All {totalCount} Signals 
-              </button>
-            ) : null}
-            {role === 'Admin' || role === 'Curator' ? (
-              <button
-                type='button'
-                className='undp-button button-primary'
-                onClick={() => {
-                  setLoading(true);
-                  exportSignals(getQueryParams()).then(response => {
-                    const url = window.URL.createObjectURL(
-                      new Blob([response]),
-                    );
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.setAttribute(
-                      'download',
-                      `FTSS_signals_${new Date(Date.now()).getFullYear()}-${
-                        new Date(Date.now()).getMonth() + 1
-                      }-${new Date(Date.now()).getDate()}.xlsx`,
-                    );
-                    document.body.appendChild(link);
-                    link.click();
-                    setLoading(false);
-                  });
-                }}
-              >
-                Download Excel
-              </button>
-            ) : null}
-            <button
-              type='button'
-              className='undp-button button-primary'
-              onClick={() => {
-                const cardToPrintTemp = [...cardsToPrint];
-                signalList.forEach(s => {
-                  if (
-                    cardsToPrint.findIndex(
-                      el =>
-                        el.id === `${s.id}` &&
-                        el.mode === 'card' &&
-                        el.type === 'signal',
-                    ) === -1
-                  ) {
-                    cardToPrintTemp.push({
-                      type: 'signal',
-                      mode: 'card',
-                      id: `${s.id}`,
-                    });
-                  }
-                });
-                updateCardsToPrint(cardToPrintTemp);
-              }}
-            >
-              Add signals on page to PDF
-            </button>
-          </div>
+          <DownloadButtons
+            totalCount={totalCount}
+            getQueryParams={getQueryParams}
+            getQueryParamsToDownloadAll={getQueryParamsToDownloadAll}
+            signalList={signalList}
+          />
           <div className='flex-div flex-wrap listing'>
             {signalList.length > 0 && signalList ? (
               view === 'cardView' ? (
@@ -382,11 +289,6 @@ export function AllSignals(props: Props) {
           <div className='undp-loader' />
         </div>
       )}
-      <Modal className='undp-modal undp-loading-modal' title='' open={loading}>
-        <div style={{ margin: 'auto' }}>
-          <div className='undp-loader' style={{ margin: 'auto' }} />
-        </div>
-      </Modal>
     </div>
   );
 }

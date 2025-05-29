@@ -1,0 +1,107 @@
+/* UserGroups.css */
+.user-group-card {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 1rem;
+}
+
+.user-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.user-group-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.user-group-actions {
+  display: flex;
+}
+
+.action-button {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+}
+
+.user-group-members {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.user-group-content {
+  margin-top: 0.75rem;
+}
+
+.section-header {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.user-group-signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.signal-item {
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+}
+
+.collaborator-badge {
+  background-color: #f3f4f6;
+  color: #1f2937;
+  border-radius: 9999px;
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+  margin-right: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.create-button {
+  background-color: #006EB5;
+  color: white;
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.create-button:hover {
+  background-color: #005A8F;
+}
+
+.create-group-btn {
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  color: #6b7280;
+} 

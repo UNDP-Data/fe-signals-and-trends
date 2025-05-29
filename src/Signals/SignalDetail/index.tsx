@@ -68,10 +68,6 @@ export function SignalDetail() {
   );
 
   useEffect(() => {
-    console.log('User Name : ', userName);
-    console.log('Name : ', name);
-    console.log('User ID : ', userID);
-    console.log('Signal ID : ', id);
     readSignal(Number(id)).then(response => {
       setData(response);
       if (response?.connected_trends?.length) {
@@ -289,14 +285,14 @@ export function SignalDetail() {
                 <h6 className='undp-typography margin-top-00 margin-bottom-03'>
                   Created for
                 </h6>
-                <div className='small-font'>{data.created_for || 'NA'}</div>
+                <div className='undp-typography'>{data.created_for || 'NA'}</div>
               </div>
               {role === 'Admin' || role === 'Curator' ? (
                 <div className='margin-top-07'>
                   <h6 className='undp-typography margin-top-00 margin-bottom-03'>
                     Score
                   </h6>
-                  <div className='small-font'>{data.score || 'NA'}</div>
+                  <div className='undp-typography'>{data.score || 'NA'}</div>
                 </div>
               ) : null}
               <AuthenticatedTemplate>
@@ -305,7 +301,7 @@ export function SignalDetail() {
                     <h6 className='undp-typography margin-top-00 margin-bottom-03'>
                       Created by
                     </h6>
-                    <p className='undp-typography small-font'>
+                    <p className='undp-typography'>
                       {`${data.created_by} on ${new Date(
                         data.created_at,
                       ).getDate()}-${
@@ -320,7 +316,7 @@ export function SignalDetail() {
                       <h6 className='undp-typography margin-top-00 margin-bottom-03'>
                         Unit
                       </h6>
-                      <p className='undp-typography small-font'>
+                      <p className='undp-typography'>
                         {data.created_unit}
                       </p>
                     </div>
@@ -532,9 +528,6 @@ export function SignalDetail() {
                 )}
               </div>
               <div className='margin-top-07'>
-                <h6 className='undp-typography margin-top-00 margin-bottom-03'>
-                  Save for Later
-                </h6>
                 <FavoriteButton
                   signalId={Number(id)}
                   initialFavoriteStatus={data?.favorite || false}

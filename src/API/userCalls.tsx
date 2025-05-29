@@ -5,7 +5,9 @@ import {
   AllowedRolesDataType,
   CurrentUserResponseDataType,
   UserDataType,
+  UserGroupDataType,
 } from '../Types';
+import logger from '../logger';
 
 interface UpdateUserResponseDataType {
   acclab: boolean;
@@ -54,11 +56,46 @@ export interface SearchUsersParamsDataType {
   query?: string;
 }
 
+export interface UserGroupResponseDataType {
+  id: number;
+  name: string;
+  users: string[];
+  signal_ids?: number[];
+  user_ids?: number[];
+  collaborator_map?: Record<string, number[]>;
+}
+
 export function readCurrentUser() {
+  const methodName = 'readCurrentUser';
+  const url = '/users/me';
+  const startTime = performance.now();
+
+  try {
+    // Only call logger if it's available
+    logger.logApiCall(methodName, url);
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
   return axiosInstance
-    .get<CurrentUserResponseDataType>('/users/me')
-    .then(response => response.data)
+    .get<CurrentUserResponseDataType>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to retrieve current user information at the moment, try again later. ${
@@ -91,10 +128,35 @@ export function searchUsers(params: SearchUsersParamsDataType = {}) {
 
   if (query) queryParams.query = query;
 
+  const methodName = 'searchUsers';
+  const url = '/users/search';
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url, queryParams);
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
   return axiosInstance
-    .get<UserSearchResponseDataType>('/users/search', { params: queryParams })
-    .then(response => response.data)
+    .get<UserSearchResponseDataType>(url, { params: queryParams })
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to search users at the moment, try again later. ${
@@ -110,10 +172,35 @@ export function searchUsers(params: SearchUsersParamsDataType = {}) {
 export function readUser(params: ReadUserParamsDataType) {
   const { uid } = params;
 
+  const methodName = 'readUser';
+  const url = `/users/${uid}`;
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url, { uid });
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
   return axiosInstance
-    .get<UserDataTypeResponseDataType>(`/users/${uid}`)
-    .then(response => response.data)
+    .get<UserDataTypeResponseDataType>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to retrieve the user at the moment, try again later. ${
@@ -127,10 +214,35 @@ export function readUser(params: ReadUserParamsDataType) {
 }
 
 export function updateUser(uid: number, params: UpdateUserParamsDataType) {
+  const methodName = 'updateUser';
+  const url = `/users/${uid}`;
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url, params);
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
   return axiosInstance
-    .put<UpdateUserResponseDataType>(`/users/${uid}`, params)
-    .then(response => response.data)
+    .put<UpdateUserResponseDataType>(url, params)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
     .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
       if (isAxiosError(error)) {
         throw new Error(
           `Unable to update user at the moment, try again later. ${
@@ -140,5 +252,638 @@ export function updateUser(uid: number, params: UpdateUserParamsDataType) {
       } else {
         throw new Error(`An unknown error occurred. ${error.message}`);
       }
+    });
+}
+
+export function listUserGroups() {
+  const methodName = 'listUserGroups';
+  const url = '/user-groups/me';
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url);
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
+  return axiosInstance
+    .get<UserGroupResponseDataType[]>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
+    .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to retrieve user groups at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function getUserGroupsWithSignals() {
+  const methodName = 'getUserGroupsWithSignals';
+  const url = '/user-groups/me/with-signals';
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url);
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
+  return axiosInstance
+    .get<UserGroupResponseDataType[]>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
+    .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to retrieve user groups with signals at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function createUserGroup(group: { name: string; users?: string[]; admins?: string[] }) {
+  const methodName = 'createUserGroup';
+  const url = '/user-groups';
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url, group);
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
+  // Create a payload that includes admin information
+  const payload = {
+    name: group.name,
+    users: group.users || [],
+    admin_emails: group.admins || []
+  };
+
+  return axiosInstance
+    .post<UserGroupResponseDataType>(url, payload)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
+    .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to create user group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function getUserGroup(groupId: number) {
+  const methodName = 'getUserGroup';
+  const url = `/user-groups/${groupId}`;
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url, { groupId });
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
+  return axiosInstance
+    .get<UserGroupDataType>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
+    .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to retrieve user group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function updateUserGroup(groupId: number, group: UserGroupResponseDataType & { admins?: string[] }) {
+  const methodName = 'updateUserGroup';
+  const url = `/user-groups/${groupId}`;
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url, { groupId, group });
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
+  // Create a payload that includes admin information if provided
+  const payload = {
+    ...group,
+    admin_emails: group.admins || []
+  };
+
+  // Remove the admins field as it's not expected by the API
+  if ('admins' in payload) {
+    delete payload.admins;
+  }
+
+  return axiosInstance
+    .put<UserGroupResponseDataType>(url, payload)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
+    .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to update user group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function deleteUserGroup(groupId: number) {
+  const methodName = 'deleteUserGroup';
+  const url = `/user-groups/${groupId}`;
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url, { groupId });
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
+  return axiosInstance
+    .delete<boolean>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
+    .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to delete user group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function addUserToGroup(groupId: number, userIdOrEmail: string) {
+  const methodName = 'addUserToGroup';
+  const url = `/user-groups/${groupId}/users/${userIdOrEmail}`;
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url, { groupId, userIdOrEmail });
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
+  return axiosInstance
+    .post<boolean>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
+    .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to add user to group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function addUserToGroupByEmail(groupId: number, email: string) {
+  const methodName = 'addUserToGroupByEmail';
+  const url = `/user-groups/${groupId}/users`;
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url, { groupId, email });
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
+  return axiosInstance
+    .post<boolean>(url, { email })
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
+    .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to add user to group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function removeUserFromGroup(groupId: number, userIdOrEmail: string) {
+  const methodName = 'removeUserFromGroup';
+  const url = `/user-groups/${groupId}/users/${userIdOrEmail}`;
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url, { groupId, userIdOrEmail });
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
+  return axiosInstance
+    .delete<boolean>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
+    .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to remove user from group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function addSignalToUserGroup(signalId: number, groupId: number) {
+  const methodName = 'addSignalToUserGroup';
+  const url = `/user-groups/${groupId}/signals/${signalId}`;
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url, { signalId, groupId });
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
+  return axiosInstance
+    .post<boolean>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
+    .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to add signal to user group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function removeSignalFromUserGroup(signalId: number, groupId: number) {
+  const methodName = 'removeSignalFromUserGroup';
+  const url = `/user-groups/${groupId}/signals/${signalId}`;
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url, { signalId, groupId });
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
+  return axiosInstance
+    .delete<boolean>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
+    .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to remove signal from user group at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function addCollaboratorToSignalInGroup(groupId: number, signalId: number, userIdOrEmail: string) {
+  const methodName = 'addCollaboratorToSignalInGroup';
+  const url = `/user-groups/${groupId}/signals/${signalId}/collaborators/${userIdOrEmail}`;
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url, { groupId, signalId, userIdOrEmail });
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
+  return axiosInstance
+    .post<boolean>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
+    .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to add collaborator to signal at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function addCollaboratorToSignalByEmail(groupId: number, signalId: number, email: string) {
+  const methodName = 'addCollaboratorToSignalByEmail';
+  const url = `/user-groups/${groupId}/${signalId}/collaborators`;
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url, { groupId, signalId, email });
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
+  return axiosInstance
+    .post<boolean>(url, { email })
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
+    .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to add collaborator to signal at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function removeCollaboratorFromSignalInGroup(groupId: number, signalId: number, userIdOrEmail: string) {
+  const methodName = 'removeCollaboratorFromSignalInGroup';
+  const url = `/user-groups/${groupId}/signals/${signalId}/collaborators/${userIdOrEmail}`;
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url, { groupId, signalId, userIdOrEmail });
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
+  return axiosInstance
+    .delete<boolean>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
+    .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to remove collaborator from signal at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    });
+}
+
+export function getAllUserGroups() {
+  const methodName = 'getAllUserGroups';
+  const url = '/user-groups';
+  const startTime = performance.now();
+
+  try {
+    logger.logApiCall(methodName, url);
+  } catch (e) {
+    console.warn('Logger error:', e);
+  }
+
+  return axiosInstance
+    .get<UserGroupResponseDataType[]>(url)
+    .then(response => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiResponse(methodName, url, response.data, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+      return response.data;
+    })
+    .catch(error => {
+      const timeMs = Math.round(performance.now() - startTime);
+      try {
+        logger.logApiError(methodName, url, error, timeMs);
+      } catch (e) {
+        console.warn('Logger error:', e);
+      }
+
+      if (isAxiosError(error)) {
+        throw new Error(
+          `Unable to retrieve all user groups at the moment, try again later. ${
+            error.response?.data?.message || error.message
+          } `,
+        );
+      }
+      throw new Error(`An unknown error occurred. ${error.message}`);
     });
 }

@@ -6,6 +6,7 @@ import {
   StatusDataType,
 } from '../Types';
 import { axiosInstance } from './apiConfig';
+import logger from '../logger';
 
 
 interface BaseSignalsParamsDataType {
@@ -60,6 +61,8 @@ export interface CreateSignalParamsDataType {
   created_for?: string | null;
   status: string | null;
   connected_trends: number[] | null;
+  user_group_ids?: number[] | null;
+  private?: boolean;
 }
 
 interface UpdateSignalParamsDataType {
@@ -77,6 +80,7 @@ interface UpdateSignalParamsDataType {
   steep?: string | null;
   url?: string | null;
   connected_trends?: number[] | null;
+  user_group_ids?: number[] | null;
   status?: string | null;
   modified_by?: string | null;
   steep_primary: string | null;
@@ -86,6 +90,7 @@ interface UpdateSignalParamsDataType {
   created_by: string | null;
   created_unit?: string | null;
   score?: string | null;
+  private?: boolean;
 }
 
 interface makeSignalFavoriteDataType {
@@ -95,6 +100,14 @@ interface makeSignalFavoriteDataType {
 export interface GetFavoriteSignalsParamsDataType {
   page?: number;
   per_page?: number;
+}
+
+export interface DigestRequestParams {
+  recipients: string[];
+  days?: number;
+  status?: string[];
+  limit?: number;
+  test?: boolean;
 }
 
 export function searchSignals(params: BaseSignalsParamsDataType = {}) {
@@ -147,13 +160,13 @@ export function searchSignals(params: BaseSignalsParamsDataType = {}) {
       params: queryParams,
     })
     .then(response => {
-      console.log(
-        'API Call URL ',
+      logger.debug(
+        'API Call URL',
         axiosInstance.defaults.baseURL,
         '/signals/search',
         queryParams,
       );
-      console.log(response.data);
+      logger.debug('API Response Data', response.data);
       return response.data;
     })
     .catch(error => {
@@ -168,7 +181,7 @@ export function searchSignals(params: BaseSignalsParamsDataType = {}) {
     });
 }
 
-export function exportSignals(params: BaseSignalsParamsDataType = {}) {
+export function exportSignals(params: BaseSignalsParamsDataType = {}, format: 'excel' | 'csv' = 'excel') {
   const {
     page = 1,
     per_page = 10,
@@ -196,6 +209,7 @@ export function exportSignals(params: BaseSignalsParamsDataType = {}) {
     order_by,
     direction,
     statuses,
+    format, // Add format parameter for backend
   };
 
   if (ids) queryParams.ids = ids;
@@ -255,7 +269,7 @@ export function generateSignal(params: { url: string }) {
 
 export function readSignal(uid: number) {
   return axiosInstance
-    .get<SignalDataType>(`/signals/${uid}`)
+    .get<SignalDataType>(`/signals/${uid}/with-user-groups`)
     .then(response => response.data)
     .catch(error => {
       if (isAxiosError(error)) {
@@ -397,4 +411,24 @@ export function deleteSignal(uid: number) {
         throw new Error(`An unknown error occurred. ${error.message}`);
       }
     });
+}
+
+export async function triggerDigestEmail(params: DigestRequestParams) {
+  try {
+    const response = await axiosInstance.post<{ message: string }>(
+      '/email/digest',
+      params
+    );
+    return response.data;
+  } catch (error) {
+    if (isAxiosError(error)) {
+      throw new Error(
+        `Unable to trigger digest email. ${error.response?.data?.detail || error.message}`
+      );
+    } else if (error instanceof Error) {
+      throw new Error(`An unknown error occurred. ${error.message}`);
+    } else {
+      throw new Error('An unexpected error occurred while triggering digest');
+    }
+  }
 }

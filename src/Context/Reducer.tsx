@@ -9,6 +9,8 @@ export default (state: any, action: any) => {
       return { ...state, unit: action.payload };
     case 'UPDATE_ROLE':
       return { ...state, role: action.payload };
+    case 'UPDATE_IS_ADMIN':
+      return { ...state, isAdmin: action.payload };
     case 'UPDATE_USER_ID':
       return { ...state, userID: action.payload };
     case 'UPDATE_NOTIFICATION_TEXT':
@@ -35,6 +37,8 @@ export default (state: any, action: any) => {
       return { ...state, trendList: action.payload };
     case 'UPDATE_SIGNAL_LIST':
       return { ...state, signalList: action.payload };
+    case 'UPDATE_USER_GROUPS':
+      return { ...state, userGroups: action.payload };
     default:
       return { ...state };
   }

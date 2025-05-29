@@ -8,7 +8,7 @@ export function ProjectsCardList() {
     return (
       <>
         {signalList.map((d, i) => (
-          <ProjectsCard data={d} key={i} isDraft={d.status === 'Draft'} />
+          <ProjectsCard data={d} key={d.id} isDraft={d.status === 'Draft'} />
         ))}
       </>
     );

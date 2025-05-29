@@ -2,29 +2,38 @@ import {
   AuthenticatedTemplate,
   UnauthenticatedTemplate,
 } from '@azure/msal-react';
-import { useContext, useEffect, useState } from 'react';
-import { Route, Routes } from 'react-router-dom';
-import { Modal, notification } from 'antd';
 import { PDFDownloadLink } from '@react-pdf/renderer';
-import { AddNewSignalEl, AddNewTrendEl } from './AddNew';
+import { Modal, notification } from 'antd';
+import { RaggleProvider } from 'raggle-js';
+import { useContext, useEffect, useState } from 'react';
+import { Outlet, Route, Routes } from 'react-router-dom';
+import { AddNewSignalEl, AddNewSprintEl, AddNewTrendEl } from './AddNew';
 import { AdminPanel } from './AdminPanel';
-import Context from './Context/Context';
-import { EditSignal } from './Signals/EditSignal';
-import { EditTrend } from './Trends/EditTrend';
-import { HomePage } from './HomePage';
-import { SignalDetail } from './Signals/SignalDetail';
-import { ArchivedSignalsListing, SignalsListing } from './Signals';
-import { TrendDetail } from './Trends/TrendDetail';
-import { ArchivedTrendsListing, TrendsListing } from './Trends';
-import { MyDrafts } from './MyDrafts';
-import { SignalDataType, TrendDataType } from './Types';
-import { PDFDocument } from './PDFGenerator';
-import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
-import { signOutClickHandler } from './Utils/AuthStatusHandler';
-import { Header } from './Components/HeaderEl';
+import { AllSprints } from './AllSprints';
 import { searchSignals, searchTrends } from './API';
+import { AdminRoute } from './Components/AdminRoute';
+import { ChatIcon } from './Components/ChatIcon';
+import { Header } from './Components/HeaderEl';
+import { navLinks } from './Constants';
+import Context from './Context/Context';
+import { HomePage } from './HomePage';
+import { SignedOutHomePage } from './HomePage/SignedOutHomepage';
+import { MyDrafts } from './MyDrafts';
 import { MyFavorites } from './MyFavorites';
 import { MyProjects } from './MyProjects';
+import { MySprints } from './MySprints';
+import DigestPage from './Pages/DigestPage';
+import SignalAnalyticsPage from './Pages/SignalAnalyticsPage';
+import { PDFDocument } from './PDFGenerator';
+import { ArchivedSignalsListing, SignalsListing } from './Signals';
+import { EditSignal } from './Signals/EditSignal';
+import { SignalDetail } from './Signals/SignalDetail';
+import { SprintPage } from './SprintPage';
+import { ArchivedTrendsListing, TrendsListing } from './Trends';
+import { EditTrend } from './Trends/EditTrend';
+import { TrendDetail } from './Trends/TrendDetail';
+import { SignalDataType, TrendDataType } from './Types';
+import { signOutClickHandler } from './Utils/AuthStatusHandler';
 
 function MainBody() {
   const {
@@ -168,55 +177,146 @@ function MainBody() {
       setConnectedSignalsForTrendsForPrinting([]);
     }
   }, [openModal]);
+
+  function MainWrapper() {
+    return (
+      <div className='main-page-container'>
+        <Outlet />
+      </div>
+    );
+  }
+
   return (
     <>
       <AuthenticatedTemplate>
-        {name && choices ? (
-          <>
-            <Header signOutClickHandler={signOutClickHandler} />
-            <Routes>
-              <Route path='/' element={<HomePage />} />
-              <Route path='/signals' element={<SignalsListing />} />
-              <Route path='/signals/:id' element={<SignalDetail />} />
-              <Route path='/signals/:id/edit' element={<EditSignal />} />
-              <Route
-                path='/archived-signals'
-                element={<ArchivedSignalsListing />}
-              />
-              <Route path='/archived-signals/:id' element={<SignalDetail />} />
-              <Route
-                path='/archived-signals/:id/edit'
-                element={<EditSignal />}
-              />
-              <Route path='/trends' element={<TrendsListing />} />
-              <Route path='/trends/:id' element={<TrendDetail />} />
-              <Route path='/trends/:id/edit' element={<EditTrend />} />
-              <Route
-                path='/archived-trends'
-                element={<ArchivedTrendsListing />}
-              />
-              <Route path='/archived-trends/:id' element={<TrendDetail />} />
-              <Route path='/archived-trends/:id/edit' element={<EditTrend />} />
-              <Route path='/add-new-signal' element={<AddNewSignalEl />} />
-              <Route path='/add-new-trend' element={<AddNewTrendEl />} />
-              <Route path='/admin-panel' element={<AdminPanel />} />
-              <Route path='/my-drafts' element={<MyDrafts />} />
-              <Route path='/my-favorites' element={<MyFavorites />} />
-              <Route path='/my-projects' element={<MyProjects />} />
-            </Routes>
-          </>
-        ) : (
-          <div className='undp-loader-container'>
-            <div className='undp-loader' />
-          </div>
-        )}
+        <RaggleProvider
+          showChatBubble={false}
+          chatEmbedUrl='https://ftss-chatbot.vercel.app'
+          chatBubbleContent={() => (
+            <button
+              type='button'
+              className='chat-bubble'
+              style={{
+                backgroundColor: 'var(--blue-600)',
+                width: '100%',
+                height: '100%',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+              }}
+              aria-label='Chat with Echo, AI assistant'
+            >
+              <ChatIcon />
+            </button>
+          )}
+        >
+          {name && choices ? (
+            <>
+              <Header signOutClickHandler={signOutClickHandler} />
+              <div className='main-content-container'>
+                <Routes>
+                  <Route path='/' element={<HomePage />} />
+                  <Route path='/signals' element={<SignalsListing />} />
+                  <Route path='/signals/:id' element={<SignalDetail />} />
+                  <Route path='/signals/:id/edit' element={<EditSignal />} />
+                  <Route
+                    path='/archived-signals'
+                    element={<ArchivedSignalsListing />}
+                  />
+                  <Route
+                    path='/archived-signals/:id'
+                    element={<SignalDetail />}
+                  />
+                  <Route
+                    path='/archived-signals/:id/edit'
+                    element={<EditSignal />}
+                  />
+                  <Route path='/trends' element={<TrendsListing />} />
+                  <Route path='/trends/:id' element={<TrendDetail />} />
+                  <Route path='/trends/:id/edit' element={<EditTrend />} />
+                  <Route
+                    path='/archived-trends'
+                    element={<ArchivedTrendsListing />}
+                  />
+                  <Route element={<MainWrapper />}>
+                    <Route
+                      path='/archived-trends/:id'
+                      element={<TrendDetail />}
+                    />
+                    <Route
+                      path='/archived-trends/:id/edit'
+                      element={<EditTrend />}
+                    />
+                    <Route
+                      path={navLinks.addNewSignal}
+                      element={<AddNewSignalEl />}
+                    />
+                    <Route
+                      path={navLinks.addNewTrend}
+                      element={<AddNewTrendEl />}
+                    />
+                    <Route
+                      path={navLinks.addNewSprint}
+                      element={<AddNewSprintEl />}
+                    />
+                    <Route
+                      path={navLinks.signalAnalytics}
+                      element={
+                        <AdminRoute>
+                          <SignalAnalyticsPage />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route
+                      path={navLinks.adminPanel}
+                      element={
+                        <AdminRoute>
+                          <AdminPanel />
+                        </AdminRoute>
+                      }
+                    />
+                    <Route path={navLinks.myDrafts} element={<MyDrafts />} />
+                    <Route
+                      path={navLinks.allSprints}
+                      element={<AllSprints />}
+                    />
+                    <Route path={navLinks.mySprints} element={<MySprints />} />
+                    <Route path={navLinks.sprint} element={<SprintPage />} />
+                    <Route path={navLinks.sprintEdit} element={<MySprints />} />
+                    <Route
+                      path={navLinks.myFavorites}
+                      element={<MyFavorites />}
+                    />
+                    <Route
+                      path={navLinks.myProjects}
+                      element={<MyProjects />}
+                    />
+                    <Route
+                      path={navLinks.curatorDigest}
+                      element={
+                        <AdminRoute>
+                          <DigestPage />
+                        </AdminRoute>
+                      }
+                    />
+                  </Route>
+                </Routes>
+              </div>
+            </>
+          ) : (
+            <div className='undp-loader-container'>
+              <div className='undp-loader' />
+            </div>
+          )}
+        </RaggleProvider>
       </AuthenticatedTemplate>
       <UnauthenticatedTemplate>
         <>
           <Header signOutClickHandler={signOutClickHandler} />
-          <Routes>
-            <Route path='/*' element={<SignedOutHomePage />} />
-          </Routes>
+          <div className='main-content-container'>
+            <Routes>
+              <Route path='/*' element={<SignedOutHomePage />} />
+            </Routes>
+          </div>
         </>
       </UnauthenticatedTemplate>
       {cardsToPrint.length > 0 ? (
@@ -413,46 +513,47 @@ function MainBody() {
                 );
               })}
             </div>
-            { <PDFDownloadLink
-              document={
-                <PDFDocument
-                  pages={cardsToPrint.map(d =>
-                    d.type === 'signal'
-                      ? {
-                          type: 'signal',
-                          mode: d.mode,
-                          data: signalsForPrinting[
-                            signalsForPrinting.findIndex(
-                              el => `${el.id}` === d.id,
-                            )
-                          ],
-                        }
-                      : {
-                          type: 'trend',
-                          mode: d.mode,
-                          data: trendsForPrinting[
-                            trendsForPrinting.findIndex(
-                              el => `${el.id}` === d.id,
-                            )
-                          ],
-                        },
-                  )}
-                  connectedSignalsForTrendsForPrinting={
-                    connectedSignalsForTrendsForPrinting
-                  }
-                  connectedTrendsForSignalsForPrinting={
-                    connectedTrendsForSignalsForPrinting
-                  }
-                />
-              }
-              fileName='Signals_And_trends.pdf'
-              style={{ textDecoration: 'none' }}
-              onClick={() => {
-                updateCardsToPrint([]);
-                setOpenModal(false);
-              }}
-            >
-              {/* {({ url }) =>
+            {
+              <PDFDownloadLink
+                document={
+                  <PDFDocument
+                    pages={cardsToPrint.map(d =>
+                      d.type === 'signal'
+                        ? {
+                            type: 'signal',
+                            mode: d.mode,
+                            data: signalsForPrinting[
+                              signalsForPrinting.findIndex(
+                                el => `${el.id}` === d.id,
+                              )
+                            ],
+                          }
+                        : {
+                            type: 'trend',
+                            mode: d.mode,
+                            data: trendsForPrinting[
+                              trendsForPrinting.findIndex(
+                                el => `${el.id}` === d.id,
+                              )
+                            ],
+                          },
+                    )}
+                    connectedSignalsForTrendsForPrinting={
+                      connectedSignalsForTrendsForPrinting
+                    }
+                    connectedTrendsForSignalsForPrinting={
+                      connectedTrendsForSignalsForPrinting
+                    }
+                  />
+                }
+                fileName='Signals_And_trends.pdf'
+                style={{ textDecoration: 'none' }}
+                onClick={() => {
+                  updateCardsToPrint([]);
+                  setOpenModal(false);
+                }}
+              >
+                {/* {({ url }) =>
                 !url ? (
                   <div
                     style={{
@@ -472,15 +573,16 @@ function MainBody() {
                     </h6>
                   </div>
                 ) : ( */}
-                  <button
-                    type='button'
-                    className='undp-button button-arrow button-primary'
-                  >
-                    Download PDF
-                  </button>
+                <button
+                  type='button'
+                  className='undp-button button-arrow button-primary'
+                >
+                  Download PDF
+                </button>
                 {/* )
               } */}
-            </PDFDownloadLink> }
+              </PDFDownloadLink>
+            }
           </>
         ) : (
           <div className='undp-loader-container'>

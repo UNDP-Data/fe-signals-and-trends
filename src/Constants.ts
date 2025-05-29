@@ -339,4 +339,18 @@ export const navLinks = {
   adminPanel: '/admin-panel',
   addNewSignal: '/add-new-signal',
   addNewTrend: '/add-new-trend',
+  addNewSprint: '/add-new-sprint',
+  signalAnalytics: '/signal-analytics',
+  curatorDigest: '/curator-digest',  
+  allSprints: '/all-sprints',
+  sprint: '/sprint/:id',
+  sprintEdit: '/sprint/:id/edit', 
+  archivedSignals: '/archived-signals',
+  archivedSignalsId: '/archived-signals/:id',
+  archivedSignalsIdEdit: '/archived-signals/:id/edit',
+  archivedTrends: '/archived-trends',
+  archivedTrendsId: '/archived-trends/:id',
+  archivedTrendsIdEdit: '/archived-trends/:id/edit',  
 }
+
+export const isLocalEnv = process.env.ENVIRONMENT === 'local' || process.env.NODE_ENV === 'development';

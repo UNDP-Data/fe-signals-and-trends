@@ -8,6 +8,7 @@ import {
   SignalFiltersDataType,
   TrendDataType,
   TrendFiltersDataType,
+  UserGroupDataType,
 } from '../Types';
 
 const Context = createContext<CtxDataType>({
@@ -15,11 +16,13 @@ const Context = createContext<CtxDataType>({
   name: undefined,
   unit: undefined,
   role: undefined,
+  isAdmin: false,
   isAcceleratorLab: undefined,
   userID: undefined,
   notificationText: undefined,
   choices: undefined,
   cardsToPrint: [],
+  userGroups: undefined,
   trendFilters: {
     impact: 'All Ratings',
     horizon: 'All Horizons',
@@ -59,6 +62,7 @@ const Context = createContext<CtxDataType>({
   updateIsAcceleratorLab: (_d?: boolean) => {},
   updateUserID: (_d?: number) => {},
   updateRole: (_d?: 'Admin' | 'Curator' | 'User') => {},
+  updateIsAdmin: (_d: boolean) => {},
   updateNotificationText: (_d?: string) => {},
   updateChoices: (_d?: ChoicesDataType) => {},
   updateCardsToPrint: (_d: CardsToPrintDataType[]) => {},
@@ -70,6 +74,7 @@ const Context = createContext<CtxDataType>({
   updateTrendsSortBy: (_d: string) => {},
   updateTrendList: (_d?: TrendDataType[]) => {},
   updateSignalList: (_d?: SignalDataType[]) => {},
+  updateUserGroups: (_d?: UserGroupDataType[]) => {},
 });
 
 export default Context;

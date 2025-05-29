@@ -1,0 +1,76 @@
+.member-select-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  align-items: stretch;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+.member-select-container.admin-select {
+  margin-bottom: 12px;
+}
+
+.member-select-label {
+  width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.admin-indicator {
+  color: #006EB5;
+  font-weight: 600;
+}
+
+.member-select-form-item {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.member-select {
+  width: 100%;
+}
+
+.member-select .ant-select-selector {
+  border: 2px solid #000000 !important;
+  border-radius: 0 !important;
+  padding: 4px 8px !important;
+  min-height: 42px !important;
+  display: flex;
+  align-items: center;
+}
+
+.admin-select-input .ant-select-selector {
+  border: 2px solid #006EB5 !important;
+  background-color: rgba(0, 110, 181, 0.05) !important;
+}
+
+.member-select .ant-select-selection-search {
+  margin-inline-start: 0 !important;
+}
+
+.member-select .ant-select-selection-placeholder {
+  color: rgba(0, 0, 0, 0.25) !important;
+  padding: 0 4px !important;
+  font-size: 16px !important;
+}
+
+.member-select .ant-select-selection-item {
+  margin-top: 2px !important;
+  margin-bottom: 2px !important;
+  background: #edf6fb !important;
+  border-color: #006EB5 !important;
+}
+
+.member-tag {
+  background: #edf6fb !important;
+  border: 1px solid #006EB5 !important;
+  color: #006EB5 !important;
+  font-weight: 500;
+  padding: 2px 8px;
+  margin: 2px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+}
