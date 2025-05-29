@@ -190,7 +190,6 @@ function MainBody() {
     <>
       <AuthenticatedTemplate>
         <RaggleProvider
-          showChatBubble={false}
           chatEmbedUrl='https://ftss-chatbot.vercel.app'
           chatBubbleContent={() => (
             <button
