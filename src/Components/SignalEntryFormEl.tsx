@@ -1340,7 +1340,7 @@ export function SignalEntryFormEl(props: Props) {
           </Select>
         </div>
       ) : null}
-      <SprintSection>
+      {/* <SprintSection>
         <p className='sprint-header'>Sprint Management</p>
         <p className='sprint-description'>Choose which sprint(s) this signal should be added to. This allows you to organize signals within specific sprint cycles.</p>
         <div className='margin-bottom-02'>
@@ -1358,7 +1358,7 @@ export function SignalEntryFormEl(props: Props) {
             placeholder='Select sprints to add this signal to'
           />
         </div>
-      </SprintSection>
+      </SprintSection> */}
       <div className='margin-top-09'>
         {submittingError ? (
           <p className='margin-bottom-05' style={{ color: 'var(--dark-red)' }}>
