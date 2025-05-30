@@ -1,7 +1,4 @@
 import { useState } from 'react';
-import { Button, Input, Spin, Alert } from 'antd';
-import { getSignalData } from '../Utils/AI';
-import type { SignalBasicType } from '../Types';
 import { ExtractedNewsData, LinkExtractor } from './LinkExtractor';
 
 interface SmartExtractModalProps {
