@@ -1,117 +1,54 @@
-import { useState, useContext } from 'react';
-import { Button, Form, Input, message } from 'antd';
-import Context from '../../Context/Context';
+import { useState } from 'react';
+import { Button, Form, Input } from 'antd';
 import MemberSelect from '../MemberSelect';
-// import UserSelect from './UserSelect'; // Commented out this import
-import { UserGroupDataType } from '../../Types';
-import { createUserGroup, updateUserGroup } from '../../API/userCalls';
-import type { UserGroupResponseDataType } from '../../API/userCalls';
-import { logger } from '../../logger';
+
+export interface UserGroupFormValues {
+  name: string;
+  users: string[];
+  admins?: string[];
+  description?: string;
+}
 
 export interface UserGroupFormProps {
-  onClose: () => void;
-  onSuccess?: (values?: { name: string; users: string[]; description?: string }) => void;
+  onSubmit: (values: UserGroupFormValues) => Promise<void>;
   initialValues?: {
     name?: string;
     users?: string[];
     admins?: string[];
     description?: string;
   };
-  group?: UserGroupDataType;
   submitButtonText?: string;
   modalMode?: boolean;
+  loading?: boolean;
 }
 
 const UserGroupForm: React.FC<UserGroupFormProps> = ({
-  onClose,
-onSuccess,
+  onSubmit,
   initialValues = { name: '', users: [], admins: [], description: '' },
-  group,
   submitButtonText = 'Save Group & Send Invites',
   modalMode = true,
+  loading: externalLoading,
 }) => {
   const [form] = Form.useForm();
-  const { userGroups, updateUserGroups, userID } = useContext(Context);
-  const [loading, setLoading] = useState(false);
+  const [internalLoading, setInternalLoading] = useState(false);
 
-  const handleSubmit = async (values: {
-    name: string;
-    users: string[];
-    admins?: string[];
-    description?: string;
-  }) => {
-    setLoading(true);
+  const loading = externalLoading !== undefined ? externalLoading : internalLoading;
+
+  const handleSubmit = async (values: UserGroupFormValues) => {
+    setInternalLoading(true);
     try {
-      // For creating a new group, we need to convert user IDs to integers
-      const submitData = {
-        name: values.name,
-        user_ids: values.users ? values.users.map(id => parseInt(id, 10)) : [],
+      // Trim the name before submission
+      const trimmedValues = {
+        ...values,
+        name: values.name?.trim(),
+        description: values.description?.trim(),
       };
-
-      let user_ids = [...submitData.user_ids]
-      if (userID) {
-        user_ids.push(userID)
-      }
-
-      if (group) {
-        // Update existing group
-        const updatedGroupData: UserGroupResponseDataType = {
-          id: group.id,
-          name: submitData.name,
-          user_ids,
-          signal_ids: group.signal_ids,
-          collaborator_map: group.collaborator_map,
-        };
-        const updatedGroup = await updateUserGroup(group.id, updatedGroupData);
-        if (userGroups) {
-          const mappedUserGroups = userGroups.map(g => {
-            if (g.id === group.id) {
-              return {
-                ...g,
-                ...updatedGroup,
-                user_ids: updatedGroup.user_ids || g.user_ids,
-                users: g.users,
-              };
-            }
-            return g;
-          });
-          updateUserGroups(mappedUserGroups);
-        }
-        message.success(`Group "${values.name}" has been updated.`);
-      } else {
-        // Create new group
-        const newGroup = await createUserGroup(submitData);
-
-        // Convert to UserGroupDataType format for compatibility
-        const newGroupData: UserGroupDataType = {
-          ...newGroup,
-          user_ids: newGroup.user_ids || [],
-          signal_ids: [],
-          collaborator_map: {},
-        };
-
-        updateUserGroups(
-          userGroups ? [...userGroups, newGroupData] : [newGroupData],
-        );
-        message.success(`Group "${values.name}" has been created.`);
-        form.resetFields();
-      }
-
-      if (onSuccess) {
-        onSuccess(values);
-      }
-
+      await onSubmit(trimmedValues);
       if (modalMode) {
         form.resetFields();
-        onClose();
       }
-    } catch (error) {
-      message.error(
-        `Failed to ${group ? 'update' : 'create'} the group. Please try again.`,
-      );
-      logger.error('Failed to create/update group:', error);
     } finally {
-      setLoading(false);
+      setInternalLoading(false);
     }
   };
 
@@ -119,15 +56,7 @@ onSuccess,
     <Form
       form={form}
       layout='vertical'
-      onFinish={values => {
-        // Trim the name before submission
-        const trimmedValues = {
-          ...values,
-          name: values.name?.trim(),
-          description: values.description?.trim(),
-        };
-        handleSubmit(trimmedValues);
-      }}
+      onFinish={handleSubmit}
       initialValues={initialValues}
       validateTrigger={['onChange', 'onBlur']}
       className={modalMode ? undefined : 'undp-form'}

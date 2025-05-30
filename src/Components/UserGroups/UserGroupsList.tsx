@@ -18,6 +18,7 @@ import type { MenuProps } from 'antd';
 import { SignalSearch } from '../SignalSearch';
 import { SignalHorizontalView } from '../SignalViews';
 import { HeroCard } from '../HeroCard';
+import { get } from 'http';
 
 interface UserWithNameAndEmail {
   name: string;
@@ -129,7 +130,7 @@ const convertToStandardFormat = (
   }));
 };
 
-export const UserGroupsList = ({ onEdit, onView, userGroups: propUserGroups }: UserGroupsListProps) => {
+export const UserGroupsList = ({ userGroups: propUserGroups }: UserGroupsListProps) => {
   const { userGroups: contextUserGroups, updateUserGroups } = useContext(Context);
   const { confirm } = Modal;
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -283,7 +284,6 @@ export const UserGroupsList = ({ onEdit, onView, userGroups: propUserGroups }: U
 
           // Generate URL for the group
           const getGroupUrl = () => {
-            if (!onView) return '#';
             
             // Create a URL-friendly slug from the group name
             const slug = group.name.toLowerCase()
@@ -301,8 +301,7 @@ export const UserGroupsList = ({ onEdit, onView, userGroups: propUserGroups }: U
                 // timeAgo={TimeAgo({ date: group.modified_at })}
                 bgImage={group.attachment || undefined}
                 // menuItems={menuItems}
-                url={onView ? getGroupUrl() : undefined}
-                onClick={onView ? () => onView(group.id) : undefined}
+                url={getGroupUrl()}
               >
                 <InfoSection>
                   {renderCollaboratorCount(group)}

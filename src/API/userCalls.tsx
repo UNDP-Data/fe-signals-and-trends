@@ -348,12 +348,10 @@ export function createUserGroup(group: { name: string; user_ids?: number[]; user
     console.warn('Logger error:', e);
   }
 
-  // Create a payload that includes admin information
+  // Create a payload that matches the backend expectation
   const payload = {
     name: group.name,
     user_ids: group.user_ids || [],
-    users: group.users || [],
-    admin_emails: group.admins || []
   };
 
   return axiosInstance
