@@ -151,6 +151,16 @@ export function LoggedInHeader(props: Props) {
                 Add Signal
               </NavLink>  
             )}
+            {!isAdmin && (
+              <NavLink
+                to={navLinks.addNewSprint}
+                className={({ isActive }) =>
+                  isActive ? 'header-link-active' : 'header-link'
+                }
+              >
+                Add Sprint
+              </NavLink>
+            )}
           </div>
           {isAdmin && (
             <div>
@@ -205,15 +215,15 @@ export function LoggedInHeader(props: Props) {
             My Sprints & Groups
           </NavLink>
         </div>
-        <div>
+        {isAdmin && <div>
           <NavLink
             to={navLinks.signalAnalytics}
             className={({ isActive }) =>
               isActive ? 'header-link-active' : 'header-link'
             }          >
-            Signal Analytics
+            Signal Analytics  
           </NavLink>
-        </div>
+        </div>}
         <div>
           <NavLink
             to={navLinks.addNewSignal}

@@ -52,6 +52,7 @@ import type { UserGroupDataType, SignalDataType } from './Types';
 import { CollaboratorsContainer } from './Components/CollaboratorsContainer';
 import { CollaboratorsList } from './Components/CollaboratorsList';
 import { OptionsDropdown } from './Components/OptionsDropdown';
+import { ShareButton } from './Components/ShareButton';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -99,7 +100,7 @@ export function SprintPage() {
   const queryClient = useQueryClient();
   const [isSprintAdmin, setIsSprintAdmin] = useState(false);
   const [hasEditPermission, setHasEditPermission] = useState(false);
-  
+
   // Parse the ID from the URL parameter (last part after hyphen)
   const getSprintId = () => {
     if (!urlParam) return null;
@@ -326,49 +327,12 @@ export function SprintPage() {
 
         <HeaderContainer>
           <HeaderContent>
-            <div>
-              {sprintQuery.isLoading ? (
-                <Skeleton.Input active style={{ width: 300 }} />
-              ) : isEditingName ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <Input
-                    ref={nameInputRef}
-                    value={sprintName}
-                    onChange={(e) => setSprintName(e.target.value)}
-                    style={{ width: '300px', fontSize: '1.5rem', fontWeight: 'bold' }}
-                    onPressEnter={handleNameUpdate}
-                  />
-                  <Button
-                    type="text"
-                    icon={<CheckOutlined style={{ color: 'green' }}/>}
-                    onClick={handleNameUpdate}
-                  />
-                  <Button
-                    type="text"
-                    icon={<CloseOutlined style={{ color: 'red' }}/>}
-                    onClick={() => {
-                      if (sprintQuery.data?.name) {
-                        setSprintName(sprintQuery.data.name);
-                      }
-                      setIsEditingName(false);
-                    }}
-                  />
-                </div>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <Title level={2} className="undp-typography margin-top-05 margin-bottom-02 inline">
                     {sprintQuery.data?.name || 'Sprint Details'}
                   </Title>
-                  {hasEditPermission ? (
-                    <Button
-                      type="text"
-                      icon={<EditOutlined />}
-                      onClick={() => setIsEditingName(true)}
-                    />
-                  ) : null}
+                  <ShareButton />
                 </div>
-              )}
-            </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginLeft: 'auto', marginRight: '16px' }}>
               {/* Collaborator avatars with limit and dropdown */}

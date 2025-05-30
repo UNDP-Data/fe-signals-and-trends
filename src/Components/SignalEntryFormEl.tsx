@@ -1,33 +1,31 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import { Checkbox, Input, Popconfirm, Select, Tooltip } from 'antd';
+import { Input, Popconfirm, Select, Tooltip } from 'antd';
 import sortBy from 'lodash.sortby';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import Context from '../Context/Context';
-import '../styles.css';
-import { NewSignalDataType, SignalDataType, TrendDataType } from '../Types';
-import { AddTrendsModal } from './AddTrendsModal';
-import { ExtractedNewsData, LinkExtractor } from './LinkExtractor';
-import { PexelsImagePicker } from './PexelsImagePicker';
-import { SprintSelect } from './SprintSelect';
-import { formatSignalData, isSignalValid } from '../Utils/FormatSignalData';
 import {
   createSignal,
   deleteSignal,
   searchTrends,
   updateSignal as updateSignalApi,
 } from '../API';
+import Context from '../Context/Context';
+import '../styles.css';
+import { NewSignalDataType, SignalDataType, TrendDataType } from '../Types';
+import { formatSignalData, isSignalValid } from '../Utils/FormatSignalData';
+import { AddTrendsModal } from './AddTrendsModal';
+import { PexelsImagePicker } from './PexelsImagePicker';
+import { SprintSelect } from './SprintSelect';
 
-import { SignalAutocomplete, SignalSuggestion } from './SignalAutocomplete';
 
-const SHOW_FORM_VALIDATION = true;
 const SHOW_RED_BORDERS = false;
 
 interface Props {
   updateSignal?: SignalDataType;
   draft: boolean;
   initialData?: Partial<NewSignalDataType>;
+  onSubmit?: (data: any) => Promise<void>;
 }
 
 const UploadEl = styled.div`
@@ -85,24 +83,54 @@ const FileAttachmentButton = styled.input`
 `;
 
 const SprintSection = styled.div`
-  background-color: #F5F7F9;
-  border: 2px solid #E5EAEF;
+  background-color: #f5f7f9;
+  border: 2px solid #e5eaef;
   border-radius: 8px;
   padding: 24px;
   margin-top: 32px;
   margin-bottom: 32px;
-  
+
   .sprint-header {
     font-size: 20px;
     font-weight: bold;
-    color: #2C3E50;
+    color: #2c3e50;
     margin-bottom: 8px;
   }
-  
+
   .sprint-description {
     font-size: 14px;
-    color: #6C757D;
+    color: #6c757d;
     margin-bottom: 16px;
+  }
+`;
+
+const StyledCheckboxWrapper = styled.label`
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 600;
+  background: #f5f7f9;
+  border: 2px solid #e5eaef;
+  border-radius: 8px;
+  padding: 18px 24px;
+  margin-bottom: 0.5rem;
+  transition: border 0.2s;
+  &:hover {
+    border: 2px solid var(--blue-600);
+    background: #e3f2fd;
+  }
+`;
+const StyledCheckboxInput = styled.input`
+  width: 28px;
+  height: 28px;
+  margin-right: 18px;
+  accent-color: var(--blue-600);
+  border-radius: 6px;
+  border: 2px solid var(--blue-600);
+  transition: box-shadow 0.2s;
+  &:focus {
+    box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
   }
 `;
 
@@ -157,23 +185,28 @@ export function isSignalInvalid(
 export function getFormValidation(
   signal: SignalDataType | NewSignalDataType,
   keyWords: [string | undefined, string | undefined, string | undefined],
-): { isValid: boolean; errorMessages: string[]; invalidFields: string[]; fieldIds: Record<string, string> } {
+): {
+  isValid: boolean;
+  errorMessages: string[];
+  invalidFields: string[];
+  fieldIds: Record<string, string>;
+} {
   const errorMessages: string[] = [];
   const invalidFields: string[] = [];
   const fieldIds: Record<string, string> = {};
-  
+
   if (!signal.headline) {
     errorMessages.push('Signal Title is required');
     invalidFields.push('headline');
     fieldIds['headline'] = 'signal-headline';
   }
-  
+
   if (!signal.created_unit) {
     errorMessages.push('Unit is required');
     invalidFields.push('created_unit');
     fieldIds['created_unit'] = 'signal-unit';
   }
-  
+
   if (!signal.description) {
     errorMessages.push('Signal Description is required');
     invalidFields.push('description');
@@ -183,49 +216,49 @@ export function getFormValidation(
     invalidFields.push('description');
     fieldIds['description'] = 'signal-description';
   }
-  
+
   if (keyWords.filter(d => d !== undefined && d.trim() !== '').length === 0) {
     errorMessages.push('At least one Keyword is required');
     invalidFields.push('keywords');
     fieldIds['keywords'] = 'signal-keywords';
   }
-  
+
   if (!signal.location) {
     errorMessages.push('Location is required');
     invalidFields.push('location');
     fieldIds['location'] = 'signal-location';
   }
-  
+
   if (!signal.steep_primary) {
     errorMessages.push('Primary STEEP+V is required');
     invalidFields.push('steep_primary');
     fieldIds['steep_primary'] = 'signal-steep-primary';
   }
-  
+
   if (!signal.signature_primary) {
     errorMessages.push('Primary Signature Solution/Enabler is required');
     invalidFields.push('signature_primary');
     fieldIds['signature_primary'] = 'signal-signature-primary';
   }
-  
+
   if (!signal.sdgs || signal.sdgs.length === 0) {
     errorMessages.push('At least one SDG is required');
     invalidFields.push('sdgs');
     fieldIds['sdgs'] = 'signal-sdgs';
   }
-  
+
   if (!signal.relevance) {
     errorMessages.push('Signal Relevance is required');
     invalidFields.push('relevance');
     fieldIds['relevance'] = 'signal-relevance';
   }
-  
+
   if (!signal.url) {
     errorMessages.push('Signal Source is required');
     invalidFields.push('url');
     fieldIds['url'] = 'signal-url';
   }
-  
+
   return {
     isValid: errorMessages.length === 0,
     errorMessages,
@@ -235,17 +268,20 @@ export function getFormValidation(
 }
 
 // First, update the ValidationMessage component styling
-const ValidationMessage = ({ 
-  signal, 
-  keyWords 
-}: { 
+const ValidationMessage = ({
+  signal,
+  keyWords,
+}: {
   signal: SignalDataType | NewSignalDataType;
   keyWords: [string | undefined, string | undefined, string | undefined];
 }) => {
-  const { isValid, errorMessages, invalidFields, fieldIds } = getFormValidation(signal, keyWords);
-  
+  const { isValid, errorMessages, invalidFields, fieldIds } = getFormValidation(
+    signal,
+    keyWords,
+  );
+
   if (isValid) return null;
-  
+
   const handleErrorClick = (fieldId: string) => {
     const element = document.getElementById(fieldId);
     if (element) {
@@ -257,29 +293,32 @@ const ValidationMessage = ({
       }, 2000);
     }
   };
-  
+
   return (
-    <div 
-      className="margin-top-05 margin-bottom-05"
-      style={{ 
-        backgroundColor: '#E3F2FD', 
+    <div
+      className='margin-top-05 margin-bottom-05'
+      style={{
+        backgroundColor: '#E3F2FD',
         border: '1px solid #90CAF9',
         borderRadius: '4px',
         padding: '12px 16px',
       }}
     >
-      <p className="undp-typography bold" style={{ color: 'var(--blue-600)', marginBottom: '8px' }}>
+      <p
+        className='undp-typography bold'
+        style={{ color: 'var(--blue-600)', marginBottom: '8px' }}
+      >
         Please complete the following fields to submit your signal:
       </p>
       <ul style={{ margin: 0, paddingLeft: '20px' }}>
         {errorMessages.map((message, index) => (
-          <li 
-            key={index} 
-            className="undp-typography" 
-            style={{ 
+          <li
+            key={index}
+            className='undp-typography'
+            style={{
               color: 'var(--blue-700)',
               cursor: 'pointer',
-              textDecoration: 'underline'
+              textDecoration: 'underline',
             }}
             onClick={() => handleErrorClick(fieldIds[invalidFields[index]])}
           >
@@ -339,9 +378,15 @@ export function SignalEntryFormEl(props: Props) {
       connected_trends: initialData?.connected_trends || [],
       created_for: initialData?.created_for || undefined,
       user_group_ids: initialData?.user_group_ids || [],
+      private: initialData?.private || false,
     },
   );
-  console.log({signalData});
+
+ 
+  console.log('signalData', signalData);
+
+  const showSubmit = !signalData.private && (!updateSignal || updateSignal.status === 'Draft');
+
   const [buttonDisabled, setButtonDisabled] = useState(false);
   // const [acceptTOS, setAcceptTOS] = useState(false);
   const [trendsList, setTrendsList] = useState<undefined | TrendDataType[]>(
@@ -355,37 +400,53 @@ export function SignalEntryFormEl(props: Props) {
     undefined,
   );
   const [keyword1, setKeyword1] = useState<string | undefined>(
-    updateSignal?.keywords ? updateSignal?.keywords[0] || undefined : initialData?.keywords ? initialData.keywords[0] || undefined : undefined,
+    updateSignal?.keywords
+      ? updateSignal?.keywords[0] || undefined
+      : initialData?.keywords
+      ? initialData.keywords[0] || undefined
+      : undefined,
   );
   const [keyword2, setKeyword2] = useState<string | undefined>(
-    updateSignal?.keywords ? updateSignal?.keywords[1] || undefined : initialData?.keywords ? initialData.keywords[1] || undefined : undefined,
+    updateSignal?.keywords
+      ? updateSignal?.keywords[1] || undefined
+      : initialData?.keywords
+      ? initialData.keywords[1] || undefined
+      : undefined,
   );
   const [keyword3, setKeyword3] = useState<string | undefined>(
-    updateSignal?.keywords ? updateSignal?.keywords[2] || undefined : initialData?.keywords ? initialData.keywords[2] || undefined : undefined,
+    updateSignal?.keywords
+      ? updateSignal?.keywords[2] || undefined
+      : initialData?.keywords
+      ? initialData.keywords[2] || undefined
+      : undefined,
   );
   const [useFetchedArticles, setUseFetchedArticles] = useState(false);
   const [showRedBorders, setShowRedBorders] = useState(SHOW_RED_BORDERS);
   // Extract user group IDs from either user_group_ids or the user_groups array
   const extractUserGroupIds = (signal?: any): number[] => {
     if (!signal) return [];
-    
+
     // If user_group_ids is available and valid, use it
-    if (Array.isArray(signal.user_group_ids) && signal.user_group_ids.length > 0) {
+    if (
+      Array.isArray(signal.user_group_ids) &&
+      signal.user_group_ids.length > 0
+    ) {
       return signal.user_group_ids;
     }
-    
+
     // If user_groups array exists with objects containing id
     if (Array.isArray(signal.user_groups) && signal.user_groups.length > 0) {
-      return signal.user_groups.map((group: any) => group.id).filter((id: any) => id !== undefined);
+      return signal.user_groups
+        .map((group: any) => group.id)
+        .filter((id: any) => id !== undefined);
     }
-    
+
     return [];
   };
-  
-  const [selectedUserGroups, setSelectedUserGroups] = useState<number[]>(
-    extractUserGroupIds(updateSignal)
-  );
 
+  const [selectedUserGroups, setSelectedUserGroups] = useState<number[]>(
+    extractUserGroupIds(updateSignal),
+  );
 
   // Initialize keywords from initialData if available
   useEffect(() => {
@@ -394,7 +455,7 @@ export function SignalEntryFormEl(props: Props) {
       if (initialData.keywords.length > 1) setKeyword2(initialData.keywords[1]);
       if (initialData.keywords.length > 2) setKeyword3(initialData.keywords[2]);
     }
-    
+
     // Set selected user groups from initialData if they exist
     // This also handles the case where initialData may have user_groups instead of user_group_ids
     const extractedGroups = extractUserGroupIds(initialData as any);
@@ -402,6 +463,39 @@ export function SignalEntryFormEl(props: Props) {
       setSelectedUserGroups(extractedGroups);
     }
   }, [initialData]);
+
+  // Update signalData when initialData changes (for extracted data)
+  useEffect(() => {
+    if (initialData && !updateSignal) {
+      updateSignalData(prevData => ({
+        ...prevData,
+        headline: initialData.headline || prevData.headline,
+        description: initialData.description || prevData.description,
+        attachment: initialData.attachment || prevData.attachment,
+        steep_primary: initialData.steep_primary || prevData.steep_primary,
+        steep_secondary: initialData.steep_secondary || prevData.steep_secondary,
+        signature_primary: initialData.signature_primary || prevData.signature_primary,
+        signature_secondary: initialData.signature_secondary || prevData.signature_secondary,
+        sdgs: initialData.sdgs || prevData.sdgs,
+        created_unit: initialData.created_unit || prevData.created_unit || unit,
+        url: initialData.url || prevData.url,
+        relevance: initialData.relevance || prevData.relevance,
+        keywords: initialData.keywords || prevData.keywords,
+        location: initialData.location || prevData.location,
+        secondary_location: initialData.secondary_location || prevData.secondary_location,
+        score: initialData.score || prevData.score,
+        connected_trends: initialData.connected_trends || prevData.connected_trends,
+        created_for: initialData.created_for || prevData.created_for,
+        user_group_ids: initialData.user_group_ids || prevData.user_group_ids,
+        private: initialData.private !== undefined ? initialData.private : prevData.private,
+      }));
+      
+      // Also update connected trends list if provided
+      if (initialData.connected_trends && initialData.connected_trends.length > 0) {
+        setSelectedTrendsList(initialData.connected_trends);
+      }
+    }
+  }, [initialData, updateSignal, unit]);
 
   const confirmDelete = (id: number, navigatePath: string) => {
     setButtonDisabled(true);
@@ -414,7 +508,8 @@ export function SignalEntryFormEl(props: Props) {
       .catch(err => {
         setButtonDisabled(false);
         setSubmittingError(
-          `${err}. ${err.response?.status === 500 ? 'Please try again in some time' : ''
+          `${err}. ${
+            err.response?.status === 500 ? 'Please try again in some time' : ''
           }`,
         );
       });
@@ -434,9 +529,10 @@ export function SignalEntryFormEl(props: Props) {
         })
         .catch(err => {
           setSubmittingError(
-            `${err}. ${err.response?.status === 500
-              ? 'Please try again in some time'
-              : ''
+            `${err}. ${
+              err.response?.status === 500
+                ? 'Please try again in some time'
+                : ''
             }`,
           );
         });
@@ -494,22 +590,7 @@ export function SignalEntryFormEl(props: Props) {
     }
   }, [useFetchedArticles]);
 
-  // Signal Auto Complete
-  const handleSuggestionSelect = (suggestion: SignalSuggestion) => {
 
-    updateSignalData({
-      ...signalData,
-      headline: suggestion.headline,
-      url: suggestion.url,
-      description: suggestion.description,
-      keywords: suggestion.keywords,
-      location: suggestion.location,
-    });
-    setImageUrl(suggestion.image || 'Image not available');
-    setKeyword1(suggestion.keywords[0]);
-    setKeyword2(suggestion.keywords[1]);
-    setKeyword3(suggestion.keywords[2]);
-  };
   // const handleUserSelectedImage = (selectedImage : string) => {
   //   update
   // }
@@ -572,62 +653,6 @@ export function SignalEntryFormEl(props: Props) {
   };
   */
 
-  // Handler for extracted data from LinkExtractor
-  const handleExtractedData = (data: ExtractedNewsData) => {
-    // Set headline from title (truncate if too long)
-    const headline = data.title.length > 100 ? data.title.substring(0, 97) + '...' : data.title;
-    
-    // Set description from text (truncate if too long)
-    const description = data.text.length > 1000 ? data.text.substring(0, 997) + '...' : data.text;
-    
-    // Set keywords
-    if (data.keywords && data.keywords.length > 0) {
-      setKeyword1(data.keywords[0]);
-      if (data.keywords.length > 1) setKeyword2(data.keywords[1]);
-      if (data.keywords.length > 2) setKeyword3(data.keywords[2]);
-    }
-    
-    // Set location from source_country if available
-    const location = data.source_country ? data.source_country.toUpperCase() : signalData.location;
-    
-    // Update signal data first without the image
-    updateSignalData({
-      ...signalData,
-      headline,
-      description,
-      url: data.url,
-      location: location || signalData.location,
-    });
-    
-    // Handle image if available
-    if (data.image) {
-      setImageUrl(data.image);
-      
-      // Fetch the image and convert to base64
-      fetch(data.image)
-        .then(res => res.blob())
-        .then(blob => {
-          const fileName = "extracted-image.jpg";
-          const file = new File([blob], fileName, { type: "image/jpeg" });
-          setSelectedFileName(fileName);
-          
-          // Create a FileReader to convert the blob to base64
-          const reader = new FileReader();
-          reader.readAsBinaryString(file);
-          reader.onloadend = (e: any) => {
-            const base64String = btoa(e.target.result);
-            updateSignalData(prevData => ({
-              ...prevData,
-              attachment: `${file.type};base64,${base64String}`,
-            }));
-          };
-        })
-        .catch(err => {
-          console.error("Error fetching image:", err);
-        });
-    }
-  };
-
   // Update the validation check function to use isSignalValid directly
   const validateForm = () => {
     return isSignalValid(signalData, [keyword1, keyword2, keyword3]);
@@ -643,40 +668,22 @@ export function SignalEntryFormEl(props: Props) {
       </p>
       <div className='margin-bottom-07'>
         <div className='margin-bottom-07 '>
-          <div className='signal-title-grid' style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <p className='undp-typography margin-bottom-01'>Signal Title*</p>
-            <Checkbox
-              checked={useFetchedArticles}
-              onChange={e => setUseFetchedArticles(e.target.checked)}
-            >
-              Use Article Suggestions
-            </Checkbox>
-          </div>
-          {!useFetchedArticles ? (
-            <Input
-              id="signal-headline"
-              className='undp-input'
-              placeholder='Enter signal title (max 100 characters)'
-              value={signalData.headline}
-              maxLength={100}
-              status={showRedBorders && !signalData.headline ? 'error' : ''}
-              onChange={d => {
-                updateSignalData({
-                  ...signalData,
-                  headline: d.target.value,
-                });
-                setQuery(d.target.value);
-              }}
-            />
-          ) : (
-            <SignalAutocomplete
-              onChange={d => {
-                setQuery(d);
-              }}
-              onSuggestionSelect={handleSuggestionSelect}
-              value={signalData.headline}
-            />
-          )}
+          <p className='undp-typography margin-bottom-01'>Signal Title*</p>
+          <Input
+            id='signal-headline'
+            className='undp-input'
+            placeholder='Enter signal title (max 100 characters)'
+            value={signalData.headline}
+            maxLength={100}
+            status={showRedBorders && !signalData.headline ? 'error' : ''}
+            onChange={d => {
+              updateSignalData({
+                ...signalData,
+                headline: d.target.value,
+              });
+              setQuery(d.target.value);
+            }}
+          />
           <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
             Useful titles are clear, concise and can stand alone as a simple
             description of the signal.{' '}
@@ -688,33 +695,19 @@ export function SignalEntryFormEl(props: Props) {
           <p className='undp-typography margin-bottom-01'>Signal Source*</p>
           <div className='flex-div margin-bottom-00'>
             <div style={{ flexGrow: 1 }}>
-              <div id="signal-url">
-                {SHOW_FORM_VALIDATION && !signalData.url && (
-                  <div style={{ marginBottom: '8px' }}>
-                    <LinkExtractor
-                      value={signalData.url}
-                      onChange={(value) => {
-                        updateSignalData({
-                          ...signalData,
-                          url: value,
-                        });
-                      }}
-                      onFetch={handleExtractedData}
-                    />
-                  </div>
-                )}
-                {(!SHOW_FORM_VALIDATION || signalData.url) && (
-                  <LinkExtractor
-                    value={signalData.url}
-                    onChange={(value) => {
-                      updateSignalData({
-                        ...signalData,
-                        url: value,
-                      });
-                    }}
-                    onFetch={handleExtractedData}
-                  />
-                )}
+              <div id='signal-url'>
+                <Input
+                  className='undp-input'
+                  placeholder='Enter signal source URL'
+                  value={signalData.url}
+                  onChange={e => {
+                    updateSignalData({
+                      ...signalData,
+                      url: e.target.value,
+                    });
+                  }}
+                  status={showRedBorders && !signalData.url ? 'error' : ''}
+                />
               </div>
             </div>
           </div>
@@ -814,9 +807,11 @@ export function SignalEntryFormEl(props: Props) {
             */}
         </div>
         <div className='margin-bottom-07'>
-          <p className='undp-typography margin-bottom-01'>Signal Description*</p>
+          <p className='undp-typography margin-bottom-01'>
+            Signal Description*
+          </p>
           <Input.TextArea
-            id="signal-description"
+            id='signal-description'
             className='undp-input'
             placeholder='Enter signal description (max 1000 characters)'
             maxLength={1000}
@@ -840,17 +835,22 @@ export function SignalEntryFormEl(props: Props) {
             about using commonly used terms and clear language. This should be
             your summarised description, not cut-and-paste from article. Min 30
             characters required.{' '}
-            {signalData.description ? 1000 - signalData.description.length : 1000}{' '}
+            {signalData.description
+              ? 1000 - signalData.description.length
+              : 1000}{' '}
             characters left
           </p>
         </div>
-        <div className='flex-div' style={{ gap: '1rem', marginBottom: 'var(--spacing-07)' }}>
+        <div
+          className='flex-div'
+          style={{ gap: '1rem', marginBottom: 'var(--spacing-07)' }}
+        >
           <div className='margin-bottom-00' style={{ width: '50%' }}>
             <p className='undp-typography margin-bottom-01'>
               Location of the signal*
             </p>
             <Select
-              id="signal-location"
+              id='signal-location'
               className='undp-select'
               placeholder='Select location'
               onChange={(e: string) => {
@@ -861,7 +861,9 @@ export function SignalEntryFormEl(props: Props) {
               }}
               value={signalData.location}
               showSearch
-              status={showRedBorders && !signalData.location ? 'error' : undefined}
+              status={
+                showRedBorders && !signalData.location ? 'error' : undefined
+              }
             >
               {choices?.location.map((d, i) => (
                 <Select.Option className='undp-select-option' key={i} value={d}>
@@ -899,14 +901,15 @@ export function SignalEntryFormEl(props: Props) {
               ))}
             </Select>
             <p className='undp-typography margin-top-02 margin-bottom-00 small-font'>
-              Additional regions and/or countries for which this signal has relevance
+              Additional regions and/or countries for which this signal has
+              relevance
             </p>
           </div>
         </div>
         <div className='margin-bottom-07'>
           <p className='undp-typography margin-bottom-01'>Signal Relevance*</p>
           <Input.TextArea
-            id="signal-relevance"
+            id='signal-relevance'
             className='undp-input'
             placeholder='Enter signal relevance'
             onChange={e => {
@@ -927,7 +930,7 @@ export function SignalEntryFormEl(props: Props) {
           <div style={{ width: '100%' }}>
             <p className='undp-typography margin-bottom-01'>Primary STEEP+V*</p>
             <Select
-              id="signal-steep-primary"
+              id='signal-steep-primary'
               className='undp-select'
               placeholder='Select STEEP+V'
               onChange={e => {
@@ -937,7 +940,11 @@ export function SignalEntryFormEl(props: Props) {
                 });
               }}
               value={signalData.steep_primary}
-              status={showRedBorders && !signalData.steep_primary ? 'error' : undefined}
+              status={
+                showRedBorders && !signalData.steep_primary
+                  ? 'error'
+                  : undefined
+              }
             >
               {choices?.steep.map((d, i) => (
                 <Select.Option className='undp-select-option' key={i} value={d}>
@@ -1023,7 +1030,9 @@ export function SignalEntryFormEl(props: Props) {
                 Selected <span className='bold'>{selectedFileName}</span>
               </SelectedEl>
             ) : (
-              <SelectedEl style={{ opacity: '0.6' }}>No file selected</SelectedEl>
+              <SelectedEl style={{ opacity: '0.6' }}>
+                No file selected
+              </SelectedEl>
             )}
             <FileAttachmentButton
               ref={fileInputRef}
@@ -1037,19 +1046,19 @@ export function SignalEntryFormEl(props: Props) {
             {signalData.attachment
               ? 'Uploading file with replace the already uploaded image shown above. '
               : ''}
-            Attach an image here to illustrate this Signal, if available. Use only
-            images that are non-copyright or license-free/Creative Commons. File
-            must be maximum 1 MBs. Compress larger images, if applicable.
+            Attach an image here to illustrate this Signal, if available. Use
+            only images that are non-copyright or license-free/Creative Commons.
+            File must be maximum 1 MBs. Compress larger images, if applicable.
           </p>
         </div>
-        <PexelsImagePicker 
-          query={query} 
-          onImageSelect={handlePexelsImageSelect} 
+        <PexelsImagePicker
+          query={query}
+          onImageSelect={handlePexelsImageSelect}
         />
       </div>
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Keywords*</p>
-        <div id="signal-keywords" className='flex-div'>
+        <div id='signal-keywords' className='flex-div'>
           <Input
             className='undp-input'
             placeholder='Enter Keyword#1'
@@ -1057,7 +1066,12 @@ export function SignalEntryFormEl(props: Props) {
               setKeyword1(e.target.value);
             }}
             value={keyword1 || ''}
-            status={showRedBorders && ![keyword1, keyword2, keyword3].some(k => k && k.trim() !== '') ? 'error' : ''}
+            status={
+              showRedBorders &&
+              ![keyword1, keyword2, keyword3].some(k => k && k.trim() !== '')
+                ? 'error'
+                : ''
+            }
           />
           <Input
             className='undp-input'
@@ -1086,7 +1100,7 @@ export function SignalEntryFormEl(props: Props) {
             Primary Signature Solution/Enabler*
           </p>
           <Select
-            id="signal-signature-primary"
+            id='signal-signature-primary'
             className='undp-select'
             placeholder='Select Signature Solution'
             onChange={e => {
@@ -1096,7 +1110,11 @@ export function SignalEntryFormEl(props: Props) {
               });
             }}
             value={signalData.signature_primary}
-            status={showRedBorders && !signalData.signature_primary ? 'error' : undefined}
+            status={
+              showRedBorders && !signalData.signature_primary
+                ? 'error'
+                : undefined
+            }
           >
             {choices?.signature.map((d, i) => (
               <Select.Option className='undp-select-option' key={i} value={d}>
@@ -1148,7 +1166,7 @@ export function SignalEntryFormEl(props: Props) {
       <div className='margin-bottom-07' style={{ width: '100%' }}>
         <p className='undp-typography margin-bottom-01'>SDGs*</p>
         <Select
-          id="signal-sdgs"
+          id='signal-sdgs'
           className='undp-select'
           mode='multiple'
           placeholder='Select SDG'
@@ -1175,7 +1193,11 @@ export function SignalEntryFormEl(props: Props) {
                 : undefined
               : undefined
           }
-          status={showRedBorders && (!signalData.sdgs || signalData.sdgs.length === 0) ? 'error' : undefined}
+          status={
+            showRedBorders && (!signalData.sdgs || signalData.sdgs.length === 0)
+              ? 'error'
+              : undefined
+          }
         >
           {choices?.goal.map((d, i) => (
             <Select.Option className='undp-select-option' key={i} value={d}>
@@ -1269,7 +1291,7 @@ export function SignalEntryFormEl(props: Props) {
           <p className='undp-typography'>Loading trends...</p>
         )}
       </div>
-      
+
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Created For</p>
         <Select
@@ -1293,7 +1315,7 @@ export function SignalEntryFormEl(props: Props) {
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Unit</p>
         <Select
-          id="signal-unit"
+          id='signal-unit'
           className='undp-select'
           placeholder='Select Unit'
           onChange={e => {
@@ -1303,7 +1325,9 @@ export function SignalEntryFormEl(props: Props) {
             });
           }}
           value={signalData.created_unit}
-          status={showRedBorders && !signalData.created_unit ? 'error' : undefined}
+          status={
+            showRedBorders && !signalData.created_unit ? 'error' : undefined
+          }
         >
           {choices?.unit_name.map((d, i) => (
             <Select.Option className='undp-select-option' key={i} value={d}>
@@ -1340,25 +1364,45 @@ export function SignalEntryFormEl(props: Props) {
           </Select>
         </div>
       ) : null}
-      <SprintSection>
-        <p className='sprint-header'>Sprint Management</p>
-        <p className='sprint-description'>Choose which sprint(s) this signal should be added to. This allows you to organize signals within specific sprint cycles.</p>
-        <div className='margin-bottom-02'>
-          <SprintSelect
-            value={selectedUserGroups}
-            onChange={(values: number[]) => {
-              // Ensure values is always an array, never null
-              const safeValues = Array.isArray(values) ? values : [];
-              setSelectedUserGroups(safeValues);
+      <div className='margin-bottom-07'>
+        <StyledCheckboxWrapper>
+          <StyledCheckboxInput
+            type='checkbox'
+            checked={signalData.private || false}
+            onChange={e => {
               updateSignalData({
                 ...signalData,
-                user_group_ids: safeValues,
+                private: e.target.checked,
               });
             }}
-            placeholder='Select sprints to add this signal to'
           />
-        </div>
-      </SprintSection>
+          Private (only visible to you and admins)
+        </StyledCheckboxWrapper>
+      </div>
+      {!updateSignal && (
+        <SprintSection>
+          <p className='sprint-header'>Sprint Management</p>
+          <p className='sprint-description'>
+            Choose which sprint(s) this signal should be added to. This allows
+            you to organize signals within specific sprint cycles.
+          </p>
+          <div className='margin-bottom-02'>
+            <SprintSelect
+              value={selectedUserGroups}
+              onChange={(values: number[]) => {
+                // Ensure values is always an array, never null
+                const safeValues = Array.isArray(values) ? values : [];
+                setSelectedUserGroups(safeValues);
+                updateSignalData({
+                  ...signalData,
+                  user_group_ids: safeValues,
+                });
+              }}
+              placeholder='Select sprints to add this signal to'
+            />
+          </div>
+        </SprintSection>
+      )}
       <div className='margin-top-09'>
         {submittingError ? (
           <p className='margin-bottom-05' style={{ color: 'var(--dark-red)' }}>
@@ -1366,274 +1410,20 @@ export function SignalEntryFormEl(props: Props) {
           </p>
         ) : null}
         <div className='flex-div flex-vert-align-center margin-top-00'>
-          {updateSignal ? (
-            updateSignal.status === 'Draft' ? (
-              <div className='flex-div'>
-                <button
-                  className={`${!validateForm() || buttonDisabled
-                    ? 'disabled'
-                    : ''
-                    } undp-button button-secondary button-arrow`}
-                  type='button'
-                  disabled={
-                    !validateForm() || buttonDisabled
-                  }
-                  onClick={() => {
-                    // submit signal
-                    const isValid = validateForm();
-                    if (!isValid) {
-                      setShowRedBorders(true);
-                      return;
-                    }
-                    setButtonDisabled(true);
-                    setSubmittingError(undefined);
-
-                    const formattedData = formatSignalData(
-                      signalData,
-                      [keyword1, keyword2, keyword3],
-                      choices,
-                      selectedTrendsList,
-                      selectedUserGroups,
-                      { isSubmit: true }
-                    );
-
-                    if (signalData.id) {
-                      // Create a properly typed object for the API
-                      const apiData = {
-                        ...formattedData,
-                        id: updateSignal.id,
-                        created_by: formattedData.created_by || '',
-                      };
-                      updateSignalApi(updateSignal.id, apiData)
-                        .then(() => {
-                          setButtonDisabled(false);
-                          navigate('/signals');
-                          updateNotificationText(
-                            'Successfully submitted the signal for review',
-                          );
-                        })
-                        .catch(err => {
-                          setButtonDisabled(false);
-                          setSubmittingError(
-                            `${err}. ${err.response?.status === 500
-                              ? 'Please try again in some time'
-                              : ''
-                            }`,
-                          );
-                        });
-                    }
-                  }}
-                >
-                  Submit Signal
-                </button>
-                <Tooltip
-                  title={selectedUserGroups.length === 0 ? "Please select a sprint from the 'Add to Sprint' field above to use this option" : ""}
-                  open={selectedUserGroups.length === 0 ? undefined : false}
-                >
-                  <button
-                    className={`undp-button button-secondary button-arrow ${
-                      selectedUserGroups.length === 0 ? 'disabled' : ''
-                    }`}
-                    type='button'
-                    disabled={selectedUserGroups.length === 0}
-                    onClick={() => {
-                      // add to sprint - similar to draft but with private attribute
-                      setButtonDisabled(true);
-                      setSubmittingError(undefined);
-
-                      const formattedData = formatSignalData(
-                        signalData,
-                        [keyword1, keyword2, keyword3],
-                        choices,
-                        selectedTrendsList,
-                        selectedUserGroups,
-                        { isAddToSprint: true }
-                      );
-
-                      if (signalData.id) {
-                        // Create a properly typed object for the API
-                        const apiData = {
-                          ...formattedData,
-                          id: updateSignal.id,
-                          created_by: formattedData.created_by || '',
-                        };
-                        updateSignalApi(updateSignal.id, apiData)
-                          .then(() => {
-                            setButtonDisabled(false);
-                            // Navigate to the first sprint if available
-                            if (selectedUserGroups.length > 0) {
-                              navigate(`/sprint/${selectedUserGroups[0]}`);
-                            } else {
-                              navigate('/my-drafts');
-                            }
-                            updateNotificationText(
-                              'Successfully added signal to sprint',
-                            );
-                          })
-                          .catch(err => {
-                            setButtonDisabled(false);
-                            setSubmittingError(
-                              `${err}. ${err.response?.status === 500
-                                ? 'Please try again in some time'
-                                : ''
-                              }`,
-                            );
-                          });
-                      }
-                    }}
-                  >
-                    Add to Sprint
-                  </button>
-                </Tooltip>
-                <button
-                  className='undp-button button-secondary button-arrow'
-                  type='button'
-                  onClick={() => {
-                    // save as draft - no validation needed for drafts
-                    console.log(signalData.attachment);
-                    setButtonDisabled(true);
-                    setSubmittingError(undefined);
-
-                    const formattedData = formatSignalData(
-                      signalData,
-                      [keyword1, keyword2, keyword3],
-                      choices,
-                      selectedTrendsList,
-                      selectedUserGroups,
-                      { isDraft: true }
-                    );
-
-                    if (signalData.id) {
-                      // Create a properly typed object for the API
-                      const apiData = {
-                        ...formattedData,
-                        id: updateSignal.id,
-                        created_by: formattedData.created_by || '',
-                      };
-                      updateSignalApi(updateSignal.id, apiData)
-                        .then(() => {
-                          setButtonDisabled(false);
-                          navigate('/my-drafts');
-                          updateNotificationText(
-                            'Successfully saved the signal to draft',
-                          );
-                        })
-                        .catch(err => {
-                          setButtonDisabled(false);
-                          setSubmittingError(
-                            `${err}. ${err.response?.status === 500
-                              ? 'Please try again in some time'
-                              : ''
-                            }`,
-                          );
-                        });
-                    }
-                  }}
-                >
-                  Save Signal as Draft
-                </button>
-                <Popconfirm
-                  title='Delete Signal'
-                  description='Are you sure to delete this signal?'
-                  onConfirm={() => confirmDelete(updateSignal.id, '/my-drafts')}
-                  onCancel={() => {
-                    updateNotificationText('Delete canceled');
-                  }}
-                  okText='Yes'
-                  cancelText='No'
-                >
-                  <button
-                    className='undp-button button-secondary button-arrow'
-                    type='button'
-                  >
-                    Delete Draft Signal
-                  </button>
-                </Popconfirm>
-              </div>
-            ) : (
+          <div className='flex-div'>
+            {/* Submit Signal Button - Show when:
+                1. Creating new signal (!updateSignal)
+                2. Updating a draft (updateSignal.status === 'Draft') 
+            */}
+            {showSubmit && (
               <button
-                className={`${!validateForm() ||
-                  buttonDisabled
-                  ? 'disabled'
-                  : ''
-                  } undp-button button-secondary button-arrow`}
+                className={`${
+                  !validateForm() || buttonDisabled ? 'disabled' : ''
+                } undp-button button-secondary button-arrow`}
                 type='button'
-                disabled={
-                  !validateForm() ||
-                  buttonDisabled
-                }
+                disabled={!validateForm() || buttonDisabled}
                 title={
-                  !validateForm() ||
-                    buttonDisabled
-                    ? 'All fields are required to update a signal. Descriptions should be > 30 letters'
-                    : 'Click to update a signal'
-                }
-                onClick={() => {
-                  // update signal
-                  const isValid = validateForm();
-                  if (!isValid) {
-                    setShowRedBorders(true);
-                    return;
-                  }
-                  setButtonDisabled(true);
-                  setSubmittingError(undefined);
-
-                  // For updates, we maintain the existing status
-                  const formattedData = formatSignalData(
-                    signalData,
-                    [keyword1, keyword2, keyword3],
-                    choices,
-                    selectedTrendsList,
-                    selectedUserGroups,
-                    {}
-                  );
-                  // Preserve the original status
-                  formattedData.status = signalData.status || '';
-
-                  if (signalData.id) {
-                    // Create a properly typed object for the API
-                    const apiData = {
-                      ...formattedData,
-                      id: updateSignal.id,
-                      created_by: formattedData.created_by || '',
-                    };
-                    updateSignalApi(updateSignal.id, apiData)
-                      .then(() => {
-                        setButtonDisabled(false);
-                        navigate(`/signals/${updateSignal.id}`);
-                        updateNotificationText(
-                          'Successfully updated the signal',
-                        );
-                      })
-                      .catch(err => {
-                        setButtonDisabled(false);
-                        setSubmittingError(
-                          `${err}. ${err.response?.status === 500
-                            ? 'Please try again in some time'
-                            : ''
-                          }`,
-                        );
-                      });
-                  }
-                }}
-              >
-                Update Signal
-              </button>
-            )
-          ) : (
-            <div className='flex-div'>
-              <button
-                className={`${!validateForm() ||
-                  buttonDisabled
-                  }undp-button button-secondary button-arrow`}
-                type='button'
-                disabled={
-                  !validateForm() ||
-                  buttonDisabled
-                }
-                title={
-                  !validateForm() ||
-                    buttonDisabled
+                  !validateForm() || buttonDisabled
                     ? 'All fields are required to submit a signal. Descriptions should be > 30 letters'
                     : 'Click to submit a signal'
                 }
@@ -1652,89 +1442,80 @@ export function SignalEntryFormEl(props: Props) {
                     choices,
                     selectedTrendsList,
                     selectedUserGroups,
-                    { isSubmit: true }
+                    { isSubmit: true },
                   );
 
-                  // Create signal with properly typed data
-                  createSignal(formattedData as any)
-                    .then(() => {
-                      setButtonDisabled(false);
-                      navigate('/signals');
-                      updateNotificationText(
-                        'Successfully submitted the signal for review',
-                      );
-                    })
-                    .catch(err => {
-                      setButtonDisabled(false);
-                      setSubmittingError(
-                        `${err}. ${err.response?.status === 500
-                          ? 'Please try again in some time'
-                          : ''
-                        }`,
-                      );
-                    });
-                }}
-              >
-                Submit Signal
-              </button>
-              <Tooltip
-                title={selectedUserGroups.length === 0 ? "Please select a sprint from the 'Add to Sprint' field above to use this option" : ""}
-                open={selectedUserGroups.length === 0 ? undefined : false}
-              >
-                <button
-                  className={`undp-button button-secondary button-arrow ${
-                    selectedUserGroups.length === 0 ? 'disabled' : ''
-                  }`}
-                  type='button'
-                  disabled={selectedUserGroups.length === 0}
-                  onClick={() => {
-                    // add to sprint - similar to draft but with private attribute
-                    setButtonDisabled(true);
-                    setSubmittingError(undefined);
-
-                    const formattedData = formatSignalData(
-                      signalData,
-                      [keyword1, keyword2, keyword3],
-                      choices,
-                      selectedTrendsList,
-                      selectedUserGroups,
-                      { isAddToSprint: true }
-                    );
-
-                    // Create signal with properly typed data
-                    createSignal(formattedData as any)
+                  if (updateSignal && signalData.id) {
+                    // Update existing draft
+                    const apiData = {
+                      ...formattedData,
+                      id: updateSignal.id,
+                      created_by: formattedData.created_by || '',
+                    };
+                    updateSignalApi(updateSignal.id, apiData)
                       .then(() => {
                         setButtonDisabled(false);
-                        // Navigate to the first sprint if available
-                        if (selectedUserGroups.length > 0) {
-                          navigate(`/sprint/${selectedUserGroups[0]}`);
-                        } else {
-                          navigate('/my-drafts');
-                        }
+                        navigate('/signals');
                         updateNotificationText(
-                          'Successfully added signal to sprint',
+                          'Successfully submitted the signal for review',
                         );
                       })
                       .catch(err => {
                         setButtonDisabled(false);
                         setSubmittingError(
-                          `${err}. ${err.response?.status === 500
-                            ? 'Please try again in some time'
-                            : ''
+                          `${err}. ${
+                            err.response?.status === 500
+                              ? 'Please try again in some time'
+                              : ''
                           }`,
                         );
                       });
-                  }}
-                >
-                  Add to Sprint
-                </button>
-              </Tooltip>
+                  } else {
+                    // Create new signal
+                    createSignal(formattedData as any)
+                      .then(() => {
+                        setButtonDisabled(false);
+                        navigate('/signals');
+                        updateNotificationText(
+                          'Successfully submitted the signal for review',
+                        );
+                      })
+                      .catch(err => {
+                        setButtonDisabled(false);
+                        setSubmittingError(
+                          `${err}. ${
+                            err.response?.status === 500
+                              ? 'Please try again in some time'
+                              : ''
+                          }`,
+                        );
+                      });
+                  }
+                }}
+              >
+                Submit Signal
+              </button>
+            )}
+
+            {/* Update Signal Button - Show when updating non-draft signal */}
+            {updateSignal && (
               <button
-                className='undp-button button-secondary button-arrow'
+                className={`${
+                  !validateForm() || buttonDisabled ? 'disabled' : ''
+                } undp-button button-secondary button-arrow`}
                 type='button'
+                disabled={!validateForm() || buttonDisabled}
+                title={
+                  !validateForm() || buttonDisabled
+                    ? 'All fields are required to update a signal. Descriptions should be > 30 letters'
+                    : 'Click to update a signal'
+                }
                 onClick={() => {
-                  // Saving as a draft - no validation needed
-                  console.log('Saving as a draft', signalData.attachment);
+                  const isValid = validateForm();
+                  if (!isValid) {
+                    setShowRedBorders(true);
+                    return;
+                  }
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
 
@@ -1744,64 +1525,262 @@ export function SignalEntryFormEl(props: Props) {
                     choices,
                     selectedTrendsList,
                     selectedUserGroups,
-                    { isDraft: true }
+                    {},
+                  );
+                  formattedData.status = signalData.status || '';
+
+                  if (signalData.id) {
+                    const apiData = {
+                      ...formattedData,
+                      id: updateSignal.id,
+                      created_by: formattedData.created_by || '',
+                    };
+                    updateSignalApi(updateSignal.id, apiData)
+                      .then(() => {
+                        setButtonDisabled(false);
+                        navigate(`/signals/${updateSignal.id}`);
+                        updateNotificationText(
+                          'Successfully updated the signal',
+                        );
+                      })
+                      .catch(err => {
+                        setButtonDisabled(false);
+                        setSubmittingError(
+                          `${err}. ${
+                            err.response?.status === 500
+                              ? 'Please try again in some time'
+                              : ''
+                          }`,
+                        );
+                      });
+                  }
+                }}
+              >
+                Update Signal
+              </button>
+            )}
+
+            {/* Add to Sprint Button - Show when:
+                1. Creating new signal (!updateSignal)
+                2. Updating a draft (updateSignal.status === 'Draft')
+            */}
+            {(!updateSignal || updateSignal.status === 'Draft') && (
+              <Tooltip
+                title={
+                  selectedUserGroups.length === 0
+                    ? "Please select a sprint from the 'Add to Sprint' field above to use this option"
+                    : ''
+                }
+                open={selectedUserGroups.length === 0 ? undefined : false}
+              >
+                <button
+                  className={`undp-button button-secondary button-arrow ${
+                    selectedUserGroups.length === 0 ? 'disabled' : ''
+                  }`}
+                  type='button'
+                  disabled={selectedUserGroups.length === 0}
+                  onClick={() => {
+                    setButtonDisabled(true);
+                    setSubmittingError(undefined);
+
+                    const formattedData = formatSignalData(
+                      signalData,
+                      [keyword1, keyword2, keyword3],
+                      choices,
+                      selectedTrendsList,
+                      selectedUserGroups,
+                      { isAddToSprint: true },
+                    );
+
+                    if (updateSignal && signalData.id) {
+                      // Update existing draft to sprint
+                      const apiData = {
+                        ...formattedData,
+                        id: updateSignal.id,
+                        created_by: formattedData.created_by || '',
+                      };
+                      updateSignalApi(updateSignal.id, apiData)
+                        .then(() => {
+                          setButtonDisabled(false);
+                          navigate(
+                            selectedUserGroups.length > 0
+                              ? `/sprint/${selectedUserGroups[0]}`
+                              : '/my-drafts',
+                          );
+                          updateNotificationText(
+                            'Successfully added signal to sprint',
+                          );
+                        })
+                        .catch(err => {
+                          setButtonDisabled(false);
+                          setSubmittingError(
+                            `${err}. ${
+                              err.response?.status === 500
+                                ? 'Please try again in some time'
+                                : ''
+                            }`,
+                          );
+                        });
+                    } else {
+                      // Create new signal in sprint
+                      createSignal(formattedData as any)
+                        .then(() => {
+                          setButtonDisabled(false);
+                          navigate(
+                            selectedUserGroups.length > 0
+                              ? `/sprint/${selectedUserGroups[0]}`
+                              : '/my-drafts',
+                          );
+                          updateNotificationText(
+                            'Successfully added signal to sprint',
+                          );
+                        })
+                        .catch(err => {
+                          setButtonDisabled(false);
+                          setSubmittingError(
+                            `${err}. ${
+                              err.response?.status === 500
+                                ? 'Please try again in some time'
+                                : ''
+                            }`,
+                          );
+                        });
+                    }
+                  }}
+                >
+                  Add to Sprint
+                </button>
+              </Tooltip>
+            )}
+
+            {/* Save as Draft Button - Show when:
+                1. Creating new signal (!updateSignal)
+                2. Updating a draft (updateSignal.status === 'Draft')
+            */}
+            {(!updateSignal || updateSignal.status === 'Draft') && (
+              <button
+                className='undp-button button-secondary button-arrow'
+                type='button'
+                onClick={() => {
+                  console.log('Saving as draft', signalData.attachment);
+                  setButtonDisabled(true);
+                  setSubmittingError(undefined);
+
+                  const formattedData = formatSignalData(
+                    signalData,
+                    [keyword1, keyword2, keyword3],
+                    choices,
+                    selectedTrendsList,
+                    selectedUserGroups,
+                    { isDraft: true },
                   );
 
-                  // Create signal with properly typed data
-                  createSignal(formattedData as any)
-                    .then(() => {
-                      setButtonDisabled(false);
-                      navigate('/my-drafts');
-                      updateNotificationText(
-                        'Successfully saved the signal to draft',
-                      );
-                    })
-                    .catch(err => {
-                      setButtonDisabled(false);
-                      setSubmittingError(
-                        `${err}. ${err.response?.status === 500
-                          ? 'Please try again in some time'
-                          : ''
-                        }`,
-                      );
-                    });
+                  if (updateSignal && signalData.id) {
+                    // Update existing draft
+                    const apiData = {
+                      ...formattedData,
+                      id: updateSignal.id,
+                      created_by: formattedData.created_by || '',
+                    };
+                    updateSignalApi(updateSignal.id, apiData)
+                      .then(() => {
+                        setButtonDisabled(false);
+                        navigate('/my-drafts');
+                        updateNotificationText(
+                          'Successfully saved the signal to draft',
+                        );
+                      })
+                      .catch(err => {
+                        setButtonDisabled(false);
+                        setSubmittingError(
+                          `${err}. ${
+                            err.response?.status === 500
+                              ? 'Please try again in some time'
+                              : ''
+                          }`,
+                        );
+                      });
+                  } else {
+                    // Create new draft
+                    createSignal(formattedData as any)
+                      .then(() => {
+                        setButtonDisabled(false);
+                        navigate('/my-drafts');
+                        updateNotificationText(
+                          'Successfully saved the signal to draft',
+                        );
+                      })
+                      .catch(err => {
+                        setButtonDisabled(false);
+                        setSubmittingError(
+                          `${err}. ${
+                            err.response?.status === 500
+                              ? 'Please try again in some time'
+                              : ''
+                          }`,
+                        );
+                      });
+                  }
                 }}
               >
                 Save Signal as Draft
               </button>
-            </div>
-          )}
-          {updateSignal &&
-            updateSignal.status === 'Archived' &&
-            (role === 'Curator' || role === 'Admin') ? (
-            <Popconfirm
-              title='Delete Signal'
-              description='Are you sure to delete this signal?'
-              onConfirm={() =>
-                confirmDelete(updateSignal.id, '../../../archived-signals')
-              }
-              onCancel={() => {
-                updateNotificationText('Delete canceled');
-              }}
-              okText='Yes'
-              cancelText='No'
-            >
-              <button
-                className='undp-button button-secondary button-arrow'
-                type='button'
+            )}
+
+            {/* Delete Draft Signal Button - Show only when updating a draft */}
+            {updateSignal && updateSignal.status === 'Draft' && (
+              <Popconfirm
+                title='Delete Signal'
+                description='Are you sure to delete this signal?'
+                onConfirm={() => confirmDelete(updateSignal.id, '/my-drafts')}
+                onCancel={() => {
+                  updateNotificationText('Delete canceled');
+                }}
+                okText='Yes'
+                cancelText='No'
               >
-                Delete Archived Signal
-              </button>
-            </Popconfirm>
-          ) : null}
+                <button
+                  className='undp-button button-secondary button-arrow'
+                  type='button'
+                >
+                  Delete Draft Signal
+                </button>
+              </Popconfirm>
+            )}
+
+            {/* Delete Archived Signal Button - Show only for archived signals and proper role */}
+            {updateSignal &&
+              updateSignal.status === 'Archived' &&
+              (role === 'Curator' || role === 'Admin') && (
+                <Popconfirm
+                  title='Delete Signal'
+                  description='Are you sure to delete this signal?'
+                  onConfirm={() =>
+                    confirmDelete(updateSignal.id, '../../../archived-signals')
+                  }
+                  onCancel={() => {
+                    updateNotificationText('Delete canceled');
+                  }}
+                  okText='Yes'
+                  cancelText='No'
+                >
+                  <button
+                    className='undp-button button-secondary button-arrow'
+                    type='button'
+                  >
+                    Delete Archived Signal
+                  </button>
+                </Popconfirm>
+              )}
+          </div>
           {buttonDisabled ? <div className='undp-loader' /> : null}
         </div>
       </div>
       <div>
-        {SHOW_FORM_VALIDATION && (
-          <ValidationMessage 
-            signal={signalData} 
-            keyWords={[keyword1, keyword2, keyword3]} 
+        {showSubmit && (
+          <ValidationMessage
+            signal={signalData}
+            keyWords={[keyword1, keyword2, keyword3]}
           />
         )}
       </div>

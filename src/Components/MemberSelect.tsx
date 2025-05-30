@@ -1,6 +1,7 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useContext } from 'react';
 import { Form, Input, Select, message } from 'antd';
 import PropTypes from 'prop-types';
+import { useQuery } from '@tanstack/react-query';
 import { searchUsers } from '../API/userCalls';
 import './MemberSelect.css';
 import { logger } from '../logger';
@@ -17,7 +18,7 @@ interface User {
 }
 
 interface MemberSelectProps {
-  value?: string[] | User[];
+  value?: string[];
   onChange?: (value: string[]) => void;
   placeholder?: string;
   isAdminSelect?: boolean;
@@ -31,52 +32,54 @@ const MemberSelect: React.FC<MemberSelectProps> = ({
   isAdminSelect = false,
   label
 }) => {
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [userOptions, setUserOptions] = useState<{ label: string; value: string }[]>([]);
   const [searchValue, setSearchValue] = useState('');
-  const { userName, userID, isAdmin } = useContext(Context);
-  
-  // Format value to ensure it's always a string[] for the Select component
-  const formattedValue = Array.isArray(value)
-    ? value.map(item => typeof item === 'string' ? item : item.email)
-    : [];
+  const { userID, } = useContext(Context);
 
-  // Load initial users
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  // Use React Query to fetch initial users
+  const { data: initialUsers, isLoading: isInitialLoading } = useQuery({
+    queryKey: ['users', 'initial'],
+    queryFn: async () => {
+      const response = await searchUsers({
+        per_page: 100
+      });
+      return response.data;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
 
-  // Function to fetch users based on search query
-  const fetchUsers = async (query?: string) => {
-    setSearchLoading(true);
-    try {
+  // Use React Query for search with debouncing
+  const { data: searchedUsers, isLoading: isSearchLoading } = useQuery({
+    queryKey: ['users', 'search', searchValue],
+    queryFn: async () => {
       const response = await searchUsers({
         per_page: 100,
-        query: query || undefined
+        query: searchValue
       });
+      return response.data;
+    },
+    enabled: searchValue.trim().length > 1,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-      const options = response.data.map(user => ({
-        label: `${user.name} (${user.email})`,
-        value: user.email,
-      })).filter(user => user.value !== userName);
+  // Determine which users to show
+  let users = searchValue.trim().length > 1 ? searchedUsers : initialUsers;
+  users = users?.filter(user => user.id !== userID);
 
-      setUserOptions(options);
-    } catch (error) {
-      logger.error('Failed to fetch users:', error);
-      message.error('Failed to fetch users. Please try again.');
-    } finally {
-      setSearchLoading(false);
-    }
-  };
+  value = value.filter(id => id !== userID?.toString());
 
-  // Debounced search function
-  const handleSearch = async (value: string) => {
+  const isLoading = searchValue.trim().length > 1 ? isSearchLoading : isInitialLoading;
+
+  // Format users for Select options
+  const userOptions = (users || []).map(user => ({
+    label: `${user.name} (${user.email})`,
+    value: user.id.toString(),
+  })).filter(option => option.value !== userID?.toString());
+
+  // Handle search input
+  const handleSearch = (value: string) => {
     setSearchValue(value);
-    if (value.trim().length > 1) {
-      await fetchUsers(value.trim());
-    } else if (value.trim() === '') {
-      await fetchUsers();
-    }
   };
 
   const handleChange = (newValue: string[]) => {
@@ -103,12 +106,12 @@ const MemberSelect: React.FC<MemberSelectProps> = ({
           options={userOptions}
           optionFilterProp="label"
           showSearch
-          loading={searchLoading}
+          loading={isLoading}
           filterOption={false}
           onSearch={handleSearch}
-          notFoundContent={searchLoading ? "Searching..." : "No users found"}
-          listHeight={280}
-          value={formattedValue}
+          notFoundContent={isLoading ? "Searching..." : "No users found"}
+          listHeight={100}
+          value={value}
           onChange={handleChange}
           maxTagCount={isAdminSelect ? 1 : undefined}
         />

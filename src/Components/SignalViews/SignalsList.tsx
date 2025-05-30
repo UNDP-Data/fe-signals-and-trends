@@ -61,15 +61,6 @@ export const SignalsList: React.FC<SignalsListProps> = ({
       user_ids: group.user_ids || [],
       signal_ids: group.signal_ids || [],
       collaborator_map: group.collaborator_map || {},
-      // Convert string[] to UserDataType[] by creating minimal user objects
-      users: group.users ? group.users.map(email => ({
-        email,
-        name: email.split('@')[0], // Just use the email's local part as name
-        id: 0, // Placeholder
-        role: 'User', // Default role
-        unit: '', // Empty unit
-        created_at: '', // Empty created_at
-      })) : [],
     }));
   };
 

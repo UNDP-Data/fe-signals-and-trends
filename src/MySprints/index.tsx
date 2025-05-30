@@ -112,9 +112,8 @@ export function MySprints() {
         
         // Make sure we return a valid UserGroupDataType[] by ensuring required fields
         return groups.map(group => {
-          const { users, ...groupWithoutUsers } = group;
           return {
-            ...groupWithoutUsers,
+            ...group,
             // users omitted
             user_ids: group.user_ids || [],
             signal_ids: group.signal_ids || [],
@@ -198,7 +197,6 @@ export function MySprints() {
           <Title level={2} className="undp-typography margin-top-05 margin-bottom-09">
             My Sprints
           </Title>
-
           <div style={{ display: 'flex', gap: '12px' }}>
             {LOAD_TEST_DATA && !useTestData && (
               <Button
@@ -216,6 +214,15 @@ export function MySprints() {
               <span>+</span> Create Sprint
             </CreateButton>
           </div>
+        </div>
+        <div style={{ marginBottom: '2rem' }}>
+          <p className="undp-typography" style={{ fontSize: '1.1rem', color: '#2C3E50', marginBottom: 0 }}>
+            Welcome to your workspace for individual exploration and team collaboration.<br />
+            <br />
+            Use sprints to group and explore signals around shared topics. If you're working on a specific project or initiative and want to look for signals on the future of a particular issue, this space is designed for focused collaboration with your team or for individual exploration.<br />
+            <br />
+            This space helps you organize insights and co-develop foresight content. Click "Create Sprint" to get started and invite collaborators.
+          </p>
         </div>
         
         {userGroupsQuery.isLoading && !useTestData ? (

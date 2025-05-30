@@ -59,10 +59,10 @@ export interface SearchUsersParamsDataType {
 export interface UserGroupResponseDataType {
   id: number;
   name: string;
-  users: string[];
   signal_ids?: number[];
   user_ids?: number[];
   collaborator_map?: Record<string, number[]>;
+  users?: UserDataType[];
 }
 
 export function readCurrentUser() {
@@ -114,7 +114,7 @@ export function searchUsers(params: SearchUsersParamsDataType = {}) {
     per_page = 10,
     order_by = 'created_at',
     direction = 'desc',
-    roles = ['Visitor', 'Curator', 'Admin'],
+    roles,
     query,
   } = params;
 
@@ -337,7 +337,7 @@ export function getUserGroupsWithSignals() {
     });
 }
 
-export function createUserGroup(group: { name: string; users?: string[]; admins?: string[] }) {
+export function createUserGroup(group: { name: string; user_ids?: number[]; users?: string[]; admins?: string[] }) {
   const methodName = 'createUserGroup';
   const url = '/user-groups';
   const startTime = performance.now();
@@ -351,6 +351,7 @@ export function createUserGroup(group: { name: string; users?: string[]; admins?
   // Create a payload that includes admin information
   const payload = {
     name: group.name,
+    user_ids: group.user_ids || [],
     users: group.users || [],
     admin_emails: group.admins || []
   };

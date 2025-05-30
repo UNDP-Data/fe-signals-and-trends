@@ -319,15 +319,9 @@ function App() {
           // Convert UserGroupResponseDataType to UserGroupDataType
           const convertedData = data.map(group => ({
             ...group,
-            // Convert string[] to UserDataType[]
-            users: (group.users || []).map(email => ({
-              created_at: '',
-              email,
-              name: email,
-              role: 'User' as const,
-              unit: '',
-              id: 0
-            }))
+            // Keep user_ids as is, users will be populated separately if needed
+            user_ids: group.user_ids || [],
+            users: [] // Initialize as empty, will be populated when needed
           })) as UserGroupDataType[];
           
           updateUserGroups(convertedData);
@@ -343,15 +337,9 @@ function App() {
           // Convert UserGroupResponseDataType to UserGroupDataType
           const convertedData = data.map(group => ({
             ...group,
-            // Convert string[] to UserDataType[]
-            users: (group.users || []).map(email => ({
-              created_at: '',
-              email,
-              name: email,
-              role: 'User' as const,
-              unit: '',
-              id: 0
-            }))
+            // Keep user_ids as is, users will be populated separately if needed
+            user_ids: group.user_ids || [],
+            users: [] // Initialize as empty, will be populated when needed
           })) as UserGroupDataType[];
           
           updateUserGroups(convertedData);

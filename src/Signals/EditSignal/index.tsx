@@ -3,33 +3,71 @@ import {
   UnauthenticatedTemplate,
   useIsAuthenticated,
 } from '@azure/msal-react';
-import { useContext, useEffect, useState } from 'react';
+import { useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { SignalEntryFormEl } from '../../Components/SignalEntryFormEl';
 import { SignInButton } from '../../Components/SignInButton';
 import Context from '../../Context/Context';
 import { SignalDataType, StatusDataType } from '../../Types';
-import { readSignal } from '../../API';
+import { readSignal, updateSignal as updateSignalApi } from '../../API';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export function EditSignal() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { role } = useContext(Context);
-  const [signal, setSignal] = useState<SignalDataType | undefined>(undefined);
+  const { role, updateNotificationText } = useContext(Context);
   const isAuthenticated = useIsAuthenticated();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [err, setError] = useState<any>(undefined);
-  useEffect(() => {
-    if (isAuthenticated) {
-      readSignal(Number(id))
-        .then(response => {
-          setSignal(response);
-        })
-        .catch(error => {
-          setError(error.toJSON());
-        });
-    }
-  }, [id, isAuthenticated]);
+  const queryClient = useQueryClient();
+
+  // Fetch the signal using React Query
+  const {
+    data: signal,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ['signal', id],
+    queryFn: () => readSignal(Number(id)),
+    enabled: isAuthenticated && !!id,
+  });
+
+  console.log({signal});
+
+  // Mutation for updating the signal
+  const updateSignalMutation = useMutation({
+    mutationFn: (data: any) =>
+      updateSignalApi(Number(id), {
+        ...data,
+        created_by: data.created_by || '',
+      }),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['signal', id] });
+      // Navigate depending on status
+      if (variables.status === 'Draft') {
+        navigate('/my-drafts');
+        updateNotificationText('Successfully saved the signal to draft');
+      } else {
+        navigate('/signals');
+        updateNotificationText('Successfully submitted the signal for review');
+      }
+    },
+    onError: (err: any) => {
+      updateNotificationText(
+        `${err}. ${err.response?.status === 500 ? 'Please try again in some time' : ''}`
+      );
+    },
+  });
+
+  // Handler for form submission
+  const handleSubmit = async (data: any) => {
+    return new Promise<void>((resolve, reject) => {
+      updateSignalMutation.mutate(data, {
+        onSuccess: () => resolve(),
+        onError: () => reject(),
+      });
+    });
+  };
+
   return (
     <div
       className='undp-container flex-wrap margin-bottom-09'
@@ -49,48 +87,38 @@ export function EditSignal() {
           Edit Signal
           {signal && signal.headline ? `: ${signal.headline}` : ''}
         </h3>
-        {signal?.status !== 'Draft' ? (
+        {isLoading ? (
+          <div className='undp-loader-container'>
+            <div className='undp-loader' />
+          </div>
+        ) : isError ? (
+          <p
+            className='undp-typography margin-top-07 padding-top-07 padding-bottom-07'
+            style={{
+              textAlign: 'center',
+              backgroundColor: 'var(--gray-200)',
+              color: 'var(--dark-red)',
+            }}
+          >
+            Error: There is an error loading the signal please try again
+          </p>
+        ) : signal && signal.status !== 'Draft' ? (
           role === 'User' ? (
             <p className='undp-typography' style={{ color: 'var(--dark-red)' }}>
               Admin or curator rights required to edit a signal
             </p>
           ) : (
-            <>
-              {err ? (
-                <p
-                  className='undp-typography margin-top-07 padding-top-07 padding-bottom-07'
-                  style={{
-                    textAlign: 'center',
-                    backgroundColor: 'var(--gray-200)',
-                    color: 'var(--dark-red)',
-                  }}
-                >
-                  Error {err.status}: There is an error loading the signal
-                  please try again
-                </p>
-              ) : null}
-              {!err && !signal ? (
-                <div className='undp-loader-container'>
-                  <div className='undp-loader' />
-                </div>
-              ) : signal ? (
-                <SignalEntryFormEl
-                  updateSignal={signal}
-                  draft={
-                    (signal.status as StatusDataType | undefined) === 'Draft'
-                  }
-                />
-              ) : null}
-            </>
+            <SignalEntryFormEl
+              updateSignal={signal}
+              draft={signal.status === 'Draft'}
+              onSubmit={handleSubmit}
+            />
           )
-        ) : !err && !signal ? (
-          <div className='undp-loader-container'>
-            <div className='undp-loader' />
-          </div>
         ) : signal ? (
           <SignalEntryFormEl
             updateSignal={signal}
             draft={signal.status === 'Draft'}
+            onSubmit={handleSubmit}
           />
         ) : null}
       </AuthenticatedTemplate>

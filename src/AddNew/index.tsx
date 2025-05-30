@@ -2,13 +2,14 @@ import {
   AuthenticatedTemplate,
   UnauthenticatedTemplate,
 } from '@azure/msal-react';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SignalEntryFormEl } from '../Components/SignalEntryFormEl';
 import { SignInButton } from '../Components/SignInButton';
 import { TrendEntryFormEl } from '../Components/TrendEntryFormEl';
 import Context from '../Context/Context';
 import { AddNewSprintEl } from './AddNewSprintEl';
+import { createSignal } from '../API';
 
 // Helper function to map short STEEP+V names to full format
 const mapSteepToFullFormat = (
@@ -37,7 +38,8 @@ const mapSDGToFullFormat = (
 export function AddNewSignalEl() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { choices } = useContext(Context);
+  const { choices, updateNotificationText } = useContext(Context);
+  const [submitting, setSubmitting] = useState(false);
 
   // Parse query parameters for initial form data
   const initialFormData = {
@@ -66,6 +68,27 @@ export function AddNewSignalEl() {
     ),
   };
 
+  // Handler for form submission
+  const handleSubmit = async (data: any) => {
+    setSubmitting(true);
+    try {
+      await createSignal(data);
+      setSubmitting(false);
+      if (data.status === 'Draft') {
+        navigate('/my-drafts');
+        updateNotificationText('Successfully saved the signal to draft');
+      } else {
+        navigate('/signals');
+        updateNotificationText('Successfully submitted the signal for review');
+      }
+    } catch (err: any) {
+      setSubmitting(false);
+      updateNotificationText(
+        `${err}. ${err.response?.status === 500 ? 'Please try again in some time' : ''}`
+      );
+    }
+  };
+
   return (
     <div
       // className='undp-container flex-wrap margin-bottom-09'
@@ -82,7 +105,7 @@ export function AddNewSignalEl() {
           ← Back
         </button>
         <h3 className='undp-typography margin-top-05'>Add New Signal</h3>
-        <SignalEntryFormEl draft={false} initialData={initialFormData} />
+        <SignalEntryFormEl draft={false} initialData={initialFormData} onSubmit={handleSubmit} />
       </AuthenticatedTemplate>
       <UnauthenticatedTemplate>
         <div

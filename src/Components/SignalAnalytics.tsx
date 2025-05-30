@@ -349,7 +349,6 @@ const SignalAnalyticsDashboard: React.FC<SignalAnalyticsDashboardProps> = ({ sig
 
       {/* Tab Content */}
       <div className="tab-content">
-        {activeTab === 'source' && (
           <div className="flex-div flex-wrap" style={{ 
             display: 'grid', 
             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
@@ -358,11 +357,11 @@ const SignalAnalyticsDashboard: React.FC<SignalAnalyticsDashboardProps> = ({ sig
           }}>
             <UnitDistribution unitData={chartData.unitData} />
             <StatusDistribution statusData={chartData.statusData} />
-            <GeographicDistribution locationData={chartData.locationData} totalSignals={filteredData.length} />
+            <GeographicDistribution locationData={chartData.locationData} totalSignals={filteredData.
+              length} />
             <MonthlyTimeline timelineData={chartData.timelineData} />
             {/* <DayOfWeek dayOfWeekData={chartData.dayOfWeekData} /> */}
           </div>
-        )}
         
         {/* {activeTab === 'theme' && (
           <div className="grid-col-3 gap-07">
