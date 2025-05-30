@@ -64,9 +64,8 @@ export function AllSprints() {
         
         // Make sure we return a valid UserGroupDataType[] by ensuring required fields
         return groups.map(group => {
-          const { users, ...groupWithoutUsers } = group;
           return {
-            ...groupWithoutUsers,
+            ...group,
             // users omitted
             user_ids: group.user_ids || [],
             signal_ids: group.signal_ids || [],

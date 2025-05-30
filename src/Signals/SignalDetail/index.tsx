@@ -21,6 +21,7 @@ import { MONTHS, SSCOLOR } from '../../Constants';
 import Context from '../../Context/Context';
 import { SignalDataType, TrendDataType } from '../../Types';
 import { getSDGIcon } from '../../Utils/GetSDGIcons';
+import { isValidUrl } from '../../Utils';
 
 interface HeroImageProps {
   bgImage?: string;
@@ -34,16 +35,6 @@ const HeroImageEl = styled.div<HeroImageProps>`
   margin-top: 7.1875rem;
 `;
 
-function isValidUrl(url?: string) {
-  if (!url) return false;
-  try {
-    // eslint-disable-next-line no-new
-    new URL(url);
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
 
 export function SignalDetail() {
   const [data, setData] = useState<SignalDataType | undefined>(undefined);

@@ -74,6 +74,7 @@ export const formatSignalData = (
     connected_trends: selectedTrendsList || (useNullValues ? null : []),
     user_group_ids: selectedUserGroups,
     keywords: formattedKeywords,
+    private: signalData.private || (useNullValues ? null : false),
     status: null // Initialize with null, will be updated based on options
   };
 

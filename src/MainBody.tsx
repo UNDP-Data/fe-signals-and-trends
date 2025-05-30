@@ -7,7 +7,9 @@ import { Modal, notification } from 'antd';
 import { RaggleProvider } from 'raggle-js';
 import { useContext, useEffect, useState } from 'react';
 import { Outlet, Route, Routes } from 'react-router-dom';
-import { AddNewSignalEl, AddNewSprintEl, AddNewTrendEl } from './AddNew';
+import { AddNewSprintEl } from './AddNew/AddNewSprintEl';
+import { AddNewSignalEl } from './AddNew/AddNewSignalEl';
+import { AddNewTrendEl } from './AddNew/AddNewTrendEl';
 import { AdminPanel } from './AdminPanel';
 import { AllSprints } from './AllSprints';
 import { searchSignals, searchTrends } from './API';
@@ -190,7 +192,6 @@ function MainBody() {
     <>
       <AuthenticatedTemplate>
         <RaggleProvider
-          showChatBubble={false}
           chatEmbedUrl='https://ftss-chatbot.vercel.app'
           chatBubbleContent={() => (
             <button

@@ -52,22 +52,22 @@ export function LoggedInHeader(props: Props) {
         </NavLink>
       ),
     },
-    // {
-    //   key: '3',
-    //   label: (
-    //     <NavLink
-    //       to={navLinks.addNewSprint}
-    //       style={{
-    //         fontFamily: 'var(--fontFamily)',
-    //         fontSize: '1.25rem',
-    //         textTransform: 'none',
-    //         padding: '0.75rem',
-    //       }}
-    //     >
-    //       Sprint
-    //     </NavLink>
-    //   ),
-    // }
+    {
+      key: '3',
+      label: (
+        <NavLink
+          to={navLinks.addNewSprint}
+          style={{
+            fontFamily: 'var(--fontFamily)',
+            fontSize: '1.25rem',
+            textTransform: 'none',
+            padding: '0.75rem',
+          }}
+        >
+          Sprint
+        </NavLink>
+      ),
+    }
   ];
 
   return (
@@ -151,6 +151,16 @@ export function LoggedInHeader(props: Props) {
                 Add Signal
               </NavLink>  
             )}
+            {!isAdmin && (
+              <NavLink
+                to={navLinks.addNewSprint}
+                className={({ isActive }) =>
+                  isActive ? 'header-link-active' : 'header-link'
+                }
+              >
+                Add Sprint
+              </NavLink>
+            )}
           </div>
           {isAdmin && (
             <div>
@@ -192,7 +202,7 @@ export function LoggedInHeader(props: Props) {
           showMenu ? 'undp-mobile-nav mobile-nav-show' : 'undp-mobile-nav'
         }
       >
-        {/* <div>
+        <div>
           <NavLink
             to={navLinks.mySprints}
             className={({ isActive }) =>
@@ -204,16 +214,16 @@ export function LoggedInHeader(props: Props) {
           >
             My Sprints & Groups
           </NavLink>
-        </div> */}
-        <div>
+        </div>
+        {isAdmin && <div>
           <NavLink
             to={navLinks.signalAnalytics}
             className={({ isActive }) =>
               isActive ? 'header-link-active' : 'header-link'
             }          >
-            Signal Analytics
+            Signal Analytics  
           </NavLink>
-        </div>
+        </div>}
         <div>
           <NavLink
             to={navLinks.addNewSignal}

@@ -22,7 +22,7 @@ export const EditGroupModal: React.FC<EditGroupModalProps> = ({
       title={`Edit Group: ${group?.name || ''}`}
       initialValues={{
         name: group?.name || '',
-        users: group?.users ? group.users.map(u => u.email) : [],
+        users: group?.user_ids ? group.user_ids.map(id => id.toString()) : [],
         description: group?.description || ''
       }}
       group={group}

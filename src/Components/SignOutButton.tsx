@@ -160,22 +160,22 @@ export function SignOutButton(props: Props) {
         </NavLink>
       ),
     },
-    // {
-    //   key: 'sprints',
-    //   label: (
-    //     <NavLink
-    //       to='/my-sprints'
-    //       style={{
-    //         fontFamily: 'var(--fontFamily)',      
-    //         fontSize: '1.25rem',
-    //         textTransform: 'none',
-    //         padding: '0.75rem',
-    //       }}
-    //     >
-    //       My Sprints
-    //     </NavLink>
-    //   ),
-    // },  
+    {
+      key: 'sprints',
+      label: (
+        <NavLink
+          to='/my-sprints'
+          style={{
+            fontFamily: 'var(--fontFamily)',      
+            fontSize: '1.25rem',
+            textTransform: 'none',
+            padding: '0.75rem',
+          }}
+        >
+          My Sprints
+        </NavLink>
+      ),
+    },  
     {
       key: 'profile',
       label: (

@@ -24,14 +24,14 @@ export interface UserGroupFormProps {
 
 const UserGroupForm: React.FC<UserGroupFormProps> = ({
   onClose,
-  onSuccess,
+onSuccess,
   initialValues = { name: '', users: [], admins: [], description: '' },
   group,
   submitButtonText = 'Save Group & Send Invites',
   modalMode = true,
 }) => {
   const [form] = Form.useForm();
-  const { userGroups, updateUserGroups } = useContext(Context);
+  const { userGroups, updateUserGroups, userID } = useContext(Context);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (values: {
@@ -42,19 +42,23 @@ const UserGroupForm: React.FC<UserGroupFormProps> = ({
   }) => {
     setLoading(true);
     try {
+      // For creating a new group, we need to convert user IDs to integers
       const submitData = {
         name: values.name,
-        users: values.users || [],
+        user_ids: values.users ? values.users.map(id => parseInt(id, 10)) : [],
       };
+
+      let user_ids = [...submitData.user_ids]
+      if (userID) {
+        user_ids.push(userID)
+      }
 
       if (group) {
         // Update existing group
         const updatedGroupData: UserGroupResponseDataType = {
           id: group.id,
           name: submitData.name,
-          users: submitData.users,
-          // Include other properties that may be needed for the API
-          user_ids: group.user_ids,
+          user_ids,
           signal_ids: group.signal_ids,
           collaborator_map: group.collaborator_map,
         };
@@ -78,11 +82,9 @@ const UserGroupForm: React.FC<UserGroupFormProps> = ({
         // Create new group
         const newGroup = await createUserGroup(submitData);
 
-        // Remove users property if present (from API response)
-        const { users, ...newGroupWithoutUsers } = newGroup;
         // Convert to UserGroupDataType format for compatibility
         const newGroupData: UserGroupDataType = {
-          ...newGroupWithoutUsers,
+          ...newGroup,
           user_ids: newGroup.user_ids || [],
           signal_ids: [],
           collaborator_map: {},

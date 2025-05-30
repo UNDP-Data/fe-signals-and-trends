@@ -50,46 +50,20 @@ export function AddNewSprintEl() {
   };
 
   return (
-    <div
-      className='undp-container flex-wrap margin-bottom-09'
-      style={{ maxWidth: '64rem', padding: '0 2rem', marginTop: '10rem' }}
-    >
-      {contextHolder}
-      <AuthenticatedTemplate>
-        <button
-          className='undp-button button-tertiary'
-          type='button'
-          onClick={() => {
-            navigate(-1);
-          }}
-        >
-          ← Back
-        </button>
-        <h3 className='undp-typography margin-top-05'>Add New Sprint</h3>
-        <div className='margin-top-07'>
-          <UserGroupForm
-            onClose={() => navigate('/my-sprints')}
-            onSuccess={handleSuccess}
-            initialValues={{ 
-              name: '', 
-              users: userName ? [userName] : [] // Add current user by default
-            }}
-            submitButtonText='Create Sprint'
-            modalMode={false}
-          />
-        </div>
-      </AuthenticatedTemplate>
-      <UnauthenticatedTemplate>
-        <div
-          className='flex-div flex-wrap flex-hor-align-center'
-          style={{ flexDirection: 'column' }}
-        >
-          <h6 className='undp-typography margin-bottom-03'>
-            Please login to create a new sprint
-          </h6>
-          <SignInButton />
-        </div>
-      </UnauthenticatedTemplate>
+    <>
+    <h3 className='undp-typography margin-top-05'>Add New Sprint</h3>
+    <div className='margin-top-07'>
+      <UserGroupForm
+        onClose={() => navigate('/my-sprints')}
+        onSuccess={handleSuccess}
+        initialValues={{ 
+          name: '', 
+          users: []
+        }}
+        submitButtonText='Create Sprint'
+        modalMode={false}
+      />
     </div>
+    </>
   );
 }

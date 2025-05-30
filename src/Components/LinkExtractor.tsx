@@ -173,9 +173,11 @@ export function LinkExtractor({
       
       // First try JSONLink if enabled
       if (useJsonLink) {
+        console.log('useJsonLink', useJsonLink);
         try {
           setExtractionStatus('jsonlink');
           extractedData = await extractWithJsonLink(url);
+          console.log('extractedData', extractedData);
           setExtractionStatus('success');
           onFetch?.(extractedData);
           setIsLoading(false);
@@ -205,7 +207,9 @@ export function LinkExtractor({
         // Use basic extraction when utils are not available
         extractedData = await extractNewsBasic(url, WORLD_NEWS_API_KEY);
       }
-      
+
+      console.log('extractedData', extractedData);
+
       setExtractionStatus('success');
       onFetch?.(extractedData);
     } catch (err) {

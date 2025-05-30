@@ -14,6 +14,7 @@ import { addSignalToUserGroup } from '../API';
 import '../styles.css';
 import { ChipEl } from './ChipEl';
 import { SignalCardActions } from './SignalCardActions';
+import { Link } from 'react-router-dom';
 
 interface Props {
   data: SignalDataType;
@@ -80,7 +81,7 @@ const MenuButton = styled.div`
   padding: 5px;
   border-radius: 4px;
   margin-left: auto;
-  
+
   &:hover {
     background-color: #f0f0f0;
   }
@@ -96,9 +97,9 @@ export function SignalCard(props: Props) {
   // Check if the signal is already in any groups
   useEffect(() => {
     if (userGroups && userGroups.length > 0) {
-      const signalGroups = userGroups.filter(group =>
-        group.signal_ids?.includes(data.id)
-      ).map(group => group.id);
+      const signalGroups = userGroups
+        .filter(group => group.signal_ids?.includes(data.id))
+        .map(group => group.id);
 
       // Use functional update to prevent infinite loops
       setGroupsWithSignal(prev => {
@@ -110,7 +111,7 @@ export function SignalCard(props: Props) {
       });
     }
   }, [userGroups, data.id]);
-  
+
   const handleAddToUserGroup = (groupId: number) => {
     // If the signal is already in the group, don't do anything
     if (groupsWithSignal.includes(groupId)) {
@@ -122,7 +123,7 @@ export function SignalCard(props: Props) {
       });
       return;
     }
-    
+
     setLoading(true);
     addSignalToUserGroup(data.id, groupId)
       .then(() => {
@@ -132,14 +133,16 @@ export function SignalCard(props: Props) {
           placement: 'top',
           className: 'undp-notification',
         });
-        
+
         // Update the list of groups containing this signal
         setGroupsWithSignal([...groupsWithSignal, groupId]);
       })
       .catch(error => {
         notification.error({
           message: 'Error',
-          description: error.message || 'An error occurred while adding signal to user group',
+          description:
+            error.message ||
+            'An error occurred while adding signal to user group',
           placement: 'top',
           className: 'undp-notification',
         });
@@ -150,55 +153,52 @@ export function SignalCard(props: Props) {
   };
 
   // Create menu items for the dropdown
-  let menuItems: MenuProps['items'] = [];
-  
-  // Use custom dropdown items if provided, otherwise use default
-  if (optionsDropdownItems) {
-    menuItems = optionsDropdownItems;
+  const menuItems = [
+    {
+      key: 'edit',
+      label: <Link to={`/signals/${data.id}/edit`}>Edit Signal</Link>,
+    },
+    {
+      key: 'favorite',
+      label: (
+        <FavoriteButton
+          signalId={data.id}
+          initialFavoriteStatus={data.favorite || false}
+          size='small'
+          inDropdown
+        />
+      ),
+    },
+    {
+      type: 'divider' as const,
+    },
+    ...(optionsDropdownItems || []),
+  ];
+
+  // Add user groups to menu items
+  if (userGroups && userGroups.length > 0) {
+    const userGroupsSubmenu = userGroups.map(group => ({
+      key: `group-${group.id}`,
+      label: (
+        <span>
+          {group.name} {groupsWithSignal.includes(group.id) && '✓'}
+        </span>
+      ),
+      disabled: groupsWithSignal.includes(group.id) || loading,
+      onClick: () => handleAddToUserGroup(group.id),
+    }));
+
+    menuItems.push({
+      key: 'user-groups',
+      label: 'Add to Sprint',
+      children: userGroupsSubmenu,
+    });
   } else {
-    // Default menu items
-    menuItems = [
-      {
-        key: 'favorite',
-        label: (
-          <FavoriteButton 
-            signalId={data.id} 
-            initialFavoriteStatus={data.favorite || false}
-            size="small"
-            inDropdown
-          />
-        ),
-      },
-      {
-        type: 'divider',
-      },
-    ];
-
-    // Add user groups to menu items
-    if (userGroups && userGroups.length > 0) {
-      const userGroupsSubmenu = userGroups.map(group => ({
-        key: `group-${group.id}`,
-        label: (
-          <span>
-            {group.name} {groupsWithSignal.includes(group.id) && '✓'}
-          </span>
-        ),
-        disabled: groupsWithSignal.includes(group.id) || loading,
-        onClick: () => handleAddToUserGroup(group.id),
-      }));
-
-      menuItems.push({
-        key: 'user-groups',
-        label: 'Add to Sprint',
-        children: userGroupsSubmenu,
-      });
-    } else {
-      menuItems.push({
-        key: 'no-groups',
-        label: 'No Groups Available',
-        disabled: true,
-      });
-    }
+    menuItems.push({
+      key: 'no-groups',
+      label: 'No Groups Available',
+      disabled: true,
+    });
   }
 
   return (
@@ -238,10 +238,10 @@ export function SignalCard(props: Props) {
               ) : null}
             </HeroImageEl>
           </NavLink>
-          
+
           <div style={{ padding: '1rem 1rem 0 1rem' }}>
             <div
-              className="flex-div"
+              className='flex-div'
               style={{
                 alignItems: 'flex-start',
                 justifyContent: 'space-between',
@@ -324,7 +324,10 @@ export function SignalCard(props: Props) {
             <div className='flex-div flex-wrap margin-bottom-07 gap-03'>
               {data.keywords?.map((el, index) =>
                 el !== '' ? (
-                  <div className='undp-chip' key={`keyword-${data.id}-${index}-${el}`}>
+                  <div
+                    className='undp-chip'
+                    key={`keyword-${data.id}-${index}-${el}`}
+                  >
                     {el}
                   </div>
                 ) : null,
@@ -332,7 +335,7 @@ export function SignalCard(props: Props) {
             </div>
           </div>
         </div>
-        <SignalCardActions 
+        <SignalCardActions
           data={data}
           isDraft={isDraft}
           cardsToPrint={cardsToPrint}

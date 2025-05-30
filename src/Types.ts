@@ -32,33 +32,38 @@ export interface SignalDataType {
   created_for?: string;
   favorite?: boolean;
   user_group_ids?: number[];
+  private?: boolean;
 }
 
-export interface NewSignalDataType {
+export interface SignalBasicType {
+  headline: string;
+  description: string;
+  url: string;
+  keywords: string[];
+  location: string;
+  steep_primary: string;
+  steep_secondary: string[];
+  signature_primary: string;  
+  signature_secondary: string[];
+  sdgs: string[];
+  relevance: string;
+  score: string;
+  connected_trends: number[];
+  created_for: string;  
+}
+
+export interface NewSignalDataType extends Partial<SignalBasicType> {
   id?: number;
   status: string;
   created_at?: string;
   created_by?: string;
   modified_at?: string;
   modified_by?: string;
-  headline?: string;
-  description?: string;
   attachment?: string;
-  steep_primary?: string;
-  steep_secondary?: string[];
-  signature_primary?: string;
-  signature_secondary?: string[];
-  sdgs?: string[];
   created_unit?: string;
-  url?: string;
-  relevance?: string;
-  keywords: string[];
-  location?: string;
   secondary_location?: string[];
-  score?: string;
-  connected_trends?: number[];
-  created_for?: string;
   user_group_ids?: number[];
+  private?: boolean;
 }
 
 export interface TrendDataType {
