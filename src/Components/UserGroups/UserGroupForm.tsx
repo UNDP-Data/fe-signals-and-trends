@@ -208,4 +208,3 @@ const UserGroupForm: React.FC<UserGroupFormProps> = ({
 };
 
 export default UserGroupForm;
-export type { UserGroupFormValues };

@@ -22,6 +22,7 @@ export interface GenericGroupModalProps {
   };
   group?: UserGroupDataType;
   submitButtonText?: string;
+  modalMode?: boolean;
 }
 
 export const GenericGroupModal: React.FC<GenericGroupModalProps> = ({
@@ -32,6 +33,7 @@ export const GenericGroupModal: React.FC<GenericGroupModalProps> = ({
   initialValues = { name: '', users: [], admins: [], description: '' },
   group,
   submitButtonText = 'Save Group & Send Invites',
+  modalMode = true,
 }) => {
   const { userGroups, updateUserGroups, userID } = useContext(Context);
   const [loading, setLoading] = useState(false);
@@ -109,6 +111,18 @@ export const GenericGroupModal: React.FC<GenericGroupModalProps> = ({
     }
   };
 
+  if (!modalMode) {
+    return (
+      <UserGroupForm
+        onSubmit={handleSubmit}
+        initialValues={initialValues}
+        submitButtonText={submitButtonText}
+        modalMode={modalMode}
+        loading={loading}
+      />
+    );
+  }
+
   return (
     <Modal
       className="modal-container"
@@ -127,7 +141,7 @@ export const GenericGroupModal: React.FC<GenericGroupModalProps> = ({
         onSubmit={handleSubmit}
         initialValues={initialValues}
         submitButtonText={submitButtonText}
-        modalMode={true}
+        modalMode={modalMode}
         loading={loading}
       />
     </Modal>

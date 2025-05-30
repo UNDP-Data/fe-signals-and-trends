@@ -41,10 +41,6 @@ const HeroHeader = styled.div`
 const HeroTitle = styled(Title)`
   margin: 0 !important;
   font-size: 22px !important;
-  
-  &:hover {
-    color: #006EB5 !important;
-  }
 `;
 
 const HeroContent = styled.div`
@@ -92,6 +88,29 @@ const HeroHeaderContent = styled.div`
   }
 `;
 
+const CardWrapper = styled.div`
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+`;
+
+const CardLink = styled.a`
+  display: block;
+  text-decoration: none;
+  color: inherit;
+`;
+
+const MenuWrapper = styled.div`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+`;
+
 interface HeroCardProps {
   title: string;
   timeAgo?: string;
@@ -111,40 +130,53 @@ export function HeroCard({
   onClick,
   children 
 }: HeroCardProps) {
-//   const handleTitleClick = (e: React.MouseEvent) => {
-//     if (onClick) {
-//       e.preventDefault();
-//       onClick();
-//     }
-//   };
+  const handleClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      e.preventDefault();
+      onClick();
+    }
+  };
 
-  return (
-    <div className="hero-card">
+  const content = (
+    <>
       {bgImage !== undefined && (
-        <a href={url || '#'} style={{ textDecoration: 'none' }}>
-          <HeroImageEl bgImage={bgImage} />
-        </a>
+        <HeroImageEl bgImage={bgImage} />
       )}
       <HeroHeader>
         <HeroHeaderContent>
           <div className="hero-header-left">
-            {url ? (
-              <a href={url} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <HeroTitle level={3}>{title}</HeroTitle>
-              </a>
-            ) : (
-              <HeroTitle level={3}>{title}</HeroTitle>
-            )}
+            <HeroTitle level={3}>{title}</HeroTitle>
             {timeAgo && <TimeAgoText>{timeAgo}</TimeAgoText>}
           </div>
-          {menuItems && (
-            <div className="hero-header-right">
-              <OptionsDropdown menuItems={menuItems} />
-            </div>
-          )}
         </HeroHeaderContent>
         {children}
       </HeroHeader>
-    </div>
+    </>
+  );
+
+  if (url) {
+    return (
+      <CardWrapper className="hero-card">
+        <CardLink href={url} onClick={handleClick}>
+          {content}
+        </CardLink>
+        {menuItems && (
+          <MenuWrapper>
+            <OptionsDropdown menuItems={menuItems} />
+          </MenuWrapper>
+        )}
+      </CardWrapper>
+    );
+  }
+
+  return (
+    <CardWrapper className="hero-card">
+      {content}
+      {menuItems && (
+        <div className="hero-header-right" style={{ position: 'absolute', top: '20px', right: '20px' }}>
+          <OptionsDropdown menuItems={menuItems} />
+        </div>
+      )}
+    </CardWrapper>
   );
 }
