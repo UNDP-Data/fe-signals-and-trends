@@ -114,6 +114,7 @@ const MemberSelect: React.FC<MemberSelectProps> = ({
           value={value}
           onChange={handleChange}
           maxTagCount={isAdminSelect ? 1 : undefined}
+          dropdownStyle={{ minWidth: 400, maxWidth: 600 }}
         />
       </Form.Item>
     </div>
