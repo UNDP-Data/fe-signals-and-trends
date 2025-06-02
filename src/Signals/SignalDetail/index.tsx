@@ -4,6 +4,7 @@ import {
 } from '@azure/msal-react';
 import { Popconfirm } from 'antd';
 import { useContext, useEffect, useState } from 'react';
+import { PageMetadata } from '../../Components/PageMetadata';
 import { NavLink, useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import UNDPColorModule from 'undp-viz-colors';
@@ -78,6 +79,13 @@ export function SignalDetail() {
   return (
     <div>
       {data ? (
+        <>
+          <PageMetadata
+            title={data.headline}
+            description={data.description}
+            image={data.attachment}
+            type="article"
+          />
         <div className='margin-bottom-13'>
           <HeroImageEl className='undp-hero-image' bgImage={data.attachment}>
             <div className='max-width'>
@@ -535,13 +543,11 @@ export function SignalDetail() {
                   <div className='flex-div flex-wrap connected'>
                     {connectedTrends.filter(d => d.status === 'Approved')
                       .length > 0 ? (
-                      <>
-                        {connectedTrends
-                          .filter(d => d.status === 'Approved')
-                          .map((d, i) => (
-                            <TrendCard key={i} data={d} />
-                          ))}
-                      </>
+                      connectedTrends
+                        .filter(d => d.status === 'Approved')
+                        .map((d, i) => (
+                          <TrendCard key={i} data={d} />
+                        ))
                     ) : (
                       <p className='undp-typography margin-bottom-00'>
                         No connected trends
@@ -557,6 +563,7 @@ export function SignalDetail() {
             </div>
           </div>
         </div>
+        </>
       ) : (
         <div className='undp-loader-container margin-top-13'>
           <div className='undp-loader' />

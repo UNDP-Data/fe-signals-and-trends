@@ -2,6 +2,7 @@ import { AuthenticationResult } from '@azure/msal-browser';
 import { useIsAuthenticated, useMsal } from '@azure/msal-react';
 import { Modal, Select, Switch } from 'antd';
 import { useEffect, useMemo, useReducer, useState } from 'react';
+import { HelmetProvider } from 'react-helmet-async';
 import { Footer } from './Components/FooterEl';
 import { SignUpButton } from './Components/SignUpButton';
 import { CHOICES, CLIENT_ID } from './Constants';
@@ -400,7 +401,8 @@ function App() {
     ],
   );
   return (
-    <Context.Provider value={contextValue}>
+    <HelmetProvider>
+      <Context.Provider value={contextValue}>
       {!loginError ? (
         <div
           className='undp-container'
@@ -485,7 +487,8 @@ function App() {
           </button>
         )}
       </Modal>
-    </Context.Provider>
+      </Context.Provider>
+    </HelmetProvider>
   );
 }
 

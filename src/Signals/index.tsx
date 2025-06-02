@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { useContext, useState } from 'react';
+import { PageMetadata } from '../Components/PageMetadata';
 import { Modal, Radio, Select, Input } from 'antd';
 import {
   AuthenticatedTemplate,
@@ -52,6 +53,10 @@ export function SignalsListing() {
   const [showFilterModal, setShowFilterModal] = useState(false);
   return (
     <>
+      <PageMetadata
+        title="Signals"
+        description="Browse and explore weak signals of change collected from across the UNDP network."
+      />
       <HeroImageEl className='undp-hero-image'>
         <div className='max-width'>
           <h1 className='undp-typography'>
@@ -692,6 +697,10 @@ export function ArchivedSignalsListing() {
   const [viewType, setViewType] = useState<'cardView' | 'listView'>('cardView');
   return (
     <>
+      <PageMetadata
+        title="Archived Signals"
+        description="Browse archived signals in the UNDP Future Trends and Signals System."
+      />
       <HeroImageEl className='undp-hero-image'>
         <div className='max-width'>
           <h1 className='undp-typography'>
