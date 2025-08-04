@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { Page, View, StyleSheet, Text, Image } from '@react-pdf/renderer';
+import { Page, View, StyleSheet, Text, Image, Link } from '@react-pdf/renderer';
 import { TrendDataType } from '../Types';
+import { WEB_ADDRESS } from '../Constants';
 
 // Create styles
 const font = 'Helvetica';
@@ -48,6 +49,15 @@ const styles = StyleSheet.create({
     fontFamily: font,
     marginBottom: 0,
     color: '#999',
+  },
+  linkText: {
+    fontSize: '10px',
+    textAlign: 'left',
+    fontFamily: font,
+    marginTop: 12,
+    color: '#006EB5',
+    fontStyle: 'italic',
+    textDecoration: 'underline',
   },
 });
 
@@ -199,6 +209,14 @@ export function TrendCardPage(props: Props) {
                   <Text style={styles.subNote}>Not Available</Text>
                 )}
               </View>
+            </View>
+            <View>
+              <Link
+                src={`${WEB_ADDRESS}/trends/${data.id}`}
+                style={styles.linkText}
+              >
+                {`${WEB_ADDRESS}/trends/${data.id}`}
+              </Link>
             </View>
           </View>
         </View>
