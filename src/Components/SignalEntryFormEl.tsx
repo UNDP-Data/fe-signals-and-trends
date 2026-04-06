@@ -11,6 +11,7 @@ import {
   updateSignal as updateSignalApi,
 } from '../API';
 import Context from '../Context/Context';
+import { CREATED_FOR } from '../Constants';
 import '../styles.css';
 import { NewSignalDataType, SignalDataType, TrendDataType } from '../Types';
 import { formatSignalData, isSignalValid } from '../Utils/FormatSignalData';
@@ -1305,7 +1306,7 @@ export function SignalEntryFormEl(props: Props) {
           }}
           value={signalData.created_for}
         >
-          {choices?.created_for.map((d, i) => (
+          {CREATED_FOR.map((d, i) => (
             <Select.Option className='undp-select-option' key={i} value={d}>
               {d}
             </Select.Option>

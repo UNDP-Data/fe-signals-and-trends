@@ -10,7 +10,7 @@ import { TrendFiltersDataType } from '../Types';
 import { AllTrends } from './AllTrends';
 import Context from '../Context/Context';
 import { SignInButton } from '../Components/SignInButton';
-import { TREND_ORDER_BY_OPTIONS } from '../Constants';
+import { CREATED_FOR, TREND_ORDER_BY_OPTIONS } from '../Constants';
 
 const HeroImageEl = styled.div`
   background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
@@ -521,7 +521,7 @@ export function TrendsListing() {
               <Select.Option className='undp-select-option' key='All SDGs'>
                 All Options
               </Select.Option>
-              {choices?.created_for.map(d => (
+              {CREATED_FOR.map(d => (
                 <Select.Option className='undp-select-option' key={d}>
                   {d}
                 </Select.Option>
