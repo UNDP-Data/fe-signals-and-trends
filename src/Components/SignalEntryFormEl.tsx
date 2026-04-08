@@ -1445,6 +1445,7 @@ export function SignalEntryFormEl(props: Props) {
                       id: updateSignal.id,
                       created_by: formattedData.created_by || '',
                     };
+
                     updateSignalApi(updateSignal.id, apiData)
                       .then(() => {
                         setButtonDisabled(false);
@@ -1454,6 +1455,7 @@ export function SignalEntryFormEl(props: Props) {
                         );
                       })
                       .catch(err => {
+
                         setButtonDisabled(false);
                         setSubmittingError(
                           `${err}. ${err.response?.status === 500
@@ -1464,6 +1466,7 @@ export function SignalEntryFormEl(props: Props) {
                       });
                   } else {
                     // Create new signal
+
                     createSignal(formattedData as any)
                       .then(() => {
                         setButtonDisabled(false);
@@ -1525,6 +1528,7 @@ export function SignalEntryFormEl(props: Props) {
                       id: updateSignal.id,
                       created_by: formattedData.created_by || '',
                     };
+
                     updateSignalApi(updateSignal.id, apiData)
                       .then(() => {
                         setButtonDisabled(false);
@@ -1587,6 +1591,7 @@ export function SignalEntryFormEl(props: Props) {
                         id: updateSignal.id,
                         created_by: formattedData.created_by || '',
                       };
+
                       updateSignalApi(updateSignal.id, apiData)
                         .then(() => {
                           setButtonDisabled(false);
@@ -1610,6 +1615,7 @@ export function SignalEntryFormEl(props: Props) {
                         });
                     } else {
                       // Create new signal in sprint
+
                       createSignal(formattedData as any)
                         .then(() => {
                           setButtonDisabled(false);
@@ -1667,6 +1673,7 @@ export function SignalEntryFormEl(props: Props) {
                       id: updateSignal.id,
                       created_by: formattedData.created_by || '',
                     };
+
                     updateSignalApi(updateSignal.id, apiData)
                       .then(() => {
                         setButtonDisabled(false);
@@ -1686,6 +1693,7 @@ export function SignalEntryFormEl(props: Props) {
                       });
                   } else {
                     // Create new draft
+
                     createSignal(formattedData as any)
                       .then(() => {
                         setButtonDisabled(false);
@@ -1695,6 +1703,7 @@ export function SignalEntryFormEl(props: Props) {
                         );
                       })
                       .catch(err => {
+
                         setButtonDisabled(false);
                         setSubmittingError(
                           `${err}. ${err.response?.status === 500
