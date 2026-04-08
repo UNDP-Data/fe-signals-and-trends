@@ -349,7 +349,7 @@ document.head.appendChild(highlightStyle);
 export function SignalEntryFormEl(props: Props) {
   const navigate = useNavigate();
 
-  const { updateSignal, draft, initialData } = props;
+  const { updateSignal, draft, initialData, onSubmit } = props;
   const { userName, role, updateNotificationText, choices, unit } =
     useContext(Context);
   // const [loading, setLoading] = useState(false);
@@ -1475,7 +1475,7 @@ export function SignalEntryFormEl(props: Props) {
                           'Successfully submitted the signal for review',
                         );
                       })
-                      .catch(err => {
+                      .catch((err: any) => {
                         setButtonDisabled(false);
                         setSubmittingError(
                           `${err}. ${err.response?.status === 500
@@ -1529,13 +1529,18 @@ export function SignalEntryFormEl(props: Props) {
                       created_by: formattedData.created_by || '',
                     };
 
-                    updateSignalApi(updateSignal.id, apiData)
+                    const updatePromise = onSubmit
+                      ? onSubmit(apiData)
+                      : updateSignalApi(updateSignal.id, apiData).then(() => {
+                          navigate(`/signals/${updateSignal.id}`);
+                          updateNotificationText(
+                            'Successfully updated the signal',
+                          );
+                        });
+
+                    updatePromise
                       .then(() => {
                         setButtonDisabled(false);
-                        navigate(`/signals/${updateSignal.id}`);
-                        updateNotificationText(
-                          'Successfully updated the signal',
-                        );
                       })
                       .catch(err => {
                         setButtonDisabled(false);
