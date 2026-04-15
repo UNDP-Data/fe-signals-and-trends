@@ -18,6 +18,7 @@ import {
 } from '../Types';
 import Context from '../Context/Context';
 import { searchSignals } from '../API';
+import { CREATED_FOR } from '../Constants';
 
 interface Props {
   setSignalModal: (_d: boolean) => void;
@@ -614,7 +615,7 @@ export function AddSignalsModal(props: Props) {
                     }}
                     clearIcon={<div className='clearIcon' />}
                   >
-                    {choices?.created_for.map(d => (
+                    {CREATED_FOR.map(d => (
                       <Select.Option className='undp-select-option' key={d}>
                         {d}
                       </Select.Option>

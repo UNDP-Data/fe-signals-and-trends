@@ -15,7 +15,6 @@ export function SmartExtractModal({ isOpen, onClose, onExtract }: SmartExtractMo
   const handleExtract = async (data: ExtractedNewsData) => {
     try {
       onExtract(data);
-      console.log('data', data);
       handleClose();
     } catch (err) {
       setError('Failed to extract information. Please try again later.');
@@ -33,7 +32,7 @@ export function SmartExtractModal({ isOpen, onClose, onExtract }: SmartExtractMo
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       style={{
         position: 'fixed',
         top: 0,
@@ -48,7 +47,7 @@ export function SmartExtractModal({ isOpen, onClose, onExtract }: SmartExtractMo
       }}
       onClick={handleClose}
     >
-      <div 
+      <div
         style={{
           backgroundColor: 'white',
           borderRadius: '8px',
@@ -60,7 +59,7 @@ export function SmartExtractModal({ isOpen, onClose, onExtract }: SmartExtractMo
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div 
+        <div
           style={{
             padding: '24px',
             borderBottom: '1px solid #e0e0e0',
@@ -73,8 +72,8 @@ export function SmartExtractModal({ isOpen, onClose, onExtract }: SmartExtractMo
           <button
             className="undp-button button-tertiary"
             onClick={handleClose}
-            style={{ 
-              padding: '0.5rem', 
+            style={{
+              padding: '0.5rem',
               minHeight: 'auto',
               border: 'none',
               background: 'transparent',

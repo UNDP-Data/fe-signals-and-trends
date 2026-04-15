@@ -29,7 +29,7 @@ import {
   ClearOutlined
 } from '@ant-design/icons';
 import { SignalDataType, ChoicesDataType } from '../Types';
-import { SIGNAL_ORDER_BY_OPTIONS } from '../Constants';
+import { CREATED_FOR, SIGNAL_ORDER_BY_OPTIONS } from '../Constants';
 import { getChoices } from '../API/choicesCalls';
 
 const { Option } = Select;

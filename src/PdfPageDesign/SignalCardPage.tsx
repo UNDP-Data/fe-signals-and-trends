@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import { Page, View, StyleSheet, Text, Image } from '@react-pdf/renderer';
+import { Page, View, StyleSheet, Text, Image, Link } from '@react-pdf/renderer';
 import { SignalDataType } from '../Types';
+import { WEB_ADDRESS } from '../Constants';
 
 // Create styles
 const font = 'Helvetica';
@@ -41,6 +42,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 9,
   },
+  linkText: {
+    fontSize: '10px',
+    textAlign: 'left',
+    fontFamily: font,
+    marginTop: 12,
+    color: '#006EB5',
+    fontStyle: 'italic',
+    textDecoration: 'underline',
+  },
 });
 
 interface Props {
@@ -55,7 +65,7 @@ export function SignalCardPage(props: Props) {
   }
 
   return (
-    <Page style={styles.page} size={[430, 400]} orientation='landscape'>
+    <Page style={styles.page} size={[440, 400]} orientation='landscape'>
       <View
         style={{
           width: '100%',
@@ -131,6 +141,12 @@ export function SignalCardPage(props: Props) {
             ))}
           </View>
         ) : null}
+        <Link
+          src={`${WEB_ADDRESS}/signals/${data.id}`}
+          style={styles.linkText}
+        >
+          {`${WEB_ADDRESS}/signals/${data.id}`}
+        </Link>
       </View>
     </Page>
   );
