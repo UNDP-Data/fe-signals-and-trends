@@ -313,17 +313,23 @@ const ValidationMessage = ({
       </p>
       <ul style={{ margin: 0, paddingLeft: '20px' }}>
         {errorMessages.map((message, index) => (
-          <li
-            key={index}
-            className='undp-typography'
-            style={{
-              color: 'var(--blue-700)',
-              cursor: 'pointer',
-              textDecoration: 'underline',
-            }}
-            onClick={() => handleErrorClick(fieldIds[invalidFields[index]])}
-          >
-            {message}
+          <li key={index}>
+            <button
+              type='button'
+              className='undp-typography'
+              style={{
+                color: 'var(--blue-700)',
+                cursor: 'pointer',
+                textDecoration: 'underline',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                font: 'inherit',
+              }}
+              onClick={() => handleErrorClick(fieldIds[invalidFields[index]])}
+            >
+              {message}
+            </button>
           </li>
         ))}
       </ul>

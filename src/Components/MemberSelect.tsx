@@ -1,6 +1,5 @@
 import { useState, useContext } from 'react';
 import { Form, Input, Select, message } from 'antd';
-import PropTypes from 'prop-types';
 import { useQuery } from '@tanstack/react-query';
 import { searchUsers } from '../API/userCalls';
 import './MemberSelect.css';
@@ -122,28 +121,3 @@ const MemberSelect: React.FC<MemberSelectProps> = ({
 };
 
 export default MemberSelect;
-
-// Moved PropTypes definition after component definition
-// Commenting out PropTypes for now to address complex type issue later
-/*
-MemberSelect.propTypes = {
-  value: PropTypes.oneOfType([
-    PropTypes.arrayOf(PropTypes.string),
-    PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        created_at: PropTypes.string.isRequired,
-        email: PropTypes.string.isRequired,
-        role: PropTypes.string.isRequired,
-        name: PropTypes.string.isRequired,
-        unit: PropTypes.string,
-        acclab: PropTypes.bool,
-      })
-    ),
-  ]),
-  onChange: PropTypes.func,
-  placeholder: PropTypes.string,
-  isAdminSelect: PropTypes.bool,
-  label: PropTypes.string,
-};
-*/

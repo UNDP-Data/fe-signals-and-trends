@@ -1,10 +1,9 @@
-import { CLIENT_ID, CLIENT_SECRET, AUTHORITY } from './Constants';
+import { CLIENT_ID, AUTHORITY } from './Constants';
 
 export const msalConfig = {
   auth: {
     clientId: CLIENT_ID as string,
     authority: AUTHORITY as string,
-    clientSecret: CLIENT_SECRET as string,
     redirectUri: '/',
     postLogoutRedirectUri: '/',
     navigateToLoginRequestUrl: false,

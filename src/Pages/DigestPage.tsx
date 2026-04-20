@@ -73,14 +73,18 @@ export default function DigestPage() {
   const [tempFilters, setTempFilters] = useState<SignalFiltersType>({});
   const [choices, setChoices] = useState<ChoicesDataType | null>(null);
 
-  // Redirect if not admin
-  if (!isAdmin) {
-    navigate('/');
-    return null;
-  }
+  useEffect(() => {
+    if (!isAdmin) {
+      navigate('/');
+    }
+  }, [isAdmin, navigate]);
 
   // Load choices for filters
   useEffect(() => {
+    if (!isAdmin) {
+      return;
+    }
+
     getChoices()
       .then(data => setChoices(data))
       .catch(error => {
@@ -114,8 +118,12 @@ export default function DigestPage() {
   };
 
   useEffect(() => {
+    if (!isAdmin) {
+      return;
+    }
+
     loadSignals(1);
-  }, [searchQuery, sortBy, filters]);
+  }, [filters, isAdmin, searchQuery, sortBy]);
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
@@ -198,6 +206,10 @@ export default function DigestPage() {
       setEmailLoading(false);
     }
   };
+
+  if (!isAdmin) {
+    return null;
+  }
 
   return (
     <div className="undp-container" style={{ padding: '2rem' }}>
@@ -319,8 +331,9 @@ export default function DigestPage() {
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
-            <label className="undp-form-label">Primary STEEP+V</label>
+            <Typography.Text className="undp-form-label">Primary STEEP+V</Typography.Text>
             <Select
+              aria-label="Primary STEEP+V"
               value={tempFilters.steep_primary}
               onChange={value => setTempFilters({...tempFilters, steep_primary: value})}
               style={{ width: '100%' }}
@@ -334,8 +347,9 @@ export default function DigestPage() {
           </div>
           
           <div>
-            <label className="undp-form-label">Primary Signature Solution/Enabler</label>
+            <Typography.Text className="undp-form-label">Primary Signature Solution/Enabler</Typography.Text>
             <Select
+              aria-label="Primary Signature Solution or Enabler"
               value={tempFilters.signature_primary}
               onChange={value => setTempFilters({...tempFilters, signature_primary: value})}
               style={{ width: '100%' }}
@@ -349,8 +363,9 @@ export default function DigestPage() {
           </div>
           
           <div>
-            <label className="undp-form-label">Location</label>
+            <Typography.Text className="undp-form-label">Location</Typography.Text>
             <Select
+              aria-label="Location"
               value={tempFilters.location}
               onChange={value => setTempFilters({...tempFilters, location: value})}
               style={{ width: '100%' }}
@@ -364,8 +379,9 @@ export default function DigestPage() {
           </div>
           
           <div>
-            <label className="undp-form-label">SDGs</label>
+            <Typography.Text className="undp-form-label">SDGs</Typography.Text>
             <Select
+              aria-label="SDGs"
               mode="multiple"
               value={tempFilters.sdgs}
               onChange={value => setTempFilters({...tempFilters, sdgs: value})}
@@ -403,8 +419,9 @@ export default function DigestPage() {
         </div>
         
         <div style={{ marginTop: '1.5rem' }}>
-          <label className="undp-form-label">Recipients</label>
+          <Typography.Text className="undp-form-label">Recipients</Typography.Text>
           <Select
+            aria-label="Recipients"
             mode="tags"
             style={{ width: '100%' }}
             placeholder="Enter email addresses"
@@ -418,8 +435,9 @@ export default function DigestPage() {
         </div>
 
         <div style={{ marginTop: '1rem' }}>
-          <label className="undp-form-label">Days to Include</label>
+          <Typography.Text className="undp-form-label">Days to Include</Typography.Text>
           <InputNumber
+            aria-label="Days to Include"
             min={1}
             max={30}
             value={days}

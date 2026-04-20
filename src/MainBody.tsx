@@ -343,24 +343,21 @@ function MainBody() {
           >
             Download selected
             {cardsToPrint.filter(d => d.type === 'signal').length > 0
-              ? ` ${
-                  cardsToPrint.filter(d => d.type === 'signal').length
-                } signal${
-                  cardsToPrint.filter(d => d.type === 'signal').length === 1
-                    ? ''
-                    : 's'
-                }`
+              ? ` ${cardsToPrint.filter(d => d.type === 'signal').length
+              } signal${cardsToPrint.filter(d => d.type === 'signal').length === 1
+                ? ''
+                : 's'
+              }`
               : ''}
             {cardsToPrint.filter(d => d.type === 'signal').length > 0 &&
-            cardsToPrint.filter(d => d.type === 'trend').length > 0
+              cardsToPrint.filter(d => d.type === 'trend').length > 0
               ? ' and'
               : ''}
             {cardsToPrint.filter(d => d.type === 'trend').length > 0
-              ? ` ${cardsToPrint.filter(d => d.type === 'trend').length} trend${
-                  cardsToPrint.filter(d => d.type === 'trend').length === 1
-                    ? ''
-                    : 's'
-                }`
+              ? ` ${cardsToPrint.filter(d => d.type === 'trend').length} trend${cardsToPrint.filter(d => d.type === 'trend').length === 1
+                ? ''
+                : 's'
+              }`
               : ''}{' '}
             as PDF
           </button>
@@ -391,7 +388,7 @@ function MainBody() {
                 if (d.type === 'signal') {
                   const s =
                     signalsForPrinting[
-                      signalsForPrinting.findIndex(el => `${el.id}` === d.id)
+                    signalsForPrinting.findIndex(el => `${el.id}` === d.id)
                     ];
                   return (
                     <div
@@ -453,7 +450,7 @@ function MainBody() {
                 }
                 const s =
                   trendsForPrinting[
-                    trendsForPrinting.findIndex(el => `${el.id}` === d.id)
+                  trendsForPrinting.findIndex(el => `${el.id}` === d.id)
                   ];
                 return (
                   <div
@@ -521,23 +518,23 @@ function MainBody() {
                     pages={cardsToPrint.map(d =>
                       d.type === 'signal'
                         ? {
-                            type: 'signal',
-                            mode: d.mode,
-                            data: signalsForPrinting[
-                              signalsForPrinting.findIndex(
-                                el => `${el.id}` === d.id,
-                              )
-                            ],
-                          }
+                          type: 'signal',
+                          mode: d.mode,
+                          data: signalsForPrinting[
+                            signalsForPrinting.findIndex(
+                              el => `${el.id}` === d.id,
+                            )
+                          ],
+                        }
                         : {
-                            type: 'trend',
-                            mode: d.mode,
-                            data: trendsForPrinting[
-                              trendsForPrinting.findIndex(
-                                el => `${el.id}` === d.id,
-                              )
-                            ],
-                          },
+                          type: 'trend',
+                          mode: d.mode,
+                          data: trendsForPrinting[
+                            trendsForPrinting.findIndex(
+                              el => `${el.id}` === d.id,
+                            )
+                          ],
+                        },
                     )}
                     connectedSignalsForTrendsForPrinting={
                       connectedSignalsForTrendsForPrinting
