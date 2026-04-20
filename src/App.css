@@ -429,3 +429,97 @@ h1.undp-typography,
 .undp-pagination-shell .undp-pagination .ant-pagination-jump-next {
   margin-inline-end: 0 !important;
 }
+
+.unified-bubble-container {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 1rem !important;
+  box-shadow: none !important;
+  height: auto !important;
+  overflow: visible !important;
+  transition: none !important;
+  width: auto !important;
+}
+
+.unified-bubble-container:hover {
+  transform: none !important;
+}
+
+.chat-bubble {
+  align-items: center;
+  background-color: var(--blue-600);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0 10px 24px rgba(0, 85, 164, 0.22);
+  color: var(--white);
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  min-height: 4rem;
+  min-width: 4rem;
+  padding: 1rem;
+  transition: none !important;
+  white-space: nowrap;
+}
+
+.chat-bubble:hover,
+.chat-bubble:focus,
+.chat-bubble:active {
+  background-color: var(--blue-600);
+  box-shadow: 0 10px 24px rgba(0, 85, 164, 0.22);
+  color: var(--white);
+  outline: none;
+  transform: none !important;
+}
+
+.chat-bubble:focus-visible {
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.9),
+    0 0 0 6px rgba(0, 85, 164, 0.35);
+}
+
+.chat-bubble-icon {
+  align-items: center;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 2rem;
+  justify-content: center;
+  width: 2rem;
+}
+
+.chat-bubble-icon svg {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.raggle-chat-expanded .unified-bubble-container,
+.raggle-chat-fullscreen .unified-bubble-container {
+  align-items: center;
+  background-color: var(--blue-600) !important;
+  border-radius: 50% !important;
+  box-shadow: 0 10px 24px rgba(0, 85, 164, 0.22) !important;
+  display: inline-flex !important;
+  height: 3rem !important;
+  justify-content: center;
+  min-width: 3rem !important;
+  padding: 0 !important;
+  position: relative;
+}
+
+.raggle-chat-expanded .unified-bubble-container img[src*='caret-down.png'],
+.raggle-chat-fullscreen .unified-bubble-container img[src*='caret-down.png'] {
+  display: none !important;
+}
+
+.raggle-chat-expanded .unified-bubble-container::before,
+.raggle-chat-fullscreen .unified-bubble-container::before {
+  border-bottom: 2px solid var(--white);
+  border-right: 2px solid var(--white);
+  content: '';
+  display: block;
+  height: 0.75rem;
+  margin-top: -0.125rem;
+  transform: rotate(45deg);
+  width: 0.75rem;
+}

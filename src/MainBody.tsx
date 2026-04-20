@@ -193,20 +193,16 @@ function MainBody() {
       <AuthenticatedTemplate>
         <RaggleProvider
           chatEmbedUrl='https://ftss-chatbot.vercel.app'
+          bubbleSize={64}
           chatBubbleContent={() => (
             <button
               type='button'
               className='chat-bubble'
-              style={{
-                backgroundColor: 'var(--blue-600)',
-                width: '100%',
-                height: '100%',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-              }}
               aria-label='Chat with Echo, AI assistant'
             >
-              <ChatIcon />
+              <span className='chat-bubble-icon' aria-hidden='true'>
+                <ChatIcon />
+              </span>
             </button>
           )}
         >
