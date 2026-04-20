@@ -106,9 +106,9 @@ export const SignalsList: React.FC<SignalsListProps> = ({
   // If there are no signals and we're not loading, show empty state
   if (!loading && (!signals || signals.length === 0)) {
     return (
-      <div className="margin-top-05">
+      <div>
         {title && (
-          <h3 className="undp-typography margin-top-05">{title}</h3>
+          <h3 className="undp-typography margin-top-00 margin-bottom-05">{title}</h3>
         )}
         <EmptyStateContainer>
           <Empty
@@ -128,9 +128,9 @@ export const SignalsList: React.FC<SignalsListProps> = ({
   }
 
   return (
-    <div className="margin-top-05">
+    <div>
       {title && (
-        <h3 className="undp-typography margin-top-05">{title}</h3>
+        <h3 className="undp-typography margin-top-00 margin-bottom-05">{title}</h3>
       )}
 
       {loading ? (

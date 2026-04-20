@@ -881,7 +881,7 @@ export function SignalEntryFormEl(props: Props) {
               Secondary Locations
             </p>
             <Select
-              className='undp-select'
+              className='undp-select signal-entry-multi-select'
               placeholder='Select secondary locations'
               mode='multiple'
               maxTagCount='responsive'
@@ -961,7 +961,7 @@ export function SignalEntryFormEl(props: Props) {
         <div style={{ width: '100%' }} className='margin-bottom-07'>
           <p className='undp-typography margin-bottom-01'>Secondary STEEP+V</p>
           <Select
-            className='undp-select'
+            className='undp-select signal-entry-multi-select'
             placeholder='Select STEEP+V'
             mode='multiple'
             maxTagCount='responsive'
@@ -1128,7 +1128,7 @@ export function SignalEntryFormEl(props: Props) {
             Additional Signature Solution/Enabler
           </p>
           <Select
-            className='undp-select'
+            className='undp-select signal-entry-multi-select'
             placeholder='Select Signature Solution'
             onChange={e => {
               if (e.length > 1) {
@@ -1167,7 +1167,7 @@ export function SignalEntryFormEl(props: Props) {
         <p className='undp-typography margin-bottom-01'>SDGs*</p>
         <Select
           id='signal-sdgs'
-          className='undp-select'
+          className='undp-select signal-entry-multi-select'
           mode='multiple'
           placeholder='Select SDG'
           maxTagCount='responsive'
@@ -1399,6 +1399,7 @@ export function SignalEntryFormEl(props: Props) {
                 });
               }}
               placeholder='Select sprints to add this signal to'
+              className='undp-select signal-entry-multi-select'
             />
           </div>
         </SprintSection>

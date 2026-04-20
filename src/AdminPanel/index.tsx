@@ -90,7 +90,7 @@ export function AdminPanel() {
 
   return (
     <div
-      className='margin-top-13 padding-top-09 margin-bottom-09'
+      className='margin-bottom-09'
       style={{
         width: '100%',
         maxWidth: '64rem',
