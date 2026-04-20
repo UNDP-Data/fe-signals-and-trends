@@ -313,7 +313,7 @@ export function TrendEntryFormEl(props: Props) {
         >
           <p className='undp-typography margin-bottom-01'>Time Horizon*</p>
           <Select
-            className='undp-select'
+            className='undp-select trend-entry-select'
             placeholder='Select time horizon'
             onChange={e => {
               updateTrendData({
@@ -339,7 +339,7 @@ export function TrendEntryFormEl(props: Props) {
         >
           <p className='undp-typography margin-bottom-01'>Impact Rating*</p>
           <Select
-            className='undp-select'
+            className='undp-select trend-entry-select'
             placeholder='Select impact rating'
             onChange={e => {
               updateTrendData({
@@ -446,7 +446,7 @@ export function TrendEntryFormEl(props: Props) {
           <div style={{ width: 'calc(50% - 0.5rem)' }}>
             <p className='undp-typography margin-bottom-01'>Primary STEEP+V*</p>
             <Select
-              className='undp-select'
+              className='undp-select trend-entry-select'
               placeholder='Select STEEP+V'
               onChange={e => {
                 updateTrendData({
@@ -468,7 +468,7 @@ export function TrendEntryFormEl(props: Props) {
               Secondary STEEP+V
             </p>
             <Select
-              className='undp-select'
+              className='undp-select trend-entry-multi-select'
               placeholder='Select STEEP+V'
               mode='multiple'
               onChange={e => {
@@ -512,7 +512,7 @@ export function TrendEntryFormEl(props: Props) {
             Primary Signature Solution/Enabler*
           </p>
           <Select
-            className='undp-select'
+            className='undp-select trend-entry-select'
             placeholder='Select Signature Solution'
             onChange={e => {
               updateTrendData({
@@ -534,7 +534,7 @@ export function TrendEntryFormEl(props: Props) {
             Additional Signature Solution/Enabler
           </p>
           <Select
-            className='undp-select'
+            className='undp-select trend-entry-multi-select'
             placeholder='Select Signature Solution'
             onChange={e => {
               if (e.length > 1) {
@@ -572,7 +572,7 @@ export function TrendEntryFormEl(props: Props) {
       <div className='margin-bottom-07' style={{ width: '100%' }}>
         <p className='undp-typography margin-bottom-01'>SDGs*</p>
         <Select
-          className='undp-select'
+          className='undp-select trend-entry-multi-select'
           mode='multiple'
           placeholder='Select SDG'
           maxTagCount='responsive'
@@ -668,7 +668,7 @@ export function TrendEntryFormEl(props: Props) {
       <div className='margin-bottom-07'>
         <p className='undp-typography margin-bottom-01'>Created For</p>
         <Select
-          className='undp-select'
+          className='undp-select trend-entry-select'
           placeholder='Created For'
           onChange={e => {
             updateTrendData({

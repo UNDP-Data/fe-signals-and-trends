@@ -126,25 +126,21 @@ const PexelsLogo = styled.img`
   margin-bottom: 8px;
 `;
 
-const SearchInput = styled.input`
-  padding: 8px 12px;
-  border: 1px solid var(--gray-400);
-  border-radius: 4px;
-  font-size: 0.875rem;
+const SearchInput = styled.input.attrs({
+  className: 'undp-input',
+})`
+  box-sizing: border-box;
   flex-grow: 1;
-  margin-right: 0.5rem;
-  
-  &:focus {
-    outline: none;
-    border-color: var(--blue-500);
-    box-shadow: 0 0 0 2px rgba(0, 127, 255, 0.2);
-  }
+  height: 3.25rem;
+  margin: 0;
+  width: 100%;
 `;
 
 const SearchContainer = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 1rem;
+  width: 100%;
 `;
 
 const MainButton = styled.button`
@@ -156,7 +152,7 @@ const MainButton = styled.button`
   font-weight: 500;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   width: 100%;
   margin-bottom: 1rem;
   
@@ -329,7 +325,7 @@ export function PexelsImagePicker({ query, onImageSelect }: Props) {
           <SearchContainer>
             <SearchInput
               type="text"
-              placeholder="Search for images..."
+              placeholder="Search Images..."
               value={searchQuery}
               onChange={handleSearchInputChange}
               disabled={isLoading}
