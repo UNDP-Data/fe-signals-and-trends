@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { Modal, message, Empty, Typography, Badge } from 'antd';
+import { Modal, message, Empty, Typography } from 'antd';
 import { 
   DeleteOutlined, 
   EditOutlined, 
@@ -18,7 +18,6 @@ import type { MenuProps } from 'antd';
 import { SignalSearch } from '../SignalSearch';
 import { SignalHorizontalView } from '../SignalViews';
 import { HeroCard } from '../HeroCard';
-import { get } from 'http';
 
 interface UserWithNameAndEmail {
   name: string;
@@ -34,6 +33,7 @@ interface UserGroupsListProps {
   onEdit?: (group: UserGroupDataType) => void;
   onView?: (groupId: number) => void;
   userGroups?: UserGroupDataType[] | ExtendedUserGroupDataType[];
+  variant?: 'hero' | 'simple';
 }
 
 const { Text } = Typography;
@@ -53,10 +53,31 @@ const GroupCard = styled.div`
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
-  background-color: #FFFFFF;
-  border: 1px solid #E8E8E8;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background-color: #ffffff;
+  border: 1px solid #d4d6d8;
+  border-top: 6px solid var(--blue-600);
+  border-radius: 0;
+  box-shadow: none;
+
+  .hero-card {
+    box-shadow: none !important;
+    transform: none !important;
+    transition: background-color 0.2s ease;
+  }
+
+  .hero-card:hover {
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  .hero-card:hover [class*='HeroImageEl'] {
+    filter: brightness(92%);
+  }
+
+  .hero-card h3,
+  .hero-card .ant-typography {
+    font-family: var(--fontFamilyHeadings) !important;
+  }
   
   a:hover {
     text-decoration: underline !important;
@@ -67,8 +88,8 @@ const InfoSection = styled.div`
   display: flex;
   flex-direction: row;
   gap: 16px;
-  margin-top: 12px;
-  padding: 0 20px 16px 20px;
+  margin-top: 0;
+  padding: 0 20px 20px 20px;
   align-items: center;
   flex-wrap: wrap;
 `;
@@ -76,18 +97,125 @@ const InfoSection = styled.div`
 const UserAvatarGroup = styled.div`
   display: flex;
   align-items: center;
-  padding: 4px 12px;
-  border-radius: 16px;
-  transition: background-color 0.3s ease;
-  background-color: #F5F5F5;
+  gap: 8px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d4d6d8;
+  border-radius: 0;
+  background-color: var(--gray-200);
   
   &:hover {
-    background-color: rgba(0, 110, 181, 0.1);
+    background-color: var(--gray-300);
+  }
+
+  .ant-typography {
+    color: var(--gray-700);
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin: 0;
+    text-transform: uppercase;
   }
 `;
 
 const SignalAvatarGroup = styled(UserAvatarGroup)`
   margin: 0;
+`;
+
+const SimpleGroupCard = styled.a`
+  display: block;
+  width: 100%;
+  color: inherit;
+  text-decoration: none !important;
+  background-color: #ffffff;
+  border: 1px solid #d4d6d8;
+  border-top: 6px solid var(--blue-600);
+  padding: 1.25rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+
+  * {
+    text-decoration: none !important;
+  }
+
+  &:hover {
+    background-color: var(--gray-100);
+    border-color: var(--gray-500);
+    text-decoration: none !important;
+  }
+`;
+
+const SimpleGroupTitle = styled.h4`
+  margin: 0 0 0.75rem 0;
+  color: var(--black);
+  font-family: var(--fontFamilyHeadings);
+  font-size: 1.75rem;
+  line-height: 1;
+`;
+
+const SimpleGroupMeta = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+`;
+
+const SimpleMetaItem = styled.div`
+  color: var(--gray-700);
+  font-family: var(--fontFamily);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+`;
+
+const SimpleGroupFooter = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  border-top: 1px solid #d4d6d8;
+  padding-top: 0.875rem;
+  padding-right: 1rem;
+`;
+
+const SimpleModified = styled.div`
+  color: var(--gray-600);
+  font-size: 0.875rem;
+`;
+
+const SimpleOpenLabel = styled.div`
+  align-items: center;
+  background-color: var(--blue-600);
+  border: 2px solid var(--blue-600);
+  color: var(--white);
+  display: inline-flex;
+  flex-shrink: 0;
+  font-family: var(--fontFamilyHeadings);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  gap: 0.5rem;
+  line-height: 1;
+  margin-left: auto;
+  margin-right: 1rem;
+  min-height: 2.5rem;
+  padding: 0.75rem 1rem;
+  text-decoration: none !important;
+  text-transform: uppercase;
+  transform: none !important;
+  transition: none !important;
+  white-space: nowrap;
+
+  &::after {
+    content: '→';
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-color: var(--blue-600);
+    border-color: var(--blue-600);
+    color: var(--white);
+    text-decoration: none !important;
+  }
 `;
 
 // TimeAgo component for displaying relative time from a date string
@@ -130,7 +258,10 @@ const convertToStandardFormat = (
   }));
 };
 
-export const UserGroupsList = ({ userGroups: propUserGroups }: UserGroupsListProps) => {
+export const UserGroupsList = ({
+  userGroups: propUserGroups,
+  variant = 'hero',
+}: UserGroupsListProps) => {
   const { userGroups: contextUserGroups, updateUserGroups } = useContext(Context);
   const { confirm } = Modal;
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -296,19 +427,43 @@ export const UserGroupsList = ({ userGroups: propUserGroups }: UserGroupsListPro
           
           return (
             <GroupCard key={group.id}>
-              <HeroCard
-                title={group.name}
-                // timeAgo={TimeAgo({ date: group.modified_at })}
-                bgImage={group.attachment || undefined}
-                // menuItems={menuItems}
-                url={getGroupUrl()}
-              >
-                <InfoSection>
-                  {renderCollaboratorCount(group)}
-                  {renderSignalCount(group)}
-                </InfoSection>
-                {renderGroupSignals(group)}
-              </HeroCard>
+              {variant === 'simple' ? (
+                <SimpleGroupCard href={getGroupUrl()}>
+                  <SimpleGroupTitle>{group.name}</SimpleGroupTitle>
+                  <SimpleGroupMeta>
+                    <SimpleMetaItem>
+                      <UserOutlined /> {group.user_ids?.length || 0}{' '}
+                      {(group.user_ids?.length || 0) === 1
+                        ? 'Collaborator'
+                        : 'Collaborators'}
+                    </SimpleMetaItem>
+                    <SimpleMetaItem>
+                      <FileTextOutlined /> {group.signal_ids?.length || 0}{' '}
+                      {(group.signal_ids?.length || 0) === 1
+                        ? 'Signal'
+                        : 'Signals'}
+                    </SimpleMetaItem>
+                  </SimpleGroupMeta>
+                  <SimpleGroupFooter>
+                    <SimpleModified>
+                      {TimeAgo({ date: group.modified_at }) || 'Recently updated'}
+                    </SimpleModified>
+                    <SimpleOpenLabel>Open Sprint</SimpleOpenLabel>
+                  </SimpleGroupFooter>
+                </SimpleGroupCard>
+              ) : (
+                <HeroCard
+                  title={group.name}
+                  bgImage={group.attachment || undefined}
+                  url={getGroupUrl()}
+                >
+                  <InfoSection>
+                    {renderCollaboratorCount(group)}
+                    {renderSignalCount(group)}
+                  </InfoSection>
+                  {renderGroupSignals(group)}
+                </HeroCard>
+              )}
             </GroupCard>
           );
         })}

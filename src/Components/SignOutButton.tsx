@@ -403,7 +403,7 @@ export function SignOutButton(props: Props) {
           >
             <p className='undp-typography margin-bottom-02'>Unit</p>
             <Select
-              className='undp-select margin-bottom-05'
+              className='undp-select margin-bottom-05 profile-unit-select'
               placeholder='Select a unit'
               onChange={e => {
                 setSelectedUnit(e);

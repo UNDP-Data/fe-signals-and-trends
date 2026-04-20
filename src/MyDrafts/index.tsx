@@ -140,7 +140,7 @@ export function MyDrafts() {
                 </h5>
               )}
             </div>
-            <div className='flex-div flex-hor-align-center margin-top-07'>
+            <div className='flex-div flex-hor-align-center margin-top-07 undp-pagination-shell'>
               <Pagination
                 className='undp-pagination'
                 onChange={e => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface MonthlyTimelineProps {
   timelineData: Array<{ month: string; count: number }>;
@@ -11,7 +11,6 @@ const MonthlyTimeline: React.FC<MonthlyTimelineProps> = ({ timelineData }) => {
       <h6 className="undp-typography margin-bottom-05">Signal Creation Timeline (Monthly)</h6>
       <ResponsiveContainer width="100%" height={400}>
         <AreaChart data={timelineData}>
-          <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="month" />
           <YAxis />
           <Tooltip />

@@ -4,7 +4,8 @@
     src: url('./assets/soehne-breit-web-dreiviertelfett.woff2') format('woff2');
 }
 
-h1.undp-typography {
+h1.undp-typography,
+.signal-analytics-dashboard h2.undp-typography {
     font-family: var(--fontFamilyHeadings) !important;
 }
 
@@ -304,4 +305,127 @@ h1.undp-typography {
   margin-top: 0 !important;
   padding-bottom: 0 !important;
   text-align: left;
+}
+
+.profile-unit-select.ant-select-single .ant-select-selector {
+  align-items: center !important;
+  display: flex;
+  justify-content: flex-start;
+  min-height: 3rem !important;
+  padding: 0 3rem 0 0.75rem !important;
+}
+
+.profile-unit-select.ant-select-single .ant-select-selection-item,
+.profile-unit-select.ant-select-single .ant-select-selection-placeholder,
+.profile-unit-select.ant-select-single .ant-select-selection-search {
+  align-items: center;
+  display: flex;
+  min-height: calc(3rem - 4px);
+  text-align: left;
+}
+
+.profile-unit-select.ant-select-single .ant-select-selection-item,
+.profile-unit-select.ant-select-single .ant-select-selection-placeholder {
+  padding: 0 3rem 0 0 !important;
+}
+
+.profile-unit-select.ant-select-single:not(.ant-select-customize-input)
+  .ant-select-selector
+  .ant-select-selection-search-input {
+  height: 100% !important;
+  margin-top: 0 !important;
+  padding-bottom: 0 !important;
+  text-align: left;
+}
+
+.undp-pagination-shell .undp-pagination {
+  align-items: center;
+  background: var(--white);
+  border: 2px solid var(--black);
+  border-radius: 0;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+}
+
+.undp-pagination-shell .undp-pagination .ant-pagination-options {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.75rem;
+  margin-inline-start: 0;
+  order: -1;
+}
+
+.undp-pagination-shell .undp-pagination .ant-select {
+  min-width: 8.5rem;
+}
+
+.undp-pagination-shell .undp-pagination .ant-select-selector,
+.undp-pagination-shell .undp-pagination .ant-pagination-item,
+.undp-pagination-shell .undp-pagination .ant-pagination-prev,
+.undp-pagination-shell .undp-pagination .ant-pagination-next {
+  border: 2px solid var(--black) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.undp-pagination-shell .undp-pagination .ant-select-selector {
+  align-items: center !important;
+  display: flex;
+  min-height: 3rem !important;
+  padding: 0 2.5rem 0 0.75rem !important;
+}
+
+.undp-pagination-shell .undp-pagination .ant-select-selection-item,
+.undp-pagination-shell .undp-pagination .ant-select-selection-placeholder {
+  color: var(--black) !important;
+  display: flex;
+  font-family: var(--fontFamily);
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.undp-pagination-shell .undp-pagination .ant-pagination-options-size-changer {
+  margin-inline-end: 0;
+}
+
+.undp-pagination-shell .undp-pagination .ant-pagination-item,
+.undp-pagination-shell .undp-pagination .ant-pagination-prev,
+.undp-pagination-shell .undp-pagination .ant-pagination-next {
+  align-items: center;
+  background: var(--white);
+  display: inline-flex;
+  height: 3rem;
+  justify-content: center;
+  margin-inline-end: 0 !important;
+  min-width: 3rem;
+}
+
+.undp-pagination-shell .undp-pagination .ant-pagination-item a,
+.undp-pagination-shell .undp-pagination .ant-pagination-prev .ant-pagination-item-link,
+.undp-pagination-shell .undp-pagination .ant-pagination-next .ant-pagination-item-link {
+  align-items: center;
+  color: var(--black) !important;
+  display: inline-flex;
+  font-family: var(--fontFamilyHeadings);
+  font-size: 1rem;
+  justify-content: center;
+  min-height: 100%;
+  min-width: 100%;
+}
+
+.undp-pagination-shell .undp-pagination .ant-pagination-item-active {
+  background: var(--blue) !important;
+  border-color: var(--blue) !important;
+}
+
+.undp-pagination-shell .undp-pagination .ant-pagination-item-active a {
+  color: var(--white) !important;
+}
+
+.undp-pagination-shell .undp-pagination .ant-pagination-jump-prev,
+.undp-pagination-shell .undp-pagination .ant-pagination-jump-next {
+  margin-inline-end: 0 !important;
 }
