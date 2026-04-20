@@ -1,29 +1,29 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import Context from '../Context/Context';
-import type { ChoicesDataType, CtxDataType } from '../Types';
-import DigestPage from './DigestPage';
+import Context from '@/Context/Context';
+import type { ChoicesDataType, CtxDataType } from '@/Types';
+import DigestPage from '@/Pages/DigestPage';
 
 const mockGetChoices = vi.fn();
 const mockSearchSignals = vi.fn();
 
-vi.mock('../API/choicesCalls', () => ({
+vi.mock('@/API/choicesCalls', () => ({
   getChoices: () => mockGetChoices(),
 }));
 
-vi.mock('../API/signalsCall', () => ({
+vi.mock('@/API/signalsCall', () => ({
   searchSignals: (...args: unknown[]) => mockSearchSignals(...args),
   triggerDigestEmail: vi.fn(),
 }));
 
-vi.mock('../Components/SignalViews/SignalGridView', () => ({
+vi.mock('@/Components/SignalViews/SignalGridView', () => ({
   SignalGridView: ({ signals }: { signals: Array<{ id: number }> }) => (
     <div data-testid="signal-grid">Grid count: {signals.length}</div>
   ),
 }));
 
-vi.mock('../Components/SignalViews/SignalHorizontalView', () => ({
+vi.mock('@/Components/SignalViews/SignalHorizontalView', () => ({
   SignalHorizontalView: ({ signals }: { signals: Array<{ id: number }> }) => (
     <div data-testid="signal-list">List count: {signals.length}</div>
   ),

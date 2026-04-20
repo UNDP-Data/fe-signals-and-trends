@@ -1,9 +1,9 @@
 import { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Context from '../Context/Context';
-import { triggerDigestEmail, searchSignals } from '../API/signalsCall';
-import { SignalGridView } from '../Components/SignalViews/SignalGridView';
-import { SignalHorizontalView } from '../Components/SignalViews/SignalHorizontalView';
+import Context from '@/Context/Context';
+import { triggerDigestEmail, searchSignals } from '@/API/signalsCall';
+import { SignalGridView } from '@/Components/SignalViews/SignalGridView';
+import { SignalHorizontalView } from '@/Components/SignalViews/SignalHorizontalView';
 import { 
   Button, 
   Alert, 
@@ -28,9 +28,9 @@ import {
   SortAscendingOutlined,
   ClearOutlined
 } from '@ant-design/icons';
-import { SignalDataType, ChoicesDataType } from '../Types';
-import { CREATED_FOR, SIGNAL_ORDER_BY_OPTIONS } from '../Constants';
-import { getChoices } from '../API/choicesCalls';
+import { SignalDataType, ChoicesDataType } from '@/Types';
+import { CREATED_FOR, SIGNAL_ORDER_BY_OPTIONS } from '@/Constants';
+import { getChoices } from '@/API/choicesCalls';
 
 const { Option } = Select;
 const { Search } = Input;
