@@ -56,15 +56,15 @@ const InputWrapper = styled.div`
 const extractWithJsonLink = async (url: string): Promise<ExtractedNewsData> => {
   const encodedUrl = encodeURIComponent(url);
   const apiUrl = `https://jsonlink.io/api/extract?url=${encodedUrl}&api_key=${JSONLINK_API_KEY}`;
-  
+
   const response = await fetch(apiUrl);
-  
+
   if (!response.ok) {
     throw new Error(`JSONLink API error: ${response.status} - ${response.statusText}`);
   }
-  
+
   const data = await response.json();
-  
+
   // Normalize the JSONLink response to match ExtractedNewsData structure
   return {
     title: data.title || '',
@@ -81,10 +81,10 @@ const extractWithJsonLink = async (url: string): Promise<ExtractedNewsData> => {
   };
 };
 
-export function LinkExtractor({ 
-  value, 
-  onChange, 
-  onFetch, 
+export function LinkExtractor({
+  value,
+  onChange,
+  onFetch,
   disabled,
   useFallback = true,
   useJsonLink = true
@@ -95,7 +95,7 @@ export function LinkExtractor({
   const [usingFallback, setUsingFallback] = useState(false);
   const [extractionStatus, setExtractionStatus] = useState<'idle' | 'api' | 'jsonlink' | 'fallback' | 'success' | 'error'>('idle');
   const inputRef = useRef<InputRef>(null);
-  
+
   // Only show fallback UI if the utils are available
   const showFallbackUI = extractNewsUtils.extractNewsFromUrl !== undefined && useFallback;
 
@@ -118,12 +118,12 @@ export function LinkExtractor({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setUrl(newValue);
-    
+
     // Prevent unnecessary re-renders by only calling onChange if the value actually changed
     if (newValue !== value) {
       onChange?.(newValue);
     }
-    
+
     // Only reset these states if there's actually a change
     if (error) setError(null);
     if (usingFallback) setUsingFallback(false);
@@ -170,14 +170,12 @@ export function LinkExtractor({
 
     try {
       let extractedData: ExtractedNewsData;
-      
+
       // First try JSONLink if enabled
       if (useJsonLink) {
-        console.log('useJsonLink', useJsonLink);
         try {
           setExtractionStatus('jsonlink');
           extractedData = await extractWithJsonLink(url);
-          console.log('extractedData', extractedData);
           setExtractionStatus('success');
           onFetch?.(extractedData);
           setIsLoading(false);
@@ -187,16 +185,16 @@ export function LinkExtractor({
           // Continue to other extraction methods
         }
       }
-      
+
       setExtractionStatus('api');
-      
+
       const WORLD_NEWS_API_KEY = import.meta.env.VITE_WORLD_NEWS_API_KEY;
-      
+
       // Use utility function if available, otherwise use basic implementation
       if (extractNewsUtils.extractNewsFromUrl) {
         extractedData = await extractNewsUtils.extractNewsFromUrl(
-          url, 
-          WORLD_NEWS_API_KEY, 
+          url,
+          WORLD_NEWS_API_KEY,
           useFallback,
           () => {
             setUsingFallback(true);
@@ -208,7 +206,6 @@ export function LinkExtractor({
         extractedData = await extractNewsBasic(url, WORLD_NEWS_API_KEY);
       }
 
-      console.log('extractedData', extractedData);
 
       setExtractionStatus('success');
       onFetch?.(extractedData);
@@ -259,9 +256,9 @@ export function LinkExtractor({
           disabled={disabled || isLoading}
           status={error ? 'error' : ''}
         />
-        
-        <Tooltip 
-          title="Extract article information from this URL" 
+
+        <Tooltip
+          title="Extract article information from this URL"
           placement="top"
           classNames={{ root: "undp-tooltip" }}
         >
@@ -270,7 +267,7 @@ export function LinkExtractor({
             onClick={handleExtractNews}
             disabled={!url || disabled || isLoading || !isValidUrl(url)}
             className="undp-button button-primary"
-            style={{ 
+            style={{
               flexShrink: 0,
               backgroundColor: 'var(--blue-600)',
               color: 'var(--white)',
@@ -285,11 +282,11 @@ export function LinkExtractor({
           />
         </Tooltip>
       </InputWrapper>
-      
+
       {statusInfo.text && (
-        <div style={{ 
-          color: statusInfo.color, 
-          fontSize: '0.875rem', 
+        <div style={{
+          color: statusInfo.color,
+          fontSize: '0.875rem',
           marginTop: '4px',
           display: 'flex',
           alignItems: 'center',
@@ -299,7 +296,7 @@ export function LinkExtractor({
           {statusInfo.text}
         </div>
       )}
-      
+
       {showFallbackUI && extractionStatus === 'fallback' && (
         <Alert
           message="Using alternative extraction method"
@@ -309,7 +306,7 @@ export function LinkExtractor({
           style={{ marginTop: '10px', fontSize: '0.875rem' }}
         />
       )}
-      
+
       {showFallbackUI && usingFallback && extractionStatus === 'success' && (
         <Alert
           message="Extraction completed with alternative method"

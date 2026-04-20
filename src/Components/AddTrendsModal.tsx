@@ -14,6 +14,7 @@ import styled from 'styled-components';
 import { TrendDataType, TrendFiltersDataType } from '../Types';
 import Context from '../Context/Context';
 import { searchTrends } from '../API';
+import { CREATED_FOR } from '../Constants';
 
 interface Props {
   setTrendModal: (_d: boolean) => void;
@@ -508,7 +509,7 @@ export function AddTrendsModal(props: Props) {
                     }}
                     clearIcon={<div className='clearIcon' />}
                   >
-                    {choices?.created_for.map(d => (
+                    {CREATED_FOR.map(d => (
                       <Select.Option className='undp-select-option' key={d}>
                         {d}
                       </Select.Option>

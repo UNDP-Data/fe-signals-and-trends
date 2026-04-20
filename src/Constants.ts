@@ -273,6 +273,11 @@ export const CHOICES = {
   ],
 };
 
+export const CREATED_FOR = [
+  'General scanning',
+  'Futures of Africa – 2026',
+];
+
 export const SIGNAL_ORDER_BY_OPTIONS = [
   {
     key: 'created_at',

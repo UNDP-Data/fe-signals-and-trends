@@ -35,7 +35,7 @@ const IconContainer = styled.div`
 `;
 const HeroImageEl = styled.div<HeroImageProps>`
   background: ${props =>
-      props.bgImage ? `url(${props.bgImage})` : `url(${Background})`}
+    props.bgImage ? `url(${props.bgImage})` : `url(${Background})`}
     no-repeat center;
   background-size: cover;
   width: 100%;
@@ -82,26 +82,26 @@ export function ProjectsCard(props: Props) {
   const [isFilled, setIsFilled] = useState<boolean>(false);
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
-  
+
   // Check if current user is the admin (creator) of this signal
-  const isAdmin = 
+  const isAdmin =
     // Check if user is admin role
-    role === 'Admin' || 
+    role === 'Admin' ||
     // Check if user is the creator of the signal
     (data.created_by === userName);
-  
+
   // Function to handle signal deletion
   const handleDeleteSignal = async () => {
     if (!isAdmin) {
       messageApi.error("Permission denied: Only signal creators or admins can delete signals");
       return;
     }
-    
+
     try {
       messageApi.loading("Deleting signal...");
       await deleteSignal(data.id);
       messageApi.success("Signal deleted successfully");
-      
+
       // Refresh the page to update the list
       window.location.reload();
     } catch (error) {
@@ -109,7 +109,7 @@ export function ProjectsCard(props: Props) {
       messageApi.error("Failed to delete signal");
     }
   };
-  
+
   //   Need to remove this?
   const myFavBtnClick = () => {
     const signals = getfavoriteSignals();
@@ -125,7 +125,6 @@ export function ProjectsCard(props: Props) {
     // try {
     //   const userData = await searchUsers();
     //   //   setUsers(userData);
-    //   console.log(userData);
     // } catch (err) {
     //   setError('Failed to fetch users. Please try again later.');
     // } finally {
@@ -157,8 +156,8 @@ export function ProjectsCard(props: Props) {
               isDraft
                 ? `/signals/${data.id}/edit`
                 : data.status === 'Archived'
-                ? `/archived-signals/${data.id}`
-                : `/signals/${data.id}`
+                  ? `/archived-signals/${data.id}`
+                  : `/signals/${data.id}`
             }
             style={{
               textDecoration: 'none',
@@ -167,13 +166,12 @@ export function ProjectsCard(props: Props) {
             <HeroImageEl bgImage={data.attachment}>
               {role === 'Admin' || role === 'Curator' ? (
                 <div
-                  className={`undp-chip margin-bottom-05 ${
-                    data.status === 'Approved'
+                  className={`undp-chip margin-bottom-05 ${data.status === 'Approved'
                       ? 'undp-chip-green'
                       : data.status === 'New'
-                      ? 'undp-chip-yellow'
-                      : 'undp-chip-red'
-                  }`}
+                        ? 'undp-chip-yellow'
+                        : 'undp-chip-red'
+                    }`}
                   style={{
                     borderRadius: '0 0.5rem 0.5rem 0',
                     marginTop: '1.5rem',
@@ -212,7 +210,7 @@ export function ProjectsCard(props: Props) {
                     </button>
                   </Popconfirm>
                 )}
-                
+
                 {/* Favorite button */}
                 <button
                   type='button'
@@ -252,10 +250,10 @@ export function ProjectsCard(props: Props) {
                     ? !choices
                       ? 'var(--black)'
                       : UNDPColorModule.categoricalColors.colors[
-                          choices?.steep.findIndex(
-                            el => el === data.steep_primary,
-                          )
-                        ]
+                      choices?.steep.findIndex(
+                        el => el === data.steep_primary,
+                      )
+                      ]
                     : 'var(--gray-600)'
                 }
               />
@@ -269,8 +267,8 @@ export function ProjectsCard(props: Props) {
                       !choices
                         ? 'var(--black)'
                         : UNDPColorModule.categoricalColors.colors[
-                            choices?.steep.findIndex(el => el === s)
-                          ]
+                        choices?.steep.findIndex(el => el === s)
+                        ]
                     }
                   />
                 ))}
@@ -280,8 +278,8 @@ export function ProjectsCard(props: Props) {
                 isDraft
                   ? `/signals/${data.id}/edit`
                   : data.status === 'Archived'
-                  ? `/archived-signals/${data.id}`
-                  : `/signals/${data.id}`
+                    ? `/archived-signals/${data.id}`
+                    : `/signals/${data.id}`
               }
               style={{
                 textDecoration: 'none',
@@ -358,8 +356,8 @@ export function ProjectsCard(props: Props) {
                 isDraft
                   ? `/signals/${data.id}/edit`
                   : data.status === 'Archived'
-                  ? `/archived-signals/${data.id}`
-                  : `/signals/${data.id}`
+                    ? `/archived-signals/${data.id}`
+                    : `/signals/${data.id}`
               }
               style={{
                 textDecoration: 'none',
@@ -380,16 +378,15 @@ export function ProjectsCard(props: Props) {
             </NavLink>
             {isDraft ? null : (
               <button
-                className={`undp-button button-tertiary button-arrow${
-                  cardsToPrint.findIndex(
-                    el =>
-                      el.id === `${data.id}` &&
-                      el.mode === 'card' &&
-                      el.type === 'signal',
-                  ) !== -1
+                className={`undp-button button-tertiary button-arrow${cardsToPrint.findIndex(
+                  el =>
+                    el.id === `${data.id}` &&
+                    el.mode === 'card' &&
+                    el.type === 'signal',
+                ) !== -1
                     ? 'disabled'
                     : ''
-                }`}
+                  }`}
                 disabled={
                   cardsToPrint.findIndex(
                     el =>

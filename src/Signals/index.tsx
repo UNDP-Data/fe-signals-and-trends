@@ -10,7 +10,7 @@ import { AllSignals } from './AllSignals';
 import Context from '../Context/Context';
 import { SignalFiltersDataType, StatusDataType } from '../Types';
 import { SignInButton } from '../Components/SignInButton';
-import { SIGNAL_ORDER_BY_OPTIONS } from '../Constants';
+import { CREATED_FOR, SIGNAL_ORDER_BY_OPTIONS } from '../Constants';
 import Button from '../Components/button';
 
 const HeroImageEl = styled.div`
@@ -552,7 +552,7 @@ export function SignalsListing() {
               <Select.Option className='undp-select-option' key='All SDGs'>
                 All Options
               </Select.Option>
-              {choices?.created_for.map(d => (
+              {CREATED_FOR.map(d => (
                 <Select.Option className='undp-select-option' key={d}>
                   {d}
                 </Select.Option>

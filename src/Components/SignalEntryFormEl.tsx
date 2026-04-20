@@ -11,6 +11,7 @@ import {
   updateSignal as updateSignalApi,
 } from '../API';
 import Context from '../Context/Context';
+import { CREATED_FOR } from '../Constants';
 import '../styles.css';
 import { NewSignalDataType, SignalDataType, TrendDataType } from '../Types';
 import { formatSignalData, isSignalValid } from '../Utils/FormatSignalData';
@@ -348,7 +349,7 @@ document.head.appendChild(highlightStyle);
 export function SignalEntryFormEl(props: Props) {
   const navigate = useNavigate();
 
-  const { updateSignal, draft, initialData } = props;
+  const { updateSignal, draft, initialData, onSubmit } = props;
   const { userName, role, updateNotificationText, choices, unit } =
     useContext(Context);
   // const [loading, setLoading] = useState(false);
@@ -382,9 +383,6 @@ export function SignalEntryFormEl(props: Props) {
     },
   );
 
- 
-  console.log('signalData', signalData);
-
   const showSubmit = !signalData.private && (!updateSignal || updateSignal.status === 'Draft');
 
   const [buttonDisabled, setButtonDisabled] = useState(false);
@@ -403,22 +401,22 @@ export function SignalEntryFormEl(props: Props) {
     updateSignal?.keywords
       ? updateSignal?.keywords[0] || undefined
       : initialData?.keywords
-      ? initialData.keywords[0] || undefined
-      : undefined,
+        ? initialData.keywords[0] || undefined
+        : undefined,
   );
   const [keyword2, setKeyword2] = useState<string | undefined>(
     updateSignal?.keywords
       ? updateSignal?.keywords[1] || undefined
       : initialData?.keywords
-      ? initialData.keywords[1] || undefined
-      : undefined,
+        ? initialData.keywords[1] || undefined
+        : undefined,
   );
   const [keyword3, setKeyword3] = useState<string | undefined>(
     updateSignal?.keywords
       ? updateSignal?.keywords[2] || undefined
       : initialData?.keywords
-      ? initialData.keywords[2] || undefined
-      : undefined,
+        ? initialData.keywords[2] || undefined
+        : undefined,
   );
   const [useFetchedArticles, setUseFetchedArticles] = useState(false);
   const [showRedBorders, setShowRedBorders] = useState(SHOW_RED_BORDERS);
@@ -489,7 +487,7 @@ export function SignalEntryFormEl(props: Props) {
         user_group_ids: initialData.user_group_ids || prevData.user_group_ids,
         private: initialData.private !== undefined ? initialData.private : prevData.private,
       }));
-      
+
       // Also update connected trends list if provided
       if (initialData.connected_trends && initialData.connected_trends.length > 0) {
         setSelectedTrendsList(initialData.connected_trends);
@@ -508,8 +506,7 @@ export function SignalEntryFormEl(props: Props) {
       .catch(err => {
         setButtonDisabled(false);
         setSubmittingError(
-          `${err}. ${
-            err.response?.status === 500 ? 'Please try again in some time' : ''
+          `${err}. ${err.response?.status === 500 ? 'Please try again in some time' : ''
           }`,
         );
       });
@@ -529,10 +526,9 @@ export function SignalEntryFormEl(props: Props) {
         })
         .catch(err => {
           setSubmittingError(
-            `${err}. ${
-              err.response?.status === 500
-                ? 'Please try again in some time'
-                : ''
+            `${err}. ${err.response?.status === 500
+              ? 'Please try again in some time'
+              : ''
             }`,
           );
         });
@@ -607,10 +603,8 @@ export function SignalEntryFormEl(props: Props) {
           `https://s.jina.ai/${rootUrl}+terms+of+service`,
         ); // TODO: use generateSignal call 
         const tos = tosRes.data;
-        console.log(rootUrl, tos);
         const firstSearch = getStringBeforeSubstring(tos, '[2] Title:');
         const matches = findFirstArrayMatch(firstSearch);
-        console.log(firstSearch, matches);
 
         // If prohibited keywords, found, return and show TOS Error message
         if (matches && matches.length > 0) {
@@ -1068,7 +1062,7 @@ export function SignalEntryFormEl(props: Props) {
             value={keyword1 || ''}
             status={
               showRedBorders &&
-              ![keyword1, keyword2, keyword3].some(k => k && k.trim() !== '')
+                ![keyword1, keyword2, keyword3].some(k => k && k.trim() !== '')
                 ? 'error'
                 : ''
             }
@@ -1305,7 +1299,7 @@ export function SignalEntryFormEl(props: Props) {
           }}
           value={signalData.created_for}
         >
-          {choices?.created_for.map((d, i) => (
+          {CREATED_FOR.map((d, i) => (
             <Select.Option className='undp-select-option' key={i} value={d}>
               {d}
             </Select.Option>
@@ -1417,9 +1411,8 @@ export function SignalEntryFormEl(props: Props) {
             */}
             {showSubmit && (
               <button
-                className={`${
-                  !validateForm() || buttonDisabled ? 'disabled' : ''
-                } undp-button button-secondary button-arrow`}
+                className={`${!validateForm() || buttonDisabled ? 'disabled' : ''
+                  } undp-button button-secondary button-arrow`}
                 type='button'
                 disabled={!validateForm() || buttonDisabled}
                 title={
@@ -1452,6 +1445,7 @@ export function SignalEntryFormEl(props: Props) {
                       id: updateSignal.id,
                       created_by: formattedData.created_by || '',
                     };
+
                     updateSignalApi(updateSignal.id, apiData)
                       .then(() => {
                         setButtonDisabled(false);
@@ -1461,17 +1455,18 @@ export function SignalEntryFormEl(props: Props) {
                         );
                       })
                       .catch(err => {
+
                         setButtonDisabled(false);
                         setSubmittingError(
-                          `${err}. ${
-                            err.response?.status === 500
-                              ? 'Please try again in some time'
-                              : ''
+                          `${err}. ${err.response?.status === 500
+                            ? 'Please try again in some time'
+                            : ''
                           }`,
                         );
                       });
                   } else {
                     // Create new signal
+
                     createSignal(formattedData as any)
                       .then(() => {
                         setButtonDisabled(false);
@@ -1480,13 +1475,12 @@ export function SignalEntryFormEl(props: Props) {
                           'Successfully submitted the signal for review',
                         );
                       })
-                      .catch(err => {
+                      .catch((err: any) => {
                         setButtonDisabled(false);
                         setSubmittingError(
-                          `${err}. ${
-                            err.response?.status === 500
-                              ? 'Please try again in some time'
-                              : ''
+                          `${err}. ${err.response?.status === 500
+                            ? 'Please try again in some time'
+                            : ''
                           }`,
                         );
                       });
@@ -1500,9 +1494,8 @@ export function SignalEntryFormEl(props: Props) {
             {/* Update Signal Button - Show when updating non-draft signal */}
             {updateSignal && (
               <button
-                className={`${
-                  !validateForm() || buttonDisabled ? 'disabled' : ''
-                } undp-button button-secondary button-arrow`}
+                className={`${!validateForm() || buttonDisabled ? 'disabled' : ''
+                  } undp-button button-secondary button-arrow`}
                 type='button'
                 disabled={!validateForm() || buttonDisabled}
                 title={
@@ -1535,21 +1528,26 @@ export function SignalEntryFormEl(props: Props) {
                       id: updateSignal.id,
                       created_by: formattedData.created_by || '',
                     };
-                    updateSignalApi(updateSignal.id, apiData)
+
+                    const updatePromise = onSubmit
+                      ? onSubmit(apiData)
+                      : updateSignalApi(updateSignal.id, apiData).then(() => {
+                          navigate(`/signals/${updateSignal.id}`);
+                          updateNotificationText(
+                            'Successfully updated the signal',
+                          );
+                        });
+
+                    updatePromise
                       .then(() => {
                         setButtonDisabled(false);
-                        navigate(`/signals/${updateSignal.id}`);
-                        updateNotificationText(
-                          'Successfully updated the signal',
-                        );
                       })
                       .catch(err => {
                         setButtonDisabled(false);
                         setSubmittingError(
-                          `${err}. ${
-                            err.response?.status === 500
-                              ? 'Please try again in some time'
-                              : ''
+                          `${err}. ${err.response?.status === 500
+                            ? 'Please try again in some time'
+                            : ''
                           }`,
                         );
                       });
@@ -1574,9 +1572,8 @@ export function SignalEntryFormEl(props: Props) {
                 open={selectedUserGroups.length === 0 ? undefined : false}
               >
                 <button
-                  className={`undp-button button-secondary button-arrow ${
-                    selectedUserGroups.length === 0 ? 'disabled' : ''
-                  }`}
+                  className={`undp-button button-secondary button-arrow ${selectedUserGroups.length === 0 ? 'disabled' : ''
+                    }`}
                   type='button'
                   disabled={selectedUserGroups.length === 0}
                   onClick={() => {
@@ -1599,6 +1596,7 @@ export function SignalEntryFormEl(props: Props) {
                         id: updateSignal.id,
                         created_by: formattedData.created_by || '',
                       };
+
                       updateSignalApi(updateSignal.id, apiData)
                         .then(() => {
                           setButtonDisabled(false);
@@ -1614,15 +1612,15 @@ export function SignalEntryFormEl(props: Props) {
                         .catch(err => {
                           setButtonDisabled(false);
                           setSubmittingError(
-                            `${err}. ${
-                              err.response?.status === 500
-                                ? 'Please try again in some time'
-                                : ''
+                            `${err}. ${err.response?.status === 500
+                              ? 'Please try again in some time'
+                              : ''
                             }`,
                           );
                         });
                     } else {
                       // Create new signal in sprint
+
                       createSignal(formattedData as any)
                         .then(() => {
                           setButtonDisabled(false);
@@ -1638,10 +1636,9 @@ export function SignalEntryFormEl(props: Props) {
                         .catch(err => {
                           setButtonDisabled(false);
                           setSubmittingError(
-                            `${err}. ${
-                              err.response?.status === 500
-                                ? 'Please try again in some time'
-                                : ''
+                            `${err}. ${err.response?.status === 500
+                              ? 'Please try again in some time'
+                              : ''
                             }`,
                           );
                         });
@@ -1662,7 +1659,6 @@ export function SignalEntryFormEl(props: Props) {
                 className='undp-button button-secondary button-arrow'
                 type='button'
                 onClick={() => {
-                  console.log('Saving as draft', signalData.attachment);
                   setButtonDisabled(true);
                   setSubmittingError(undefined);
 
@@ -1682,6 +1678,7 @@ export function SignalEntryFormEl(props: Props) {
                       id: updateSignal.id,
                       created_by: formattedData.created_by || '',
                     };
+
                     updateSignalApi(updateSignal.id, apiData)
                       .then(() => {
                         setButtonDisabled(false);
@@ -1693,15 +1690,15 @@ export function SignalEntryFormEl(props: Props) {
                       .catch(err => {
                         setButtonDisabled(false);
                         setSubmittingError(
-                          `${err}. ${
-                            err.response?.status === 500
-                              ? 'Please try again in some time'
-                              : ''
+                          `${err}. ${err.response?.status === 500
+                            ? 'Please try again in some time'
+                            : ''
                           }`,
                         );
                       });
                   } else {
                     // Create new draft
+
                     createSignal(formattedData as any)
                       .then(() => {
                         setButtonDisabled(false);
@@ -1711,12 +1708,12 @@ export function SignalEntryFormEl(props: Props) {
                         );
                       })
                       .catch(err => {
+
                         setButtonDisabled(false);
                         setSubmittingError(
-                          `${err}. ${
-                            err.response?.status === 500
-                              ? 'Please try again in some time'
-                              : ''
+                          `${err}. ${err.response?.status === 500
+                            ? 'Please try again in some time'
+                            : ''
                           }`,
                         );
                       });

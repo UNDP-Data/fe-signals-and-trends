@@ -18,6 +18,7 @@ import {
   deleteTrend,
   searchSignals,
 } from '../API';
+import { CREATED_FOR } from '../Constants';
 
 interface Props {
   updateTrend?: TrendDataType;
@@ -677,7 +678,7 @@ export function TrendEntryFormEl(props: Props) {
           }}
           value={trendData.created_for}
         >
-          {choices?.created_for.map((d, i) => (
+          {CREATED_FOR.map((d, i) => (
             <Select.Option className='undp-select-option' key={i} value={d}>
               {d}
             </Select.Option>
