@@ -11,7 +11,6 @@ import Context from '../Context/Context';
 import { SignalFiltersDataType, StatusDataType } from '../Types';
 import { SignInButton } from '../Components/SignInButton';
 import { CREATED_FOR, SIGNAL_ORDER_BY_OPTIONS } from '../Constants';
-import Button from '../Components/button';
 
 const HeroImageEl = styled.div`
   background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
@@ -98,7 +97,7 @@ export function SignalsListing() {
               </Select.Option>
             ))}
           </Select>
-          <Button
+          <button
             type='button'
             className='undp-button button-secondary'
             onClick={() => {
@@ -108,7 +107,7 @@ export function SignalsListing() {
           >
             Filters
             {noOfSignalsFiltersActive ? ` (${noOfSignalsFiltersActive})` : ''}
-          </Button>
+          </button>
           <Radio.Group
             defaultValue='cardView'
             onChange={e => {
