@@ -111,7 +111,6 @@ const UserGroupForm: React.FC<UserGroupFormProps> = ({
         >
           <MemberSelect
             placeholder='Type a name or UNDP email to search and select users'
-            label='Group Members'
           />
         </Form.Item>
       </>

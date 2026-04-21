@@ -328,7 +328,6 @@ export const WEB_ADDRESS = 'https://signals.data.undp.org';
 
 export const API_BASEURL = process.env.VITE_API_BASEURL;
 export const CLIENT_ID = process.env.VITE_CLIENT_ID;
-export const CLIENT_SECRET = process.env.VITE_CLIENT_SECRET;
 export const AUTHORITY = process.env.VITE_AUTHORITY;
 
 

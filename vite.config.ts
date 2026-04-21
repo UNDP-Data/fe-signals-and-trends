@@ -1,3 +1,4 @@
+import { fileURLToPath, URL } from 'node:url';
 import react from '@vitejs/plugin-react';
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
@@ -7,6 +8,11 @@ export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
     plugins: [react()],
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+      },
+    },
     define: {
       'process.env': env,
     },

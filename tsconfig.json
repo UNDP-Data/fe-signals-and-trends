@@ -15,11 +15,16 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": [
     ".eslintrc.json",
     "vite.config.ts",
+    "vitest.config.ts",
     "src"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]

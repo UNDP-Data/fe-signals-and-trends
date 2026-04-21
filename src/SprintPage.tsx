@@ -18,7 +18,6 @@ import {
   Button,
   InputRef
 } from 'antd';
-import UNDPButton from "./Components/button"
 import {
   CheckOutlined,
   CloseOutlined,
@@ -67,10 +66,6 @@ const HeaderContainer = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-`;
-
-const BackButton = styled(Button)`
-  display: inline-block;
 `;
 
 const HeaderContent = styled.div`
@@ -320,9 +315,13 @@ export function SprintPage() {
       {contextHolder}
       <AuthenticatedTemplate>
         <BackButtonContainer>
-          <BackButton type="default" onClick={handleBack}>
+          <button
+            className='undp-button button-tertiary'
+            type='button'
+            onClick={handleBack}
+          >
             ← Back to Sprints
-          </BackButton>
+          </button>
         </BackButtonContainer>
 
         <HeaderContainer>
@@ -353,15 +352,14 @@ export function SprintPage() {
                   disabledTooltip="Only sprint admins or application admins can edit or delete this sprint"
                 />
               </div>
-              <a href="/signals">
-              <UNDPButton 
-                  icon={<PlusOutlined />}
-                  onClick={() => setIsSignalSearchVisible(true)}
-                  style={{ backgroundColor: '#006EB5' }}
-                >
-                  Add Signals
-              </UNDPButton>
-              </a>
+              <button
+                className='undp-button button-secondary'
+                type='button'
+                onClick={() => setIsSignalSearchVisible(true)}
+              >
+                <PlusOutlined />
+                Add Signals
+              </button>
             </div>
           </HeaderContent>
         </HeaderContainer>

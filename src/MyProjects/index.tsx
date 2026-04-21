@@ -83,13 +83,13 @@ export function MyProjects() {
 
   return (
     <div
-      className='margin-top-13 padding-top-09 margin-bottom-09'
+      className='margin-bottom-09'
       style={{ paddingLeft: '1rem', paddingRight: '1rem' }}
     >
       <AuthenticatedTemplate>
         {signalList ? (
           <div>
-            <h3 className='undp-typography margin-top-05'>Projects</h3>
+            <h3 className='undp-typography margin-top-00 margin-bottom-05'>Projects</h3>
             <div className='flex-div flex-wrap listing'>
               {signalList.length > 0 ? (
                 <ProjectsCardList />

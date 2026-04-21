@@ -87,12 +87,5 @@
     "vite": "^4.1.0",
     "vite-plugin-eslint": "^1.8.1",
     "vitest": "^3.0.7"
-  },
-  "vitest": {
-    "environment": "jsdom",
-    "globals": true,
-    "setupFiles": [
-      "./src/setupTests.ts"
-    ]
   }
 }

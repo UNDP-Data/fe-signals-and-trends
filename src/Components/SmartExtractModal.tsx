@@ -45,10 +45,27 @@ export function SmartExtractModal({ isOpen, onClose, onExtract }: SmartExtractMo
         justifyContent: 'center',
         zIndex: 1000
       }}
-      onClick={handleClose}
     >
-      <div
+      <button
+        type="button"
+        aria-label="Close extract signal dialog"
+        onClick={handleClose}
         style={{
+          position: 'absolute',
+          inset: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          border: 'none',
+          padding: 0,
+          cursor: 'pointer'
+        }}
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Extract signal"
+        style={{
+          position: 'relative',
+          zIndex: 1,
           backgroundColor: 'white',
           borderRadius: '8px',
           boxShadow: '0 4px 24px rgba(0, 0, 0, 0.15)',
@@ -57,7 +74,6 @@ export function SmartExtractModal({ isOpen, onClose, onExtract }: SmartExtractMo
           maxHeight: '80vh',
           overflow: 'auto'
         }}
-        onClick={(e) => e.stopPropagation()}
       >
         <div
           style={{

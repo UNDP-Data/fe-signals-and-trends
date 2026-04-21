@@ -90,7 +90,7 @@ export function AdminPanel() {
 
   return (
     <div
-      className='margin-top-13 padding-top-09 margin-bottom-09'
+      className='margin-bottom-09'
       style={{
         width: '100%',
         maxWidth: '64rem',
@@ -117,7 +117,7 @@ export function AdminPanel() {
         <div>
           <p className='undp-typography label'>Filter by roles</p>
           <Select
-            className='undp-select'
+            className='undp-select admin-panel-select'
             placeholder='Filter by role'
             onChange={e => {
               setFilterRole(e as 'All Roles' | 'Admin' | 'Curator' | 'User');

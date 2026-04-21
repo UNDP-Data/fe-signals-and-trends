@@ -63,15 +63,22 @@ npm install
 
 To start the project locally, you can run `npm run dev` in the project folder in terminal or command prompt. This will run the app in development mode. Open [http://localhost:5173/](http://localhost:5173/) to view it in the browser. The page will reload if you make edits. You will also see any lint errors in the console.
 
-You will need a `.env.local` file in the root folder. the `env` file would require the following variable and values
+You will need a `.env.local` file in the root folder. The frontend currently reads these variables:
 
 ```
-VITE_API_LINK=https://signals-and-trends-api.azurewebsites.net/v1/
-VITE_ACCESS_CODE={{contact the team for API secret}}
-VITE_AUTHORITY=https://login.microsoftonline.com/{{contact the team for the complete URL}}
-VITE_CLIENT_ID={{contact the team forClient ID}}
+VITE_CLIENT_ID={{contact the team for the Azure AD app client ID}}
+VITE_AUTHORITY=https://login.microsoftonline.com/{{tenant-or-policy}}
 VITE_API_BASEURL=https://ftss-api-dev.azurewebsites.net/
 ```
+
+Optional integrations:
+
+```
+VITE_PEXEL_API_KEY={{optional, only needed for image search flows}}
+VITE_WORLD_NEWS_API_KEY={{optional, only needed for news enrichment flows}}
+```
+
+`VITE_CLIENT_SECRET` should not be present in the frontend. Client secrets belong on the server, not in a browser-delivered app.
 
 ### Tooling Setup
 
@@ -117,4 +124,3 @@ All changes must go through a pull request and code review. Changes are to be me
 7. **Open a Pull Request to `staging`**: Go to the original repository and click on "New Pull Request." Provide a detailed description of your changes and why they should be merged.
 
 When merging from `staging` to `main`, make sure to merge with rebase.
-

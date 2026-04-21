@@ -51,7 +51,7 @@ export function SignalsListing() {
   });
   const [showFilterModal, setShowFilterModal] = useState(false);
   return (
-    <>
+    <div className='signals-page'>
       <HeroImageEl className='undp-hero-image'>
         <div className='max-width'>
           <h1 className='undp-typography'>
@@ -240,7 +240,8 @@ export function SignalsListing() {
       ) : null}
       <AllSignals view={viewType} />
       <Modal
-        className='undp-modal'
+        className='undp-modal signals-filter-modal'
+        rootClassName='signals-filter-modal'
         open={showFilterModal}
         onCancel={() => {
           setTempFilters(signalFilters);
@@ -683,7 +684,7 @@ export function SignalsListing() {
           Apply Filters
         </button>
       </Modal>
-    </>
+    </div>
   );
 }
 
@@ -691,7 +692,7 @@ export function ArchivedSignalsListing() {
   const { role } = useContext(Context);
   const [viewType, setViewType] = useState<'cardView' | 'listView'>('cardView');
   return (
-    <>
+    <div className='signals-page'>
       <HeroImageEl className='undp-hero-image'>
         <div className='max-width'>
           <h1 className='undp-typography'>
@@ -740,6 +741,6 @@ export function ArchivedSignalsListing() {
       <UnauthenticatedTemplate>
         <SignInButton buttonText='Sign In to View This Page' />
       </UnauthenticatedTemplate>
-    </>
+    </div>
   );
 }

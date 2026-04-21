@@ -234,6 +234,7 @@ export function MySprints() {
             <UserGroupsList 
               userGroups={paginatedGroups} 
               onView={handleViewGroup} 
+              variant='simple'
             />
             
             {totalGroups > groupsPageSize && (
